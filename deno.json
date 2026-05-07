@@ -24,5 +24,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
-  }
+  },
+  "unstable": ["kv"]
 }
