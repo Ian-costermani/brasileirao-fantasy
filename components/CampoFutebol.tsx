@@ -14,6 +14,7 @@ interface Props {
   modoAoVivo?: boolean;
   corTime?: string;
   campoBg?: string;
+  escudo?: string;
 }
 
 function CampoSVG() {
@@ -140,7 +141,7 @@ function PlayerCard(
   );
 }
 
-export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff", campoBg }: Props) {
+export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff", campoBg, escudo }: Props) {
   const titulares = jogadores.filter((j) => j.escalacao === "Sim");
   const banco = jogadores.filter((j) => j.escalacao === "Banco");
 
@@ -168,6 +169,9 @@ export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff
         {campoBg
           ? <img src={campoBg} alt="" class="campo-svg-bg" aria-hidden="true" />
           : <CampoSVG />}
+        {escudo && (
+          <img src={escudo} alt="" class="campo-escudo-time" aria-hidden="true" />
+        )}
         {rows.map((row) => (
           <div key={row.key} class={`campo-row campo-row-${row.key}`}>
             {row.jogadores.map((j, i) => (

@@ -71,6 +71,18 @@ const NOMES_ELENCO: Record<string, string> = {
   "DORIVAL JUNIORS":     "Pedro Álvares Pardal",
 };
 
+const ESCUDOS_TIMES: Record<string, string> = {
+  "FILHOS DE KIEZA":     "/times_escudos/filhos-de-kieza.png",
+  "BOTAFOFO FR":         "/times_escudos/botafofo.png",
+  "MALVADINHOS FC":      "/times_escudos/ilha-de-paqueta.png",
+  "CHUTOCA FC":          "/times_escudos/crefilho-da-gama.png",
+  "BENDERMEM 23":        "/times_escudos/bendermem.png",
+  "888 PARTNERS":        "/times_escudos/888-partners.png",
+  "TODOS COM BOLSONARO": "/times_escudos/moleicester-city.png",
+  "PIRATAS DO CARILLE":  "/times_escudos/papai-chegou.png",
+  "DORIVAL JUNIORS":     "/times_escudos/pedro-alvares-pardal.png",
+};
+
 const INTERVALO_POLLING = 2 * 60 * 1000;
 
 export default function Ranking() {
@@ -271,7 +283,8 @@ export default function Ranking() {
                   jogadores={time.jogadores}
                   modoAoVivo={aba === "ao_vivo"}
                   corTime={CORES_TIMES[time.nome]}
-                                  />
+                  escudo={ESCUDOS_TIMES[time.nome]}
+                />
               )}
             </div>
           ))}

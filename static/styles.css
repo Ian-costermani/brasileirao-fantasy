@@ -574,7 +574,8 @@ body {
   display: grid;
   grid-template-rows: 1fr 1fr 1fr 1fr;
   min-height: 460px;
-  background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 65%);
+  background-color: color-mix(in srgb, var(--cor-time, #10b981) 15%, #0d1520);
+  background-image: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 65%);
   padding: 32px 0 8px;
 }
 
@@ -592,6 +593,17 @@ body {
 }
 img.campo-svg-bg {
   object-fit: fill;
+}
+.campo-escudo-time {
+  position: absolute;
+  bottom: 18px;
+  right: 14px;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  opacity: 0.18;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .campo-row {
