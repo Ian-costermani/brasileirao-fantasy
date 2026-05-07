@@ -20,9 +20,15 @@ export const handler: Handlers = {
       );
     }
 
-    // Salva no Deno KV sobrescrevendo a rodada atual
-    const kv = await Deno.openKv();
-    await kv.set(["rodada_atual"], dados);
+    try {
+      const kv = await Deno.openKv();
+      await kv.set(["rodada_atual"], dados);
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ ok: false, erro: String(e) }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     return new Response(
       JSON.stringify({ ok: true }),
