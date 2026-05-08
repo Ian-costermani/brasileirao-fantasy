@@ -171,9 +171,9 @@ export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff
         )}
         {rows.map((row) => (
           <div key={row.key} class={`campo-row campo-row-${row.key}`}>
-            {row.jogadores.map((j, i) => (
+            {row.jogadores.map((j) => (
               <PlayerCard
-                key={i}
+                key={j.atleta_id ?? j.nome}
                 jogador={j}
                 modoAoVivo={modoAoVivo}
                 fraco={modoAoVivo && j.pontuacao === 0}
@@ -188,8 +188,8 @@ export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff
         <div class="campo-banco">
           <span class="campo-banco-label">Banco de Reservas</span>
           <div class="campo-banco-jogadores">
-            {banco.map((j, i) => (
-              <PlayerCard key={i} jogador={j} modoAoVivo={modoAoVivo} fraco corTime={corTime} />
+            {banco.map((j) => (
+              <PlayerCard key={j.atleta_id ?? j.nome} jogador={j} modoAoVivo={modoAoVivo} fraco corTime={corTime} />
             ))}
           </div>
         </div>
