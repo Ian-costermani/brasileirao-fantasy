@@ -17,8 +17,11 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
   const data = await fetchAtletasMercado();
   const now = new Date().toISOString();
 
+  // Atualiza cache de atletas por posição (para busca/troca)
   const grupos: Record<string, Record<string, { apelido: string; clube: string; clube_id: number; posicao: string; posicao_id: number }>> = {};
   for (const c of POSICAO_CHAVES_CACHE) grupos[c] = {};
+
+  const statusMap = new Map<number, number | null>();
 
   for (const a of data.atletas) {
     const posNome = POSICAO_ID_NOME[a.posicao_id];
@@ -33,11 +36,33 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
       posicao: posNome,
       posicao_id: a.posicao_id,
     };
+    statusMap.set(a.atleta_id, a.status_id ?? null);
   }
 
   for (const [chave, atletas] of Object.entries(grupos)) {
     const cache: AtletaCacheKV = { atualizadoEm: now, atletas };
     await kv.set(["atletas_cache", chave], cache);
+  }
+
+  // Atualiza status_id nos elencos (lesionado, suspenso, provável, etc.)
+  const elencos = await getAllElencos(kv);
+  for (const [chave, elenco] of Object.entries(elencos)) {
+    let alterado = false;
+    for (const [id, jogador] of Object.entries(elenco.jogadores)) {
+      const sid = statusMap.get(jogador.atleta_id);
+      if (sid === undefined) continue;
+      if (jogador.status_id === sid) continue;
+      elenco.jogadores[id] = {
+        ...jogador,
+        status_id: sid,
+        provavel:  sid === 5,
+        lesionado: sid === 2,
+        suspenso:  sid === 3,
+        nulo:      sid === 6,
+      };
+      alterado = true;
+    }
+    if (alterado) await setElenco(kv, chave, elenco);
   }
 
   console.log(`[cron] atletas sincronizados: ${data.atletas.length}`);
