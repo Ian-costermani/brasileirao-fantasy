@@ -1,6 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import type { ElencoKV, JogadorKV } from "../../../lib/types.ts";
 import { DONOS_CHAVES } from "../../../lib/kv.ts";
+import dados from "../../../static/de_para_jogadores.json" with { type: "json" };
 
 const H = { "Content-Type": "application/json" };
 
@@ -13,35 +14,30 @@ const POSICAO_ID: Record<string, number> = {
   "Técnico":  6,
 };
 
+type DadosJSON = {
+  times: Array<{
+    dono: string;
+    nome_time: string;
+    jogadores: Array<{
+      atleta_id: number;
+      apelido_api: string;
+      clube: string;
+      clube_id: number;
+      posicao: string;
+      posicao_id: number;
+      escalacao: "Sim" | "Banco" | "Não";
+    }>;
+  }>;
+};
+
 export const handler: Handlers = {
-  async POST(req) {
+  async POST() {
     try {
-      // Fetch the static JSON file from the same server
-      const base = new URL(req.url);
-      const jsonUrl = `${base.protocol}//${base.host}/de_para_jogadores.json`;
-      const resp = await fetch(jsonUrl);
-      if (!resp.ok) throw new Error(`Falha ao buscar JSON: ${resp.status}`);
-
-      const dados = await resp.json() as {
-        times: Array<{
-          dono: string;
-          nome_time: string;
-          jogadores: Array<{
-            atleta_id: number;
-            apelido_api: string;
-            clube: string;
-            clube_id: number;
-            posicao: string;
-            posicao_id: number;
-            escalacao: "Sim" | "Banco" | "Não";
-          }>;
-        }>;
-      };
-
       const kv = await Deno.openKv();
       const resultados: string[] = [];
+      const typed = dados as DadosJSON;
 
-      for (const time of dados.times) {
+      for (const time of typed.times) {
         const chave = DONOS_CHAVES[time.dono];
         if (!chave) {
           resultados.push(`SKIP: dono não mapeado — ${time.dono}`);
