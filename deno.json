@@ -21,9 +21,10 @@
     "@preact/signals": "https://esm.sh/@preact/signals@1.2.1",
     "@preact/signals-core": "https://esm.sh/@preact/signals-core@1.5.0"
   },
+  "unstable": ["kv", "cron"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns", "deno.unstable"]
   }
 }

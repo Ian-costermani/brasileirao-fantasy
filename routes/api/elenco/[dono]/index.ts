@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import { getElenco, TODAS_CHAVES } from "../../../lib/kv.ts";
+import { getElenco, TODAS_CHAVES } from "../../../../lib/kv.ts";
 
 const H = { "Content-Type": "application/json", "Cache-Control": "no-store" };
 
