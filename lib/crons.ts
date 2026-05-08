@@ -46,53 +46,21 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
 async function atualizarTudo(kv: Deno.Kv): Promise<void> {
   const now = new Date().toISOString();
 
-  // Busca status do mercado e todos os atletas em paralelo
-  const [mercado, apiData] = await Promise.all([
-    fetchMercadoStatus(),
-    fetchAtletasMercado(),
-  ]);
+  // Sempre busca apenas o status do mercado (leve)
+  const mercado = await fetchMercadoStatus();
 
-  // Mapa atleta_id → status + entrou_em_campo
-  const statusMap = new Map(
-    apiData.atletas.map((a) => [
-      a.atleta_id,
-      { status_id: a.status_id ?? null, entrou_em_campo: a.entrou_em_campo },
-    ]),
-  );
-
-  // Atualiza campos de status nos elencos (sempre, independente do mercado)
-  const elencos = await getAllElencos(kv);
-  for (const [chave, elenco] of Object.entries(elencos)) {
-    let alterado = false;
-    for (const [id, jogador] of Object.entries(elenco.jogadores)) {
-      const api = statusMap.get(jogador.atleta_id);
-      if (!api) continue;
-      if (jogador.status_id === api.status_id && jogador.entrou_em_campo === api.entrou_em_campo) continue;
-      elenco.jogadores[id] = {
-        ...jogador,
-        status_id:       api.status_id,
-        provavel:        api.status_id === 5,
-        lesionado:       api.status_id === 2,
-        suspenso:        api.status_id === 3,
-        nulo:            api.status_id === 6,
-        entrou_em_campo: api.entrou_em_campo,
-      };
-      alterado = true;
-    }
-    if (alterado) await setElenco(kv, chave, elenco);
-  }
-
-  // Mercado aberto: aguardando próxima rodada
+  // Mercado aberto: apenas salva status aguardando, sem buscar atletas
   if (mercado.status_mercado === 2) {
     await setRodadaStatus(kv, {
       status: "aguardando",
       rodada: mercado.rodada_atual,
       fechamento: mercado.fechamento,
+      atualizadoEm: now,
     });
     return;
   }
 
-  // Mercado fechado: busca pontuados
+  // Mercado fechado: busca pontuados para scoring ao vivo
   let pontuados;
   try {
     pontuados = await fetchAtletasPontuados();
@@ -114,14 +82,17 @@ async function atualizarTudo(kv: Deno.Kv): Promise<void> {
     return;
   }
 
-  // Atualiza pontos nos elencos
-  const elencos2 = await getAllElencos(kv);
-  for (const [chave, elenco] of Object.entries(elencos2)) {
+  // Atualiza pontos + entrou_em_campo nos elencos
+  const elencos = await getAllElencos(kv);
+  for (const [chave, elenco] of Object.entries(elencos)) {
     let alterado = false;
     for (const [id, jogador] of Object.entries(elenco.jogadores)) {
       const p = pontuados.atletas[String(jogador.atleta_id)];
       if (!p) continue;
-      elenco.jogadores[id] = { ...jogador, pontos: p.pontuacao, entrou_em_campo: p.entrou_em_campo };
+      const novoPontos = p.pontuacao ?? 0;
+      const novoEntrou = p.entrou_em_campo ?? null;
+      if (jogador.pontos === novoPontos && jogador.entrou_em_campo === novoEntrou) continue;
+      elenco.jogadores[id] = { ...jogador, pontos: novoPontos, entrou_em_campo: novoEntrou };
       alterado = true;
     }
     if (alterado) await setElenco(kv, chave, elenco);
@@ -147,8 +118,8 @@ export function registrarCrons(): void {
     }
   });
 
-  // Status + pontuação ao vivo: a cada 2 minutos
-  Deno.cron("atualizar", "*/2 * * * *", async () => {
+  // Status + pontuação ao vivo: a cada 5 minutos
+  Deno.cron("atualizar", "*/5 * * * *", async () => {
     try {
       const kv = await Deno.openKv();
       await atualizarTudo(kv);
