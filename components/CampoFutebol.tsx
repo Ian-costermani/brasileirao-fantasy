@@ -93,7 +93,9 @@ function PlayerCard(
   { jogador, modoAoVivo, fraco, corTime }: { jogador: Jogador; modoAoVivo: boolean; fraco: boolean; corTime: string },
 ) {
   const [fotoOk, setFotoOk] = useState(false);
-  const [fotoSrc, setFotoSrc] = useState(`/players/${toSlug(jogador.nome)}.webp`);
+  const slugNome = toSlug(jogador.nome);
+  const slugClube = jogador.clube ? toSlug(jogador.clube) : null;
+  const [fotoSrc, setFotoSrc] = useState(`/players/${slugNome}.webp`);
   const sInfo = statusInfo(jogador.status_id);
   const temPts = jogador.pontuacao > 0;
   const escudoSrc = jogador.clube ? `/escudos/${toSlug(jogador.clube)}.jpg` : null;
@@ -113,7 +115,9 @@ function PlayerCard(
             style={fotoOk ? "" : "display:none"}
             onLoad={() => setFotoOk(true)}
             onError={() => {
-              if (fotoSrc.endsWith(".webp")) setFotoSrc(`/players/${toSlug(jogador.nome)}.jpg`);
+              if (fotoSrc === `/players/${slugNome}.webp`) setFotoSrc(`/players/${slugNome}.jpg`);
+              else if (fotoSrc === `/players/${slugNome}.jpg` && slugClube) setFotoSrc(`/players/${slugNome}-${slugClube}.webp`);
+              else if (slugClube && fotoSrc === `/players/${slugNome}-${slugClube}.webp`) setFotoSrc(`/players/${slugNome}-${slugClube}.jpg`);
             }}
           />
           {escudoSrc && (
