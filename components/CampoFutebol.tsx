@@ -116,8 +116,10 @@ function PlayerCard(
             onLoad={() => setFotoOk(true)}
             onError={() => {
               if (fotoSrc === `/players/${slugNome}.webp`) setFotoSrc(`/players/${slugNome}.jpg`);
-              else if (fotoSrc === `/players/${slugNome}.jpg` && slugClube) setFotoSrc(`/players/${slugNome}-${slugClube}.webp`);
+              else if (fotoSrc === `/players/${slugNome}.jpg`) setFotoSrc(`/players/${slugNome}.png`);
+              else if (fotoSrc === `/players/${slugNome}.png` && slugClube) setFotoSrc(`/players/${slugNome}-${slugClube}.webp`);
               else if (slugClube && fotoSrc === `/players/${slugNome}-${slugClube}.webp`) setFotoSrc(`/players/${slugNome}-${slugClube}.jpg`);
+              else if (slugClube && fotoSrc === `/players/${slugNome}-${slugClube}.jpg`) setFotoSrc(`/players/${slugNome}-${slugClube}.png`);
             }}
           />
           {escudoSrc && (
