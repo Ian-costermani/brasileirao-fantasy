@@ -1,0 +1,107 @@
+import { Handlers } from "$fresh/server.ts";
+import { getAllElencos, setElenco, getAtletasCache, TODAS_CHAVES, POSICAO_CHAVES_CACHE } from "../../../../../lib/kv.ts";
+import type { JogadorKV } from "../../../../../lib/types.ts";
+
+const H = { "Content-Type": "application/json" };
+
+export const handler: Handlers = {
+  async POST(req, ctx) {
+    const chave = ctx.params.dono.toLowerCase();
+    if (!TODAS_CHAVES.includes(chave)) {
+      return new Response(JSON.stringify({ ok: false, erro: "Time não encontrado" }), { status: 404, headers: H });
+    }
+
+    let body: { atleta_id_sai: number; atleta_id_entra: number; escalacao: "Sim" | "Banco" | "Não" };
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ ok: false, erro: "JSON inválido" }), { status: 400, headers: H });
+    }
+
+    const kv = await Deno.openKv();
+    const elencos = await getAllElencos(kv);
+    const elencoAtual = elencos[chave];
+    if (!elencoAtual) {
+      return new Response(JSON.stringify({ ok: false, erro: "Elenco não encontrado" }), { status: 404, headers: H });
+    }
+
+    const idSai   = String(body.atleta_id_sai);
+    const idEntra = String(body.atleta_id_entra);
+
+    if (!elencoAtual.jogadores[idSai]) {
+      return new Response(JSON.stringify({ ok: false, erro: "Jogador a sair não está no elenco" }), { status: 404, headers: H });
+    }
+    if (elencoAtual.jogadores[idEntra]) {
+      return new Response(JSON.stringify({ ok: false, erro: "Jogador já está no seu elenco" }), { status: 400, headers: H });
+    }
+
+    const jogadorSai = elencoAtual.jogadores[idSai];
+
+    // Busca dados do atleta que entra no cache
+    let atletaCache = null;
+    for (const posChave of POSICAO_CHAVES_CACHE) {
+      const cache = await getAtletasCache(kv, posChave);
+      if (cache?.atletas[idEntra]) {
+        atletaCache = cache.atletas[idEntra];
+        break;
+      }
+    }
+    if (!atletaCache) {
+      return new Response(
+        JSON.stringify({ ok: false, erro: "Atleta não encontrado no cache — rode sync-atletas primeiro" }),
+        { status: 404, headers: H },
+      );
+    }
+
+    // Verifica se o atleta que entra está em outro elenco
+    let elencoOrigem: string | null = null;
+    let escalacaoEntraOrigem: "Sim" | "Banco" | "Não" = "Banco";
+    for (const [k, e] of Object.entries(elencos)) {
+      if (k === chave) continue;
+      if (e.jogadores[idEntra]) {
+        elencoOrigem = k;
+        escalacaoEntraOrigem = e.jogadores[idEntra].escalacao;
+        break;
+      }
+    }
+
+    // Monta JogadorKV para o atleta que entra
+    const sid = atletaCache.status_id ?? null;
+    const jogadorEntra: JogadorKV = {
+      atleta_id:       body.atleta_id_entra,
+      apelido_api:     atletaCache.apelido,
+      clube:           atletaCache.clube,
+      clube_id:        atletaCache.clube_id,
+      posicao:         atletaCache.posicao,
+      posicao_id:      atletaCache.posicao_id,
+      escalacao:       body.escalacao,
+      status_id:       sid,
+      provavel:        sid === 7,
+      lesionado:       sid === 5,
+      suspenso:        sid === 3,
+      nulo:            sid === 6,
+      entrou_em_campo: null,
+      clube_casa:      null,
+      clube_fora:      null,
+      pontos:          null,
+    };
+
+    // Aplica troca no elenco atual
+    delete elencoAtual.jogadores[idSai];
+    elencoAtual.jogadores[idEntra] = jogadorEntra;
+    await setElenco(kv, chave, elencoAtual);
+
+    // Se veio de outro elenco: manda jogadorSai para lá com a escalação que entra tinha lá
+    if (elencoOrigem) {
+      const elencoOrig = elencos[elencoOrigem];
+      delete elencoOrig.jogadores[idEntra];
+      elencoOrig.jogadores[idSai] = { ...jogadorSai, escalacao: escalacaoEntraOrigem };
+      await setElenco(kv, elencoOrigem, elencoOrig);
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, tipo: elencoOrigem ? "swap-inter-elenco" : "free-agent", elencoOrigem }),
+      { headers: H },
+    );
+  },
+};

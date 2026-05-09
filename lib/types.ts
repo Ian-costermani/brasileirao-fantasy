@@ -33,6 +33,7 @@ export interface AtletaCacheEntry {
   clube_id: number;
   posicao: string;
   posicao_id: number;
+  status_id: number | null;
 }
 
 export interface AtletaCacheKV {

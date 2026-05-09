@@ -144,16 +144,17 @@ function PainelGerenciamento(
 
   const trocarJogador = async (novoAtletaId: number) => {
     if (!trocando) return;
-    await fetch(`/api/elenco/${chave}/jogador/remove`, {
+    const resp = await fetch(`/api/elenco/${chave}/jogador/swap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ atleta_id: trocando.atletaId }),
+      body: JSON.stringify({
+        atleta_id_sai:   trocando.atletaId,
+        atleta_id_entra: novoAtletaId,
+        escalacao:       trocando.escalacaoAtual,
+      }),
     });
-    await fetch(`/api/elenco/${chave}/jogador/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ atleta_id: novoAtletaId, escalacao: trocando.escalacaoAtual }),
-    });
+    const json = await resp.json();
+    if (!json.ok) { alert(json.erro); return; }
     setTrocando(null);
     setBuscaQ("");
     setResultados([]);

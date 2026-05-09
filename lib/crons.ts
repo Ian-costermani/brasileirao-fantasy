@@ -34,11 +34,12 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
     if (!posChave || !grupos[posChave]) continue;
     const clube = data.clubes[String(a.clube_id)];
     grupos[posChave][String(a.atleta_id)] = {
-      apelido: a.apelido,
-      clube: clube?.nome ?? "",
-      clube_id: a.clube_id,
-      posicao: posNome,
+      apelido:    a.apelido,
+      clube:      clube?.nome ?? "",
+      clube_id:   a.clube_id,
+      posicao:    posNome,
       posicao_id: a.posicao_id,
+      status_id:  a.status_id ?? null,
     };
     statusMap.set(a.atleta_id, a.status_id ?? null);
   }

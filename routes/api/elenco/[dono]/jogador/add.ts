@@ -41,6 +41,7 @@ export const handler: Handlers = {
       );
     }
 
+    const sid = atletaEncontrado.status_id ?? null;
     const novoJogador: JogadorKV = {
       atleta_id:       body.atleta_id,
       apelido_api:     atletaEncontrado.apelido,
@@ -49,11 +50,11 @@ export const handler: Handlers = {
       posicao:         atletaEncontrado.posicao,
       posicao_id:      atletaEncontrado.posicao_id,
       escalacao:       body.escalacao ?? "Banco",
-      status_id:       null,
-      provavel:        null,
-      lesionado:       null,
-      suspenso:        null,
-      nulo:            null,
+      status_id:       sid,
+      provavel:        sid === 7,
+      lesionado:       sid === 5,
+      suspenso:        sid === 3,
+      nulo:            sid === 6,
       entrou_em_campo: null,
       clube_casa:      null,
       clube_fora:      null,

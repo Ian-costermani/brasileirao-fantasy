@@ -33,6 +33,7 @@ export const handler: Handlers = {
           clube_id:   a.clube_id,
           posicao:    posNome,
           posicao_id: a.posicao_id,
+          status_id:  a.status_id ?? null,
         };
         statusMap.set(a.atleta_id, a.status_id ?? null);
       }
