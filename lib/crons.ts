@@ -27,6 +27,7 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
   for (const c of POSICAO_CHAVES_CACHE) grupos[c] = {};
 
   const statusMap = new Map<number, number | null>();
+  const clubeNomeMap = new Map<number, string>();
 
   for (const a of data.atletas) {
     const posNome = POSICAO_ID_NOME[a.posicao_id];
@@ -34,15 +35,17 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
     const posChave = POSICAO_NOME_CHAVE[posNome];
     if (!posChave || !grupos[posChave]) continue;
     const clube = data.clubes[String(a.clube_id)];
+    const clubeNome = clube?.nome_fantasia ?? clube?.nome ?? "";
     grupos[posChave][String(a.atleta_id)] = {
       apelido:    a.apelido,
-      clube:      clube?.nome_fantasia ?? clube?.nome ?? "",
+      clube:      clubeNome,
       clube_id:   a.clube_id,
       posicao:    posNome,
       posicao_id: a.posicao_id,
       status_id:  a.status_id ?? null,
     };
     statusMap.set(a.atleta_id, a.status_id ?? null);
+    clubeNomeMap.set(a.atleta_id, clubeNome);
   }
 
   for (const [chave, atletas] of Object.entries(grupos)) {
@@ -65,16 +68,22 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
     await setPartidasCache(kv, partidasRecord);
   }
 
-  // Atualiza status_id e partida nos elencos
+  // Atualiza status_id, clube e partida nos elencos
   const elencos = await getAllElencos(kv);
   for (const [chave, elenco] of Object.entries(elencos)) {
     let alterado = false;
     for (const [id, jogador] of Object.entries(elenco.jogadores)) {
       const sid = statusMap.has(jogador.atleta_id) ? statusMap.get(jogador.atleta_id)! : jogador.status_id;
+      const novoClube = clubeNomeMap.get(jogador.atleta_id) ?? jogador.clube;
       const match = matchMap.get(jogador.clube_id);
       const novoCasa = match ? match.casa : jogador.clube_casa;
       const novaFora = match ? match.fora : jogador.clube_fora;
-      if (jogador.status_id === sid && jogador.clube_casa === novoCasa && jogador.clube_fora === novaFora) continue;
+      if (
+        jogador.status_id === sid &&
+        jogador.clube === novoClube &&
+        jogador.clube_casa === novoCasa &&
+        jogador.clube_fora === novaFora
+      ) continue;
       elenco.jogadores[id] = {
         ...jogador,
         status_id: sid,
@@ -82,6 +91,7 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
         lesionado: sid === 5,
         suspenso:  sid === 3,
         nulo:      sid === 6,
+        clube:     novoClube,
         clube_casa: novoCasa,
         clube_fora: novaFora,
       };
