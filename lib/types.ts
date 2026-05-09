@@ -52,6 +52,7 @@ export interface RodadaStatus {
 export interface CartolaMercadoStatus {
   status_mercado: number; // 1 = fechado, 2 = aberto
   rodada_atual: number;
+  bola_rolando: boolean;
   fechamento: { dia: string; hora: string };
 }
 

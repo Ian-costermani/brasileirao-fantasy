@@ -109,8 +109,8 @@ async function atualizarTudo(kv: Deno.Kv): Promise<void> {
   // Sempre busca apenas o status do mercado (leve)
   const mercado = await fetchMercadoStatus();
 
-  // Mercado aberto: apenas salva status aguardando, sem buscar atletas
-  if (mercado.status_mercado === 2) {
+  // Mercado aberto e bola parada: aguardando próxima rodada
+  if (mercado.status_mercado === 2 && !mercado.bola_rolando) {
     await setRodadaStatus(kv, {
       status: "aguardando",
       rodada: mercado.rodada_atual,
