@@ -9,6 +9,7 @@ import {
 import {
   getAllElencos,
   setElenco,
+  getRodadaStatus,
   setRodadaStatus,
   setPartidasCache,
   POSICAO_CHAVES_CACHE,
@@ -108,9 +109,12 @@ export async function atualizarTudo(kv: Deno.Kv): Promise<void> {
 
   // Sempre busca apenas o status do mercado (leve)
   const mercado = await fetchMercadoStatus();
+  const statusAtual = await getRodadaStatus(kv);
+  const jaAoVivo = statusAtual?.status === "ao_vivo";
+  const rodadaEncerrada = (mercado as any).mercado_pos_rodada === true;
 
-  // Mercado aberto e bola parada: aguardando próxima rodada
-  if (mercado.status_mercado === 2 && !mercado.bola_rolando) {
+  // Só volta para "aguardando" se: bola parada E rodada encerrada (ou nunca foi ao_vivo)
+  if (mercado.status_mercado === 2 && !mercado.bola_rolando && (rodadaEncerrada || !jaAoVivo)) {
     await setRodadaStatus(kv, {
       status: "aguardando",
       rodada: mercado.rodada_atual,
@@ -120,25 +124,31 @@ export async function atualizarTudo(kv: Deno.Kv): Promise<void> {
     return;
   }
 
-  // Mercado fechado: busca pontuados para scoring ao vivo
+  // Se bola parada mas já estávamos ao_vivo (intervalo entre jogos), tenta pontuados
+  // Mercado fechado ou bola rolando: busca pontuados
   let pontuados;
   try {
     pontuados = await fetchAtletasPontuados();
   } catch {
-    await setRodadaStatus(kv, {
-      status: "aguardando_inicio",
-      rodada: mercado.rodada_atual,
-      atualizadoEm: now,
-    });
+    // Entre jogos: mantém ao_vivo se já estava, senão aguardando_inicio
+    if (!jaAoVivo) {
+      await setRodadaStatus(kv, {
+        status: "aguardando_inicio",
+        rodada: mercado.rodada_atual,
+        atualizadoEm: now,
+      });
+    }
     return;
   }
 
   if (!pontuados?.atletas || Object.keys(pontuados.atletas).length === 0) {
-    await setRodadaStatus(kv, {
-      status: "aguardando_inicio",
-      rodada: mercado.rodada_atual,
-      atualizadoEm: now,
-    });
+    if (!jaAoVivo) {
+      await setRodadaStatus(kv, {
+        status: "aguardando_inicio",
+        rodada: mercado.rodada_atual,
+        atualizadoEm: now,
+      });
+    }
     return;
   }
 
