@@ -99,7 +99,6 @@ function PlayerCard(
   const slugClube = jogador.clube ? toSlug(jogador.clube) : null;
   const [fotoSrc, setFotoSrc] = useState(`${CDN}/players/${slugNome}.webp`);
   const sInfo = statusInfo(jogador.status_id);
-  const temPts = jogador.pontuacao > 0;
   const escudoSrc = jogador.clube ? `${CDN}/escudos/${toSlug(jogador.clube)}.jpg` : null;
   const neonStyle = `border-color:${corTime}`;
 
@@ -139,7 +138,9 @@ function PlayerCard(
         <div class="campo-player-box" style={neonStyle}>
           <span class="campo-player-nome">{abreviarNome(jogador.nome)}</span>
           {modoAoVivo
-            ? <span class={`campo-player-pos${temPts ? " campo-pts-verde" : " campo-pts-zero"}`}>{temPts ? `+${jogador.pontuacao.toFixed(1)}` : "—"}</span>
+            ? <span class={`campo-player-pos${jogador.pontuacao > 0 ? " campo-pts-verde" : jogador.pontuacao < 0 ? " campo-pts-neg" : " campo-pts-zero"}`}>
+                {jogador.pontuacao > 0 ? `+${jogador.pontuacao.toFixed(1)}` : jogador.pontuacao < 0 ? jogador.pontuacao.toFixed(1) : "—"}
+              </span>
             : <span class="campo-player-pos">{POSICAO_ABREV[jogador.posicao] ?? jogador.posicao}</span>
           }
         </div>
@@ -186,7 +187,7 @@ export function CampoFutebol({ jogadores, modoAoVivo = false, corTime = "#ffffff
                 key={j.atleta_id ?? j.nome}
                 jogador={j}
                 modoAoVivo={modoAoVivo}
-                fraco={modoAoVivo && j.pontuacao === 0}
+                fraco={modoAoVivo && j.pontuacao <= 0}
                 corTime={corTime}
               />
             ))}

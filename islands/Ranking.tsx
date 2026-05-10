@@ -424,7 +424,7 @@ export default function Ranking() {
                 <div class="posicao-wrapper">
                   <span class="posicao">
                     {modoElenco
-                      ? <BolaPNG size={18} corTime={CORES_TIMES[time.nome] ?? "#00FF88"} />
+                      ? <img src={ESCUDOS_TIMES[time.nome]} alt="" class="posicao-escudo" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                       : index === 0 ? "🏆" : `#${index + 1}`}
                   </span>
                 </div>

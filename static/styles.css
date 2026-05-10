@@ -286,6 +286,13 @@ body {
 
 .time-card.primeiro-lugar .posicao { font-size: 1.3rem; }
 
+.posicao-escudo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+}
+
 .time-info {
   flex: 1;
   min-width: 0;
@@ -763,6 +770,10 @@ img.campo-svg-bg {
 }
 .campo-pts-zero {
   color: rgba(255, 255, 255, 0.22);
+  font-size: 9px;
+}
+.campo-pts-neg {
+  color: #ef4444;
   font-size: 9px;
 }
 
