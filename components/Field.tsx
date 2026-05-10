@@ -5,6 +5,7 @@ export interface Pino {
   num?: string;
   capt?: boolean;
   pts?: number | null;
+  escudo?: string | null;
 }
 
 export interface Escalacao {
@@ -35,22 +36,21 @@ function PlayerPin(
     empty: boolean;
   },
 ) {
-  const isEmpty = empty && !p.num;
-  const isGk = accent === "yellow";
+  const isEmpty = empty && !p.num && !p.escudo;
   const cls = ["bf-pin"];
   if (isEmpty) cls.push("bf-pin--empty");
   const shirtCls = ["bf-pin__shirt"];
   if (p.capt) shirtCls.push("bf-pin__shirt--captain");
-  if (isGk) shirtCls.push("bf-pin__shirt--gk");
   const pts = showPoints && p.pts != null ? p.pts : null;
+  const shirtStyle: Record<string, string> = {
+    "--shirt-color": COLOR_VAR[accent],
+  };
+  if (p.escudo) shirtStyle["background-image"] = `url(${p.escudo})`;
 
   return (
     <div class={cls.join(" ")}>
-      <div
-        class={shirtCls.join(" ")}
-        style={{ "--shirt-color": COLOR_VAR[accent] } as Record<string, string>}
-      >
-        {isEmpty ? "+" : (p.num ?? "·")}
+      <div class={shirtCls.join(" ")} style={shirtStyle}>
+        {!p.escudo && (isEmpty ? "+" : (p.num ?? ""))}
       </div>
       {p.nome && <div class="bf-pin__name">{p.nome}</div>}
       {pts != null && (

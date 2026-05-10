@@ -13,6 +13,7 @@ import Crest, { type CrestColor } from "../components/Crest.tsx";
 import SectionHeader from "../components/SectionHeader.tsx";
 import Pill from "../components/Pill.tsx";
 import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
+import { escudoUrl } from "../lib/escudos.ts";
 
 // Time do usuário "logado". Sem auth ainda — hardcoded por enquanto.
 // Trocar pra cookie/sessão quando login entrar.
@@ -52,12 +53,18 @@ interface HomeData {
 
 function montarEscalacao(
   jogadoresEscalados: Array<
-    { apelido_api: string; posicao: string; pontos: number | null }
+    {
+      apelido_api: string;
+      posicao: string;
+      pontos: number | null;
+      clube: string;
+    }
   >,
 ): Escalacao {
   const pino = (j: typeof jogadoresEscalados[number]): Pino => ({
     nome: j.apelido_api,
     pts: j.pontos,
+    escudo: escudoUrl(j.clube),
   });
   const gk = jogadoresEscalados.find((j) => j.posicao === "Goleiro");
   const def = jogadoresEscalados.filter((j) =>
@@ -83,7 +90,14 @@ export const handler: Handlers<HomeData> = {
 
     const escaladosPorChave: Record<
       string,
-      Array<{ apelido_api: string; posicao: string; pontos: number | null }>
+      Array<
+        {
+          apelido_api: string;
+          posicao: string;
+          pontos: number | null;
+          clube: string;
+        }
+      >
     > = {};
 
     const ranking: TimeRanking[] = Object.entries(elencos)

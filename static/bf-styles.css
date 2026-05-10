@@ -508,7 +508,10 @@ body {
 .bf-pin__shirt {
   width: 36px; height: 36px;
   border-radius: 999px;
-  background: var(--bf-chassis);
+  background-color: var(--bf-chassis);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: 1.5px solid var(--shirt-color, #fff);
   display: flex;
   align-items: center;
@@ -519,11 +522,7 @@ body {
   color: #fff;
   position: relative;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
-.bf-pin__shirt--gk {
-  background: var(--bf-yellow);
-  color: #000;
-  border-color: var(--bf-yellow);
+  flex-shrink: 0;
 }
 .bf-pin__shirt--captain::after {
   content: 'C';
