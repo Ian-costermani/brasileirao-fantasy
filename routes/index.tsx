@@ -14,7 +14,7 @@ import SectionHeader from "../components/SectionHeader.tsx";
 import Pill from "../components/Pill.tsx";
 import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
-import { fotoUrl } from "../lib/fotos.ts";
+import { coresClube } from "../lib/cores.ts";
 
 // Time do usuário "logado". Sem auth ainda — hardcoded por enquanto.
 // Trocar pra cookie/sessão quando login entrar.
@@ -75,7 +75,7 @@ function montarEscalacao(
     nome: j.apelido_api,
     pts: j.pontos,
     escudo: escudoUrl(j.clube),
-    foto: fotoUrl(j.apelido_api),
+    cores: coresClube(j.clube),
     pos: POS_ABREV[j.posicao],
   });
   const gk = jogadoresEscalados.find((j) => j.posicao === "Goleiro");
