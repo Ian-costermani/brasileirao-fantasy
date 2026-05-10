@@ -577,30 +577,34 @@ body {
 .bf-pin__pos {
   font-family: var(--bf-font-cond);
   font-weight: 900;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: var(--pos-color, var(--bf-fg-2));
-  color: #0a0a0c;
-  box-shadow: 0 0 6px var(--pos-color, transparent);
+  background: rgba(0, 0, 0, 0.75);
+  border: 1.5px solid var(--pos-color, var(--bf-fg-2));
+  color: var(--pos-color, #fff);
+  box-shadow: 0 0 8px var(--pos-color, transparent);
   line-height: 1.1;
 }
 .bf-pin__pts {
   font-family: var(--bf-font-display);
   font-weight: 900;
   font-size: 10px;
-  background: rgba(0,0,0,0.7);
-  border: 1px solid var(--bf-lime);
+  background: rgba(0,0,0,0.75);
+  border: 1.5px solid var(--bf-lime);
   color: var(--bf-lime);
-  padding: 1px 5px;
+  padding: 2px 7px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 8px var(--bf-lime-glow);
+  line-height: 1.1;
 }
 .bf-pin__pts--neg {
   border-color: var(--bf-red);
   color: var(--bf-red);
+  box-shadow: 0 0 8px var(--bf-red-glow);
 }
 .bf-pin--empty .bf-pin__shirt {
   border-style: dashed;
