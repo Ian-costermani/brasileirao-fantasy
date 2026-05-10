@@ -50,6 +50,7 @@ export function calcularMelhorTime(todos: JogadorKV[]): JogadorComSub[] {
     .map((a) => a.pos);
 
   const usados = new Set<number>();
+  const deslocados = new Set<number>();
   const resultado: JogadorComSub[] = [];
 
   for (const { pos } of slots) {
@@ -60,10 +61,21 @@ export function calcularMelhorTime(todos: JogadorKV[]): JogadorComSub[] {
       ? av.titular
       : av.subst;
 
+    const vencedoresIds = new Set(vencedores.map((j) => j.atleta_id));
+
     for (const j of vencedores) {
       const substituido = j.escalacao === "Banco" && top3.includes(pos);
       resultado.push({ ...j, escalacao: substituido ? "Sim" : j.escalacao, substituido });
       usados.add(j.atleta_id);
+    }
+
+    // Titulares que ficaram fora da escalação final (deslocados por banco)
+    if (top3.includes(pos)) {
+      for (const j of av.titular) {
+        if (!vencedoresIds.has(j.atleta_id)) {
+          deslocados.add(j.atleta_id);
+        }
+      }
     }
   }
 
@@ -78,7 +90,9 @@ export function calcularMelhorTime(todos: JogadorKV[]): JogadorComSub[] {
   // Restantes (banco / não escalados que não entraram)
   for (const j of todos) {
     if (!usados.has(j.atleta_id)) {
-      resultado.push({ ...j, substituido: false });
+      // Deslocados por substituição: mudam de Sim para Banco na exibição
+      const escalacao = deslocados.has(j.atleta_id) ? "Banco" : j.escalacao;
+      resultado.push({ ...j, escalacao, substituido: false });
       usados.add(j.atleta_id);
     }
   }
