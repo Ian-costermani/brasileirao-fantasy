@@ -11,6 +11,29 @@ export default function App({ Component }: AppProps) {
         <link rel="stylesheet" href="/styles.css?v=54" />
       </head>
       <body>
+        {
+          /* Filtro global usado pra remover fundo branco das fotos de jogador.
+            new_alpha = 3 - (R+G+B)  → branco vira transparente, tons médios
+            preservam opacidade. */
+        }
+        <svg
+          width="0"
+          height="0"
+          style="position:absolute"
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="bf-remove-white" color-interpolation-filters="sRGB">
+              <feColorMatrix
+                type="matrix"
+                values="1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        -1 -1 -1 0 3"
+              />
+            </filter>
+          </defs>
+        </svg>
         <Component />
       </body>
     </html>

@@ -509,9 +509,6 @@ body {
   width: 38px; height: 38px;
   border-radius: 999px;
   background-color: var(--bf-chassis);
-  background-size: cover;
-  background-position: center 18%;
-  background-repeat: no-repeat;
   border: 2px solid var(--shirt-color, #fff);
   display: flex;
   align-items: center;
@@ -521,8 +518,18 @@ body {
   font-size: 13px;
   color: #fff;
   position: relative;
+  overflow: hidden;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   flex-shrink: 0;
+}
+.bf-pin__shirt-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  filter: url(#bf-remove-white);
 }
 .bf-pin__shirt--captain::after {
   content: 'C';

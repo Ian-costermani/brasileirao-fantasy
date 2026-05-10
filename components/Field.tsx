@@ -46,12 +46,13 @@ function PlayerPin(
   const shirtStyle: Record<string, string> = {
     "--shirt-color": COLOR_VAR[accent],
   };
-  if (p.foto) shirtStyle["background-image"] = `url(${p.foto})`;
 
   return (
     <div class={cls.join(" ")}>
       <div class={shirtCls.join(" ")} style={shirtStyle}>
-        {!p.foto && (isEmpty ? "+" : (p.num ?? ""))}
+        {p.foto
+          ? <img class="bf-pin__shirt-img" src={p.foto} alt="" />
+          : (isEmpty ? "+" : (p.num ?? ""))}
       </div>
       {p.nome && (
         <div class="bf-pin__name">
