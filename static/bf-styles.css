@@ -1,0 +1,461 @@
+@import url("/design-system/tokens.css");
+
+/* ============================================================
+   GLOBAL — black-light arcade base
+   ============================================================ */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bf-ink);
+  color: var(--bf-fg-1);
+  min-height: 100vh;
+  font-family: var(--bf-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(800px 400px at 80% -200px, rgba(255,27,141,0.06), transparent 70%),
+    radial-gradient(600px 400px at -100px 700px, rgba(31,168,255,0.05), transparent 70%),
+    var(--bf-ink);
+}
+
+/* Mobile-first viewport — center on desktop, baseline 390px */
+.bf-viewport {
+  max-width: var(--bf-mobile-w);
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 96px; /* room for bottom nav */
+}
+
+/* ============================================================
+   TOPBAR — menu / mini logo / bell
+   ============================================================ */
+.bf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--bf-z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--bf-gutter);
+  background: linear-gradient(to bottom, var(--bf-ink) 78%, transparent);
+}
+
+.bf-iconbtn {
+  width: 40px; height: 40px;
+  border-radius: 999px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bf-fg-1);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-iconbtn:hover { background: var(--bf-chassis-hover); }
+
+.bf-iconbtn--alert::after {
+  content: '';
+  position: absolute;
+  top: 8px; right: 9px;
+  width: 8px; height: 8px;
+  background: var(--bf-lime);
+  border-radius: 999px;
+  box-shadow: 0 0 8px var(--bf-lime-glow);
+  animation: bf-pulse 1.4s var(--bf-ease-in-out) infinite;
+}
+
+.bf-minlogo {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  padding: 0 6px;
+}
+.bf-minlogo__main {
+  font-family: var(--bf-font-graffiti);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  -webkit-text-stroke: 0.6px var(--bf-magenta);
+  text-shadow:
+    1px 1px 0 var(--bf-magenta),
+    -1px -1px 0 var(--bf-blue),
+    0 0 10px rgba(255,27,141,0.55),
+    0 0 18px rgba(31,168,255,0.35);
+}
+.bf-minlogo__sub {
+  font-family: var(--bf-font-marker);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  margin-top: 1px;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(255,255,255,0.4);
+  transform: rotate(-2deg);
+}
+.bf-minlogo::before,
+.bf-minlogo::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 30px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: -1;
+}
+.bf-minlogo::before { left: -22px; background-image: url("/assets/splatter-magenta.png"); }
+.bf-minlogo::after  { right: -22px; background-image: url("/assets/splatter-blue.png"); }
+
+/* ============================================================
+   GREETING / LABEL MICRO
+   ============================================================ */
+.bf-label-micro {
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
+}
+
+.bf-greeting {
+  padding: 16px var(--bf-gutter) 8px;
+}
+
+/* ============================================================
+   PILLS
+   ============================================================ */
+.bf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bf-fg-1);
+}
+.bf-pill--lime    { background: var(--bf-lime);    color: var(--bf-lime-ink); border-color: transparent; box-shadow: 0 0 14px var(--bf-lime-glow); }
+.bf-pill--magenta { background: var(--bf-magenta); color: #fff;               border-color: transparent; }
+.bf-pill__dot {
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: var(--bf-lime);
+  box-shadow: 0 0 8px var(--bf-lime-glow);
+  animation: bf-pulse 1.4s var(--bf-ease-in-out) infinite;
+}
+
+/* ============================================================
+   SECTION HEADER — graffiti title row
+   ============================================================ */
+.bf-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 16px var(--bf-gutter) 8px;
+  gap: 12px;
+}
+.bf-section-header__title {
+  font-family: var(--bf-font-graffiti);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* ============================================================
+   CREST — splatter + sigla core
+   ============================================================ */
+.bf-crest {
+  position: relative;
+  width: var(--crest-size, 48px);
+  height: var(--crest-size, 48px);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.bf-crest__splat {
+  position: absolute;
+  inset: -20%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.bf-crest--magenta .bf-crest__splat { background-image: url("/assets/splatter-magenta.png"); }
+.bf-crest--orange  .bf-crest__splat { background-image: url("/assets/splatter-orange.png"); }
+.bf-crest--yellow  .bf-crest__splat { background-image: url("/assets/splatter-yellow.png"); }
+.bf-crest--green   .bf-crest__splat { background-image: url("/assets/splatter-green.png"); }
+.bf-crest--blue    .bf-crest__splat { background-image: url("/assets/splatter-blue.png"); }
+.bf-crest--lime    .bf-crest__splat { background-image: url("/assets/splatter-lime.png"); }
+
+.bf-crest__core {
+  width: 70%;
+  height: 70%;
+  border-radius: 999px;
+  background: #0a0a0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: calc(var(--crest-size, 48px) * 0.32);
+  letter-spacing: 0.02em;
+  color: #fff;
+  border: 1.5px solid currentColor;
+  position: relative;
+  z-index: 1;
+}
+.bf-crest--magenta .bf-crest__core { color: var(--bf-magenta); }
+.bf-crest--orange  .bf-crest__core { color: var(--bf-orange); }
+.bf-crest--yellow  .bf-crest__core { color: var(--bf-yellow); }
+.bf-crest--green   .bf-crest__core { color: var(--bf-green); }
+.bf-crest--blue    .bf-crest__core { color: var(--bf-blue); }
+.bf-crest--lime    .bf-crest__core { color: var(--bf-lime); }
+.bf-crest__core span { color: #fff; }
+
+/* ============================================================
+   BOTTOM NAV — floating pill, 5 items
+   ============================================================ */
+.bf-bottom-nav {
+  position: fixed;
+  bottom: 26px;
+  left: 14px;
+  right: 14px;
+  max-width: calc(var(--bf-mobile-w) - 28px);
+  margin: 0 auto;
+  height: var(--bf-footer-h);
+  background: rgba(20,22,30,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bf-line);
+  border-radius: 999px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  z-index: var(--bf-z-header);
+  box-shadow: var(--bf-shadow-card);
+}
+.bf-bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+  transition: color var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-bottom-nav__item:hover { color: var(--bf-fg-2); }
+.bf-bottom-nav__item--active {
+  color: var(--bf-lime);
+}
+.bf-bottom-nav__item--active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 3px; height: 3px;
+  border-radius: 999px;
+  background: var(--bf-lime);
+  box-shadow: 0 0 8px var(--bf-lime-glow);
+}
+.bf-bottom-nav__icon { width: 18px; height: 18px; }
+
+/* ============================================================
+   CARD UTILITIES
+   ============================================================ */
+.bf-card {
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: var(--bf-radius-lg);
+  box-shadow: var(--bf-shadow-card);
+  padding: 18px;
+}
+
+/* ============================================================
+   TEAM STATUS CARD (Home dashboard)
+   ============================================================ */
+.bf-status-card {
+  margin: 0 var(--bf-gutter);
+}
+.bf-status-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bf-status-card__name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.bf-status-card__name h3 {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bf-status-card__sub {
+  font-family: var(--bf-font-body);
+  font-size: 12px;
+  color: var(--bf-fg-2);
+}
+
+.bf-status-card__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: end;
+}
+.bf-status-card__divider {
+  background: var(--bf-line);
+  align-self: stretch;
+}
+.bf-status-card__metric { display: flex; flex-direction: column; gap: 4px; }
+.bf-status-card__metric-label { /* uses .bf-label-micro */ }
+.bf-status-card__metric-value {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 36px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.005em;
+}
+.bf-status-card__metric-value--sm { font-size: 24px; }
+.bf-status-card__metric-foot {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--bf-fg-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.bf-status-card__metric-foot--lime { color: var(--bf-lime); }
+.bf-status-card__metric-foot--red  { color: var(--bf-red); }
+
+/* ============================================================
+   GAME ROW (próximos jogos na home)
+   ============================================================ */
+.bf-game-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: var(--bf-radius-md);
+  padding: 12px 14px;
+  margin: 0 var(--bf-gutter) 8px;
+}
+.bf-game-row__when {
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bf-fg-2);
+  min-width: 56px;
+}
+.bf-game-row__teams {
+  flex: 1;
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bf-game-row__action {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bf-lime);
+  cursor: pointer;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.bf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--bf-radius-md);
+  background: var(--bf-lime);
+  color: var(--bf-lime-ink);
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--bf-glow-lime);
+  transition: transform var(--bf-dur-fast) var(--bf-ease-out),
+              filter var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-btn:hover  { filter: brightness(1.08); }
+.bf-btn:active { transform: scale(0.98); }
+.bf-btn--ghost {
+  background: transparent;
+  color: var(--bf-fg-1);
+  border: 1px solid var(--bf-line-strong);
+  box-shadow: none;
+}
+.bf-btn--ghost:hover { background: var(--bf-chassis-hover); }
+
+/* Empty state placeholder card (used while screens are WIP) */
+.bf-empty-state {
+  margin: 0 var(--bf-gutter);
+  padding: 32px 18px;
+  border: 1px dashed var(--bf-line-strong);
+  border-radius: var(--bf-radius-lg);
+  text-align: center;
+  color: var(--bf-fg-2);
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Animations shared */
+@keyframes bf-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}

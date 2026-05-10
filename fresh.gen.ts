@@ -16,6 +16,7 @@ import * as $api_elenco__dono__jogador_swap from "./routes/api/elenco/[dono]/jog
 import * as $api_ranking from "./routes/api/ranking.ts";
 import * as $api_status from "./routes/api/status.ts";
 import * as $index from "./routes/index.tsx";
+import * as $ranking from "./routes/ranking.tsx";
 import * as $Ranking from "./islands/Ranking.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -30,11 +31,14 @@ const manifest = {
     "./routes/api/elenco/[dono]/index.ts": $api_elenco__dono__index,
     "./routes/api/elenco/[dono]/escalacao.ts": $api_elenco__dono__escalacao,
     "./routes/api/elenco/[dono]/jogador/add.ts": $api_elenco__dono__jogador_add,
-    "./routes/api/elenco/[dono]/jogador/remove.ts": $api_elenco__dono__jogador_remove,
-    "./routes/api/elenco/[dono]/jogador/swap.ts": $api_elenco__dono__jogador_swap,
+    "./routes/api/elenco/[dono]/jogador/remove.ts":
+      $api_elenco__dono__jogador_remove,
+    "./routes/api/elenco/[dono]/jogador/swap.ts":
+      $api_elenco__dono__jogador_swap,
     "./routes/api/ranking.ts": $api_ranking,
     "./routes/api/status.ts": $api_status,
     "./routes/index.tsx": $index,
+    "./routes/ranking.tsx": $ranking,
   },
   islands: {
     "./islands/Ranking.tsx": $Ranking,
