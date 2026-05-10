@@ -1,36 +1,81 @@
-// Cores oficiais (aproximadas) por clube. Usadas pra renderizar a camisa
-// estilizada do jogador. Fallback é o chassis cinza-escuro.
+// Cores e padrão visual por clube. Usado pra renderizar a camisa SVG
+// estilizada, aproximando o uniforme real.
+//
+// Pattern:
+//   solid     — corpo monocromático
+//   vstripes  — duas listras verticais da cor secundária sobre a primária
+//   hstripes  — três faixas horizontais (hoops) da secundária sobre a primária
+//   sash      — faixa diagonal da secundária (Vasco-style)
+
+export type CoresPattern = "solid" | "vstripes" | "hstripes" | "sash";
 
 export interface CoresClube {
   primary: string;
   secondary: string;
+  pattern: CoresPattern;
 }
 
 const CORES: Record<string, CoresClube> = {
-  "Athletico-PR": { primary: "#E31837", secondary: "#000000" },
-  "Atlético-MG": { primary: "#000000", secondary: "#FFFFFF" },
-  "Bahia": { primary: "#005CB7", secondary: "#E31837" },
-  "Botafogo": { primary: "#000000", secondary: "#FFFFFF" },
-  "Bragantino": { primary: "#E31837", secondary: "#FFFFFF" },
-  "RB Bragantino": { primary: "#E31837", secondary: "#FFFFFF" },
-  "Chapecoense": { primary: "#0F8D2A", secondary: "#FFFFFF" },
-  "Corinthians": { primary: "#000000", secondary: "#FFFFFF" },
-  "Coritiba": { primary: "#0F8D2A", secondary: "#FFFFFF" },
-  "Cruzeiro": { primary: "#003DA5", secondary: "#FFFFFF" },
-  "Flamengo": { primary: "#E5161B", secondary: "#000000" },
-  "Fluminense": { primary: "#7A0F1F", secondary: "#0F4730" },
-  "Grêmio": { primary: "#0E72B5", secondary: "#000000" },
-  "Internacional": { primary: "#E5161B", secondary: "#FFFFFF" },
-  "Mirassol": { primary: "#FFD400", secondary: "#0F8D2A" },
-  "Palmeiras": { primary: "#005A2C", secondary: "#FFFFFF" },
-  "Remo": { primary: "#005CB7", secondary: "#FFFFFF" },
-  "Santos": { primary: "#FFFFFF", secondary: "#000000" },
-  "São Paulo": { primary: "#FFFFFF", secondary: "#E5161B" },
-  "Vasco": { primary: "#000000", secondary: "#FFFFFF" },
-  "Vitória": { primary: "#E5161B", secondary: "#000000" },
+  "Athletico-PR": {
+    primary: "#E31837",
+    secondary: "#000000",
+    pattern: "vstripes",
+  },
+  "Atlético-MG": {
+    primary: "#000000",
+    secondary: "#FFFFFF",
+    pattern: "vstripes",
+  },
+  "Bahia": { primary: "#FFFFFF", secondary: "#005CB7", pattern: "hstripes" },
+  "Botafogo": { primary: "#000000", secondary: "#FFFFFF", pattern: "vstripes" },
+  "Bragantino": {
+    primary: "#FFFFFF",
+    secondary: "#E31837",
+    pattern: "hstripes",
+  },
+  "RB Bragantino": {
+    primary: "#FFFFFF",
+    secondary: "#E31837",
+    pattern: "hstripes",
+  },
+  "Chapecoense": {
+    primary: "#FFFFFF",
+    secondary: "#0F8D2A",
+    pattern: "vstripes",
+  },
+  "Corinthians": { primary: "#FFFFFF", secondary: "#000000", pattern: "solid" },
+  "Coritiba": { primary: "#FFFFFF", secondary: "#0F8D2A", pattern: "vstripes" },
+  "Cruzeiro": { primary: "#003DA5", secondary: "#FFFFFF", pattern: "solid" },
+  "Flamengo": { primary: "#E5161B", secondary: "#000000", pattern: "hstripes" },
+  "Fluminense": {
+    primary: "#7A0F1F",
+    secondary: "#0F4730",
+    pattern: "vstripes",
+  },
+  "Grêmio": { primary: "#0E72B5", secondary: "#000000", pattern: "vstripes" },
+  "Internacional": {
+    primary: "#E5161B",
+    secondary: "#FFFFFF",
+    pattern: "solid",
+  },
+  "Mirassol": { primary: "#FFD400", secondary: "#0F8D2A", pattern: "solid" },
+  "Palmeiras": { primary: "#005A2C", secondary: "#FFFFFF", pattern: "solid" },
+  "Remo": { primary: "#005CB7", secondary: "#FFFFFF", pattern: "vstripes" },
+  "Santos": { primary: "#FFFFFF", secondary: "#000000", pattern: "solid" },
+  "São Paulo": {
+    primary: "#FFFFFF",
+    secondary: "#E5161B",
+    pattern: "hstripes",
+  },
+  "Vasco": { primary: "#000000", secondary: "#FFFFFF", pattern: "sash" },
+  "Vitória": { primary: "#E5161B", secondary: "#000000", pattern: "vstripes" },
 };
 
-const FALLBACK: CoresClube = { primary: "#1B1D26", secondary: "#7A7B82" };
+const FALLBACK: CoresClube = {
+  primary: "#1B1D26",
+  secondary: "#7A7B82",
+  pattern: "solid",
+};
 
 export function coresClube(clube: string | null | undefined): CoresClube {
   if (!clube) return FALLBACK;

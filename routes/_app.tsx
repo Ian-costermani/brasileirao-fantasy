@@ -33,6 +33,13 @@ export default function App({ Component }: AppProps) {
                         -20 -20 -20 0 56"
               />
             </filter>
+            {
+              /* Clip do corpo da camisa — usado pra constrain padrões
+                (listras/sash) à silhueta do jersey. */
+            }
+            <clipPath id="bf-jersey-body" clipPathUnits="userSpaceOnUse">
+              <path d="M30 10 L8 22 L13 40 L27 40 L27 92 Q27 98 33 98 L67 98 Q73 98 73 92 L73 40 L87 40 L92 22 L70 10 L60 17 L50 22 L40 17 Z" />
+            </clipPath>
           </defs>
         </svg>
         <Component />

@@ -1,5 +1,7 @@
 export type Posicao = "gol" | "lat" | "zag" | "mei" | "ata";
 
+export type CoresPattern = "solid" | "vstripes" | "hstripes" | "sash";
+
 export interface Pino {
   nome?: string;
   num?: string;
@@ -7,7 +9,70 @@ export interface Pino {
   pts?: number | null;
   escudo?: string | null;
   pos?: string;
-  cores?: { primary: string; secondary: string };
+  cores?: { primary: string; secondary: string; pattern: CoresPattern };
+}
+
+const JERSEY_BODY_PATH =
+  "M30 10 L8 22 L13 40 L27 40 L27 92 Q27 98 33 98 L67 98 Q73 98 73 92 L73 40 L87 40 L92 22 L70 10 L60 17 L50 22 L40 17 Z";
+const COLLAR_PATH = "M30 10 L70 10 L60 17 L50 22 L40 17 Z";
+
+function PatternOverlay({ pattern }: { pattern: CoresPattern }) {
+  if (pattern === "vstripes") {
+    return (
+      <>
+        <rect
+          x="34"
+          y="20"
+          width="11"
+          height="78"
+          fill="var(--team-secondary)"
+        />
+        <rect
+          x="55"
+          y="20"
+          width="11"
+          height="78"
+          fill="var(--team-secondary)"
+        />
+      </>
+    );
+  }
+  if (pattern === "hstripes") {
+    return (
+      <>
+        <rect
+          x="20"
+          y="28"
+          width="60"
+          height="10"
+          fill="var(--team-secondary)"
+        />
+        <rect
+          x="20"
+          y="50"
+          width="60"
+          height="10"
+          fill="var(--team-secondary)"
+        />
+        <rect
+          x="20"
+          y="72"
+          width="60"
+          height="10"
+          fill="var(--team-secondary)"
+        />
+      </>
+    );
+  }
+  if (pattern === "sash") {
+    return (
+      <polygon
+        points="20,20 20,38 80,98 80,80"
+        fill="var(--team-secondary)"
+      />
+    );
+  }
+  return null;
 }
 
 export interface Escalacao {
@@ -60,17 +125,23 @@ function PlayerPin(
               class="bf-pin__jersey"
               aria-hidden="true"
             >
-              {/* Corpo + sleeves */}
+              {/* 1. Corpo da camisa, fill primary */}
+              <path d={JERSEY_BODY_PATH} fill="var(--team-primary)" />
+              {/* 2. Padrão (listras/sash) clipado pra ficar dentro do corpo */}
+              <g clip-path="url(#bf-jersey-body)">
+                <PatternOverlay pattern={p.cores.pattern} />
+              </g>
+              {/* 3. Outline por cima pra contorno crisp */}
               <path
-                d="M30 10 L8 22 L13 40 L27 40 L27 92 Q27 98 33 98 L67 98 Q73 98 73 92 L73 40 L87 40 L92 22 L70 10 L60 17 L50 22 L40 17 Z"
-                fill="var(--team-primary)"
+                d={JERSEY_BODY_PATH}
+                fill="none"
                 stroke="var(--shirt-color)"
-                stroke-width="3.5"
+                stroke-width="3"
                 stroke-linejoin="round"
               />
-              {/* Gola/secundária — triangle no decote */}
+              {/* 4. Gola na cor secundária */}
               <path
-                d="M30 10 L70 10 L60 17 L50 22 L40 17 Z"
+                d={COLLAR_PATH}
                 fill="var(--team-secondary)"
                 stroke="var(--shirt-color)"
                 stroke-width="2"
