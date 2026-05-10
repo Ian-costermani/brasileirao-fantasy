@@ -506,13 +506,13 @@ body {
 /* Player pins */
 .bf-pin { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; max-width: 64px; }
 .bf-pin__shirt {
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   border-radius: 999px;
   background-color: var(--bf-chassis);
   background-size: cover;
-  background-position: center;
+  background-position: center 18%;
   background-repeat: no-repeat;
-  border: 1.5px solid var(--shirt-color, #fff);
+  border: 2px solid var(--shirt-color, #fff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -540,6 +540,9 @@ body {
   box-shadow: 0 0 8px var(--bf-lime-glow);
 }
 .bf-pin__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-family: var(--bf-font-cond);
   font-weight: 700;
   font-size: 10px;
@@ -547,11 +550,22 @@ body {
   text-transform: uppercase;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  max-width: 72px;
+  background: rgba(0,0,0,0.55);
+  padding: 2px 5px;
+  border-radius: 999px;
+}
+.bf-pin__name > span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60px;
-  text-align: center;
+}
+.bf-pin__name-escudo {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.7));
 }
 .bf-pin__pts {
   font-family: var(--bf-font-display);
