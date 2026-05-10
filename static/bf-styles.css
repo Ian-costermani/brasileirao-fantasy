@@ -288,6 +288,15 @@ body {
 }
 
 /* ============================================================
+   TEAM CREST — logo oficial da liga (PNG com transparência)
+   ============================================================ */
+.bf-team-crest {
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* ============================================================
    BOTTOM NAV — floating pill, 5 items
    ============================================================ */
 .bf-bottom-nav {

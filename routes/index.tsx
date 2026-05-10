@@ -9,32 +9,17 @@ import {
 import { calcularMelhorTime } from "../lib/substituicao.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
-import Crest, { type CrestColor } from "../components/Crest.tsx";
+import TeamCrest from "../components/TeamCrest.tsx";
 import SectionHeader from "../components/SectionHeader.tsx";
 import Pill from "../components/Pill.tsx";
 import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
+import { timeLigaInfo } from "../lib/times-liga.ts";
 
 // Time do usuário "logado". Sem auth ainda — hardcoded por enquanto.
 // Trocar pra cookie/sessão quando login entrar.
 const CHAVE_USUARIO = "aguiar";
-
-// Identidade visual por time (cor do crest + sigla curta).
-const TIME_VISUAL: Record<
-  string,
-  { color: CrestColor; sigla: string; displayName?: string }
-> = {
-  aguiar: { color: "magenta", sigla: "FK" },
-  ian: { color: "orange", sigla: "BF" },
-  costa: { color: "yellow", sigla: "IP", displayName: "Ilha de Paquetá" },
-  brito: { color: "green", sigla: "CG", displayName: "Crefilho da Gama" },
-  domingos: { color: "blue", sigla: "B23" },
-  jose: { color: "lime", sigla: "888" },
-  leo: { color: "blue", sigla: "MOL", displayName: "Moleicester City" },
-  armando: { color: "magenta", sigla: "PCH", displayName: "Papai Chegou FC" },
-  jp: { color: "orange", sigla: "PAP", displayName: "Pedro Álvares Pardal" },
-};
 
 interface TimeRanking {
   chave: string;
@@ -147,10 +132,9 @@ export const handler: Handlers<HomeData> = {
 };
 
 export default function Home({ data }: PageProps<HomeData>) {
-  const visual = TIME_VISUAL[CHAVE_USUARIO] ??
-    { color: "magenta" as CrestColor, sigla: "??" };
+  const visual = timeLigaInfo(CHAVE_USUARIO);
   const meta = CHAVES_TIMES[CHAVE_USUARIO];
-  const displayName = visual.displayName ?? meta?.nome_time ?? "Time";
+  const displayName = visual?.displayName ?? meta?.nome_time ?? "Time";
   const pontosFmt = data.meu?.pontuacao.toFixed(1).replace(".", ",") ?? "—";
 
   return (
@@ -170,7 +154,7 @@ export default function Home({ data }: PageProps<HomeData>) {
 
         <article class="bf-card bf-status-card">
           <div class="bf-status-card__top">
-            <Crest color={visual.color} sigla={visual.sigla} size={52} />
+            <TeamCrest chave={CHAVE_USUARIO} size={52} />
             <div class="bf-status-card__name">
               <h3>{displayName}</h3>
               <span class="bf-status-card__sub">
