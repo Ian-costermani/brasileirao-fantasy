@@ -611,16 +611,25 @@ body {
   max-width: 88px;
 }
 .bf-pin__shirt {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bf-pin__jersey {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+}
+.bf-pin__placeholder {
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-  /* Jersey: cor primária + faixa horizontal de gola na cor secundária.
-     Caem pro chassis quando o time não tem cores mapeadas. */
-  background: linear-gradient(
-    to bottom,
-    var(--team-secondary, var(--bf-line-strong)) 0 24%,
-    var(--team-primary, var(--bf-chassis)) 24% 100%
-  );
+  background: var(--bf-chassis);
   border: 2px solid var(--shirt-color, #fff);
   display: flex;
   align-items: center;
@@ -629,27 +638,25 @@ body {
   font-weight: 900;
   font-size: 13px;
   color: #fff;
-  position: relative;
-  overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  flex-shrink: 0;
 }
-.bf-pin__shirt--captain::after {
-  content: "C";
+.bf-pin__capt-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 16px;
-  height: 16px;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
   background: var(--bf-lime);
   color: #000;
   border-radius: 999px;
-  font-size: 9px;
+  font-family: var(--bf-font-cond);
   font-weight: 900;
+  font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 8px var(--bf-lime-glow);
+  box-shadow: 0 0 6px var(--bf-lime-glow);
+  z-index: 2;
 }
 .bf-pin__name {
   display: inline-flex;
@@ -710,11 +717,12 @@ body {
   color: var(--bf-red);
   box-shadow: 0 0 8px var(--bf-red-glow);
 }
-.bf-pin--empty .bf-pin__shirt {
+.bf-pin--empty .bf-pin__placeholder {
   border-style: dashed;
   background: transparent;
   border-color: rgba(255, 255, 255, 0.4);
   color: rgba(255, 255, 255, 0.4);
+  box-shadow: none;
 }
 
 /* Animations shared */

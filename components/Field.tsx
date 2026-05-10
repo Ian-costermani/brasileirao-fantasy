@@ -41,8 +41,6 @@ function PlayerPin(
   const isEmpty = empty && !p.num && !p.cores;
   const cls = ["bf-pin"];
   if (isEmpty) cls.push("bf-pin--empty");
-  const shirtCls = ["bf-pin__shirt"];
-  if (p.capt) shirtCls.push("bf-pin__shirt--captain");
   const pts = showPoints && p.pts != null ? p.pts : null;
   const shirtStyle: Record<string, string> = {
     "--shirt-color": COLOR_VAR[accent],
@@ -54,8 +52,38 @@ function PlayerPin(
 
   return (
     <div class={cls.join(" ")}>
-      <div class={shirtCls.join(" ")} style={shirtStyle}>
-        {!p.cores && (isEmpty ? "+" : (p.num ?? ""))}
+      <div class="bf-pin__shirt" style={shirtStyle}>
+        {p.cores
+          ? (
+            <svg
+              viewBox="0 0 100 100"
+              class="bf-pin__jersey"
+              aria-hidden="true"
+            >
+              {/* Corpo + sleeves */}
+              <path
+                d="M30 10 L8 22 L13 40 L27 40 L27 92 Q27 98 33 98 L67 98 Q73 98 73 92 L73 40 L87 40 L92 22 L70 10 L60 17 L50 22 L40 17 Z"
+                fill="var(--team-primary)"
+                stroke="var(--shirt-color)"
+                stroke-width="3.5"
+                stroke-linejoin="round"
+              />
+              {/* Gola/secundária — triangle no decote */}
+              <path
+                d="M30 10 L70 10 L60 17 L50 22 L40 17 Z"
+                fill="var(--team-secondary)"
+                stroke="var(--shirt-color)"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+            </svg>
+          )
+          : (
+            <span class="bf-pin__placeholder">
+              {isEmpty ? "+" : (p.num ?? "")}
+            </span>
+          )}
+        {p.capt && <span class="bf-pin__capt-badge">C</span>}
       </div>
       {p.nome && (
         <div class="bf-pin__name">
