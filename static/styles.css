@@ -293,6 +293,15 @@ body {
   display: block;
 }
 
+.time-nome-escudo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
 .time-info {
   flex: 1;
   min-width: 0;

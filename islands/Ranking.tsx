@@ -431,12 +431,10 @@ export default function Ranking() {
 
                 <div class="time-info">
                   <span class="time-nome">
-                    {!modoElenco && (
-                      <BolaPNG size={10} corTime={CORES_TIMES[time.nome] ?? "#00FF88"} />
+                    {NOMES_ELENCO[time.nome] ?? time.nome}
+                    {!modoElenco && ESCUDOS_TIMES[time.nome] && (
+                      <img src={ESCUDOS_TIMES[time.nome]} alt="" class="time-nome-escudo" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     )}
-                    {modoElenco
-                      ? (NOMES_ELENCO[time.nome] ?? time.nome)
-                      : time.nome}
                   </span>
                   <span class="time-dono">{time.dono}</span>
                 </div>
