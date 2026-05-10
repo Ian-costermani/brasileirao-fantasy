@@ -9,7 +9,7 @@ export default function Home() {
       </Head>
       <div class="app">
         <header class="app-header">
-          <img src="/logo_site.png" alt="Brasileirão Fantasy" class="app-header-logo-img" />
+          <img src="https://cdn.jsdelivr.net/gh/Ian-costermani/brasileirao-fantasy@master/static/logo_site.png" alt="Brasileirão Fantasy" class="app-header-logo-img" />
         </header>
         <main class="main">
           <Ranking />

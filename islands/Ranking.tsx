@@ -4,7 +4,7 @@ import { CampoFutebol } from "../components/CampoFutebol.tsx";
 function BolaPNG({ size, corTime }: { size: number; corTime: string }) {
   return (
     <span style={`display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0;background:${corTime}`}>
-      <img src="/bola.png" alt="" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply;display:block;" />
+      <img src="https://cdn.jsdelivr.net/gh/Ian-costermani/brasileirao-fantasy@master/static/bola.png" alt="" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply;display:block;" />
     </span>
   );
 }
@@ -92,16 +92,17 @@ const NOMES_ELENCO: Record<string, string> = {
   "DORIVAL JUNIORS":     "Pedro Álvares Pardal",
 };
 
+const CDN_TIMES = "https://cdn.jsdelivr.net/gh/Ian-costermani/brasileirao-fantasy@master/static/times_escudos";
 const ESCUDOS_TIMES: Record<string, string> = {
-  "FILHOS DE KIEZA":     "/times_escudos/filhos-de-kieza.png",
-  "BOTAFOFO FR":         "/times_escudos/botafofo.png",
-  "MALVADINHOS FC":      "/times_escudos/ilha-de-paqueta.png",
-  "CHUTOCA FC":          "/times_escudos/crefilho-da-gama.png",
-  "BENDERMEM 23":        "/times_escudos/bendermem.png",
-  "888 PARTNERS":        "/times_escudos/888-partners.png",
-  "TODOS COM BOLSONARO": "/times_escudos/moleicester-city.png",
-  "PIRATAS DO CARILLE":  "/times_escudos/papai-chegou.png",
-  "DORIVAL JUNIORS":     "/times_escudos/pedro-alvares-pardal.png",
+  "FILHOS DE KIEZA":     `${CDN_TIMES}/filhos-de-kieza.png`,
+  "BOTAFOFO FR":         `${CDN_TIMES}/botafofo.png`,
+  "MALVADINHOS FC":      `${CDN_TIMES}/ilha-de-paqueta.png`,
+  "CHUTOCA FC":          `${CDN_TIMES}/crefilho-da-gama.png`,
+  "BENDERMEM 23":        `${CDN_TIMES}/bendermem.png`,
+  "888 PARTNERS":        `${CDN_TIMES}/888-partners.png`,
+  "TODOS COM BOLSONARO": `${CDN_TIMES}/moleicester-city.png`,
+  "PIRATAS DO CARILLE":  `${CDN_TIMES}/papai-chegou.png`,
+  "DORIVAL JUNIORS":     `${CDN_TIMES}/pedro-alvares-pardal.png`,
 };
 
 const INTERVALO_POLLING = 2 * 60 * 1000;
