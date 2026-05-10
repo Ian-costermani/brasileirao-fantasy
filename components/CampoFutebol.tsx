@@ -139,7 +139,7 @@ function PlayerCard(
           <span class="campo-player-nome">{abreviarNome(jogador.nome)}</span>
           {modoAoVivo
             ? <span class={`campo-player-pos${jogador.pontuacao > 0 ? " campo-pts-verde" : jogador.pontuacao < 0 ? " campo-pts-neg" : " campo-pts-zero"}`}>
-                {jogador.pontuacao > 0 ? `+${jogador.pontuacao.toFixed(1)}` : jogador.pontuacao < 0 ? jogador.pontuacao.toFixed(1) : "—"}
+                {jogador.pontuacao > 0 ? `+${jogador.pontuacao.toFixed(2)}` : jogador.pontuacao < 0 ? jogador.pontuacao.toFixed(2) : "—"}
               </span>
             : <span class="campo-player-pos">{POSICAO_ABREV[jogador.posicao] ?? jogador.posicao}</span>
           }
