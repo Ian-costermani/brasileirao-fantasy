@@ -546,9 +546,23 @@ body {
   align-items: center;
   gap: 12px;
   background: var(--bf-chassis);
-  border: 1px solid var(--bf-line);
+  border: 1px solid rgba(31, 168, 255, 0.25);
+  border-left: 3px solid var(--bf-blue);
   border-radius: var(--bf-radius-md);
   padding: 10px 14px;
+  box-shadow: 0 0 14px rgba(31, 168, 255, 0.12);
+  position: relative;
+}
+.bf-game-row:has(.bf-game-row__when--live) {
+  border-color: rgba(182, 245, 0, 0.45);
+  border-left-color: var(--bf-lime);
+  box-shadow: 0 0 18px rgba(182, 245, 0, 0.22);
+}
+.bf-game-row:has(.bf-game-row__when--final) {
+  border-color: rgba(255, 255, 255, 0.06);
+  border-left-color: var(--bf-fg-3);
+  box-shadow: none;
+  opacity: 0.85;
 }
 .bf-game-row__when {
   font-family: var(--bf-font-cond);
@@ -586,8 +600,8 @@ body {
   justify-content: flex-end;
 }
 .bf-game-row__shield {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   flex-shrink: 0;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
@@ -743,16 +757,17 @@ body {
   align-items: center;
   z-index: 2;
 }
-.bf-field__row--gk {
+/* Inverted: ataque no topo, goleiro embaixo (defendendo a linha de baixo) */
+.bf-field__row--ata {
   top: 6%;
 }
-.bf-field__row--def {
+.bf-field__row--mid {
   top: 26%;
 }
-.bf-field__row--mid {
+.bf-field__row--def {
   top: 52%;
 }
-.bf-field__row--ata {
+.bf-field__row--gk {
   top: 78%;
 }
 
