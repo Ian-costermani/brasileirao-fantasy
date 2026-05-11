@@ -137,41 +137,32 @@ function PlayerPin(
   const cls = ["bf-pin"];
   if (isEmpty) cls.push("bf-pin--empty");
   const pts = showPoints && p.pts != null ? p.pts : null;
-  const shirtStyle: Record<string, string> = {};
+  const status = statusInfo(p.statusId);
+  const cardStyle: Record<string, string> = {
+    "--pos-color": COLOR_VAR[accent],
+  };
   if (p.cores) {
-    shirtStyle["--team-primary"] = p.cores.primary;
-    shirtStyle["--team-secondary"] = p.cores.secondary;
+    cardStyle["--team-primary"] = p.cores.primary;
+    cardStyle["--team-secondary"] = p.cores.secondary;
   }
 
   return (
-    <div class={cls.join(" ")}>
-      <div
-        class={`bf-pin__shirt ${hasFotoReal ? "bf-pin__shirt--photo" : ""}`}
-        style={shirtStyle}
-      >
+    <div class={cls.join(" ")} style={cardStyle}>
+      {/* Cabeça flutuante acima do card */}
+      <div class="bf-pin__head-wrap">
         {hasFotoReal
-          ? (
-            <img
-              class="bf-pin__photo"
-              src={p.foto!}
-              alt=""
-              loading="lazy"
-            />
-          )
+          ? <img class="bf-pin__head-img" src={p.foto!} alt="" loading="lazy" />
           : p.cores
           ? (
             <svg
               viewBox="0 0 100 100"
-              class="bf-pin__jersey"
+              class="bf-pin__head-jersey"
               aria-hidden="true"
             >
-              {/* 1. Corpo da camisa, fill primary */}
               <path d={JERSEY_BODY_PATH} fill="var(--team-primary)" />
-              {/* 2. Padrão (listras/sash) clipado pra ficar dentro do corpo */}
               <g clip-path="url(#bf-jersey-body)">
                 <PatternOverlay pattern={p.cores.pattern} />
               </g>
-              {/* 3. Outline por cima pra contorno crisp */}
               <path
                 d={JERSEY_BODY_PATH}
                 fill="none"
@@ -179,7 +170,6 @@ function PlayerPin(
                 stroke-width="3"
                 stroke-linejoin="round"
               />
-              {/* 4. Gola na cor secundária */}
               <path
                 d={COLLAR_PATH}
                 fill="var(--team-secondary)"
@@ -190,43 +180,48 @@ function PlayerPin(
             </svg>
           )
           : (
-            <span class="bf-pin__placeholder">
+            <span class="bf-pin__head-placeholder">
               {isEmpty ? "+" : (p.num ?? "")}
             </span>
           )}
-        {p.escudo && <img class="bf-pin__shirt-escudo" src={p.escudo} alt="" />}
         {p.capt && <span class="bf-pin__capt-badge">C</span>}
-        {(() => {
-          const s = statusInfo(p.statusId);
-          return s
-            ? (
-              <span
-                class="bf-pin__status-badge"
-                style={{ "--st-color": s.cor } as Record<string, string>}
-                title={s.title}
-                aria-label={s.title}
-              >
-                {s.sym}
-              </span>
-            )
-            : null;
-        })()}
       </div>
-      {p.nome && <div class="bf-pin__name">{p.nome}</div>}
-      {p.pos && (
-        <div
-          class="bf-pin__pos"
-          style={{ "--pos-color": COLOR_VAR[accent] } as Record<string, string>}
-        >
-          {p.pos}
+
+      {/* Corpo da carta */}
+      <div class="bf-pin__card">
+        <div class="bf-pin__row">
+          {p.escudo && (
+            <img
+              class="bf-pin__card-escudo"
+              src={p.escudo}
+              alt=""
+            />
+          )}
+          {p.nome && <span class="bf-pin__card-name">{p.nome}</span>}
+          {status && (
+            <span
+              class="bf-pin__status-inline"
+              style={{ "--st-color": status.cor } as Record<string, string>}
+              title={status.title}
+              aria-label={status.title}
+            >
+              {status.sym}
+            </span>
+          )}
         </div>
-      )}
-      {pts != null && (
-        <div class={`bf-pin__pts ${pts < 0 ? "bf-pin__pts--neg" : ""}`}>
-          {pts > 0 ? "+" : ""}
-          {pts}
-        </div>
-      )}
+        {pts != null
+          ? (
+            <div
+              class={`bf-pin__card-pts ${
+                pts < 0 ? "bf-pin__card-pts--neg" : ""
+              }`}
+            >
+              {pts > 0 ? "+" : ""}
+              {pts.toFixed(1).replace(".", ",")}
+            </div>
+          )
+          : p.pos && <div class="bf-pin__card-pos">{p.pos}</div>}
+      </div>
     </div>
   );
 }

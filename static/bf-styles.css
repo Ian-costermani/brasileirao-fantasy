@@ -1134,51 +1134,57 @@ body {
 }
 
 /* Player pins */
+/* Pin = "carta" de jogador: cabeça flutuando + body card */
 .bf-pin {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  /* Largura fixa: space-around distribui pins identicamente, independente
-     do tamanho do nome. Sem isso, "Garro" (curto) e "Everton Ribeiro"
-     (longo) teriam pin widths diferentes e o pin do meio sairia do centro. */
   width: 84px;
   flex-shrink: 0;
+  padding-top: 18px; /* espaço pra cabeça flutuar acima */
 }
-.bf-pin__shirt {
-  width: 44px;
-  height: 44px;
+.bf-pin__head-wrap {
   position: relative;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: -14px;
+  z-index: 2;
 }
-.bf-pin__jersey {
+.bf-pin__head-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  object-position: center 18%;
+  background: var(--bf-ink);
+  border: 1.5px solid rgba(0, 0, 0, 0.75);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.7);
+  display: block;
+}
+.bf-pin__head-jersey {
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.6));
 }
-.bf-pin__placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  background: var(--bf-chassis);
-  border: 2px solid var(--bf-line-strong);
+.bf-pin__head-placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 999px;
+  background: var(--bf-chassis);
+  border: 2px solid var(--bf-line-strong);
   font-family: var(--bf-font-cond);
   font-weight: 900;
   font-size: 13px;
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 .bf-pin__capt-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -4px;
+  right: -4px;
   width: 14px;
   height: 14px;
   background: var(--bf-lime);
@@ -1191,106 +1197,92 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 6px var(--bf-lime-glow);
-  z-index: 2;
+  z-index: 3;
 }
-.bf-pin__name {
+
+/* Card body */
+.bf-pin__card {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid color-mix(in srgb, var(--pos-color, #fff) 50%, transparent);
+  border-radius: var(--bf-radius-sm);
+  padding: 16px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 0 10px
+    color-mix(in srgb, var(--pos-color, #fff) 12%, transparent);
+}
+.bf-pin__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+.bf-pin__card-escudo {
+  width: 11px;
+  height: 11px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.7));
+}
+.bf-pin__card-name {
   font-family: var(--bf-font-cond);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 10px;
-  line-height: 1.15;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  background: rgba(0, 0, 0, 0.55);
-  padding: 2px 8px;
-  border-radius: 999px;
-  text-align: center;
-  word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
 }
-/* O shirt em si NÃO clipa nada — badges precisam transbordar nos cantos.
-   A foto se faz circular sozinha via border-radius no <img>. */
-.bf-pin__photo {
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--bf-ink);
-  border: 1.5px solid rgba(0, 0, 0, 0.7);
-  object-fit: cover;
-  object-position: center 18%;
-  display: block;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-}
-.bf-pin__shirt-escudo {
-  position: absolute;
-  bottom: -2px;
-  left: -2px;
-  width: 16px;
-  height: 16px;
-  background: var(--bf-ink);
-  border-radius: 999px;
-  padding: 1.5px;
-  object-fit: contain;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  z-index: 1;
-}
-.bf-pin__status-badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 14px;
-  height: 14px;
-  background: var(--bf-ink);
-  border: 1.5px solid var(--st-color, #fff);
-  border-radius: 999px;
-  display: flex;
+.bf-pin__status-inline {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--bf-font-cond);
-  font-weight: 900;
-  font-size: 9px;
-  color: var(--st-color, #fff);
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
-  z-index: 1;
-  line-height: 1;
-}
-.bf-pin__pos {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--st-color, #fff);
   font-family: var(--bf-font-cond);
   font-weight: 900;
   font-size: 8px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid var(--pos-color, var(--bf-fg-2));
-  color: var(--pos-color, #fff);
-  line-height: 1.1;
+  line-height: 1;
+  color: var(--st-color, #fff);
 }
-.bf-pin__pts {
+.bf-pin__card-pts {
   font-family: var(--bf-font-display);
   font-weight: 900;
-  font-size: 10px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1.5px solid var(--bf-lime);
-  color: var(--bf-lime);
-  padding: 2px 7px;
-  border-radius: 999px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 8px var(--bf-lime-glow);
-  line-height: 1.1;
+  color: var(--bf-lime);
+  text-shadow: 0 0 6px var(--bf-lime-glow);
+  line-height: 1;
 }
-.bf-pin__pts--neg {
-  border-color: var(--bf-red);
+.bf-pin__card-pts--neg {
   color: var(--bf-red);
-  box-shadow: 0 0 8px var(--bf-red-glow);
+  text-shadow: 0 0 6px var(--bf-red-glow);
 }
-.bf-pin--empty .bf-pin__placeholder {
+.bf-pin__card-pos {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pos-color, var(--bf-fg-2));
+  line-height: 1;
+}
+.bf-pin--empty .bf-pin__head-placeholder {
   border-style: dashed;
   background: transparent;
   border-color: rgba(255, 255, 255, 0.4);
   color: rgba(255, 255, 255, 0.4);
-  box-shadow: none;
 }
 
 /* Animations shared */
