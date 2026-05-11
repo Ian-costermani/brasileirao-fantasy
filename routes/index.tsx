@@ -35,6 +35,7 @@ interface HomeData {
   posicao: number | null;
   totalTimes: number;
   escalacao: Escalacao | null;
+  esquema: string | null;
 }
 
 const POS_ABREV: Record<string, string> = {
@@ -118,13 +119,20 @@ export const handler: Handlers<HomeData> = {
 
     const meuIdx = ranking.findIndex((t) => t.chave === CHAVE_USUARIO);
     const meuEscalados = escaladosPorChave[CHAVE_USUARIO] ?? [];
+    const escalacao = meuEscalados.length
+      ? montarEscalacao(meuEscalados)
+      : null;
+    const esquema = escalacao
+      ? `${escalacao.def.length}-${escalacao.mid.length}-${escalacao.ata.length}`
+      : null;
     const data: HomeData = {
       rodada: rodada?.rodada ?? 0,
       status: rodada?.status ?? "aguardando",
       meu: meuIdx >= 0 ? ranking[meuIdx] : null,
       posicao: meuIdx >= 0 ? meuIdx + 1 : null,
       totalTimes: ranking.length || TODAS_CHAVES.length,
-      escalacao: meuEscalados.length ? montarEscalacao(meuEscalados) : null,
+      escalacao,
+      esquema,
     };
 
     return ctx.render(data);
@@ -149,12 +157,6 @@ export default function Home({ data }: PageProps<HomeData>) {
       <div class="bf-viewport">
         <TopBar hasAlert />
 
-        <div class="bf-greeting">
-          <span class="bf-label-micro">
-            Olá, {meta?.dono ?? "—"} · Rodada {data.rodada}
-          </span>
-        </div>
-
         <article class="bf-card bf-status-card">
           {splatterUrl && (
             <div
@@ -162,12 +164,20 @@ export default function Home({ data }: PageProps<HomeData>) {
               style={{ backgroundImage: `url(${splatterUrl})` }}
             />
           )}
+
+          <div class="bf-status-card__greeting">
+            <span class="bf-status-card__hello">
+              Olá, <strong>{meta?.dono ?? "—"}</strong>
+            </span>
+            <span class="bf-status-card__round">Rodada {data.rodada}</span>
+          </div>
+
           <div class="bf-status-card__top">
-            <TeamCrest chave={CHAVE_USUARIO} size={52} />
+            <TeamCrest chave={CHAVE_USUARIO} size={56} />
             <div class="bf-status-card__name">
               <h3>{displayName}</h3>
               <span class="bf-status-card__sub">
-                {data.posicao ? `${data.posicao}º` : "—"} · Liga da Sexta
+                Liga da Sexta · {data.totalTimes} times
               </span>
             </div>
             {data.status === "ao_vivo" && (
@@ -195,6 +205,16 @@ export default function Home({ data }: PageProps<HomeData>) {
               </span>
               <span class="bf-status-card__metric-foot">
                 de {data.totalTimes}
+              </span>
+            </div>
+            <div class="bf-status-card__divider"></div>
+            <div class="bf-status-card__metric">
+              <span class="bf-label-micro">Esquema</span>
+              <span class="bf-status-card__metric-value bf-status-card__metric-value--sm">
+                {data.esquema ?? "—"}
+              </span>
+              <span class="bf-status-card__metric-foot">
+                titulares
               </span>
             </div>
           </div>

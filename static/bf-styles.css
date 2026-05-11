@@ -192,83 +192,23 @@ body {
 }
 
 /* ============================================================
-   SECTION HEADER — graffiti title + magenta brush slash + ticks
+   SECTION HEADER — graffiti title row
    ============================================================ */
 .bf-section-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 24px var(--bf-gutter) 16px;
+  padding: 16px var(--bf-gutter) 8px;
   gap: 12px;
-}
-.bf-section-header__title-wrap {
-  position: relative;
-  display: inline-block;
-  padding: 4px 8px 12px;
 }
 .bf-section-header__title {
   font-family: var(--bf-font-graffiti);
   font-weight: 400;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #fff;
-  position: relative;
-  z-index: 1;
-}
-.bf-section-header__slash {
-  position: absolute;
-  left: -4px;
-  right: -8px;
-  bottom: 4px;
-  height: 9px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--bf-magenta) 8%,
-    var(--bf-magenta) 88%,
-    transparent 100%
-  );
-  transform: skewX(-14deg) rotate(-1.5deg);
-  border-radius: 2px;
-  filter: drop-shadow(0 0 8px var(--bf-magenta-glow));
-  -webkit-mask-image: radial-gradient(
-    ellipse 80% 100% at 50% 50%,
-    black 60%,
-    transparent 95%
-  );
-  mask-image: radial-gradient(
-    ellipse 80% 100% at 50% 50%,
-    black 60%,
-    transparent 95%
-  );
-  pointer-events: none;
-}
-.bf-section-header__tick {
-  position: absolute;
-  height: 4px;
-  background: var(--bf-magenta);
-  transform: skewX(-14deg);
-  border-radius: 1px;
-  filter: drop-shadow(0 0 6px var(--bf-magenta-glow));
-  pointer-events: none;
-}
-.bf-section-header__tick--1 {
-  left: 10px;
-  bottom: -4px;
-  width: 12px;
-}
-.bf-section-header__tick--2 {
-  left: 38px;
-  bottom: -7px;
-  width: 8px;
-}
-.bf-section-header__tick--3 {
-  right: 6px;
-  bottom: -8px;
-  width: 16px;
-  transform: skewX(-14deg) rotate(8deg);
 }
 
 /* ============================================================
@@ -485,11 +425,36 @@ body {
   color: var(--bf-fg-2);
 }
 
+/* Greeting embutido no topo do card — substituiu o externo apagado */
+.bf-status-card__greeting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.bf-status-card__hello {
+  color: var(--bf-fg-2);
+}
+.bf-status-card__hello strong {
+  color: var(--bf-fg-1);
+  font-weight: 900;
+}
+.bf-status-card__round {
+  color: var(--bf-magenta);
+  font-weight: 900;
+  text-shadow: 0 0 10px var(--bf-magenta-glow);
+}
+
 .bf-status-card__metrics {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 12px;
-  margin-top: 16px;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  gap: 10px;
+  margin-top: 18px;
   align-items: end;
 }
 .bf-status-card__divider {
@@ -507,7 +472,7 @@ body {
 .bf-status-card__metric-value {
   font-family: var(--bf-font-display);
   font-weight: 900;
-  font-size: 36px;
+  font-size: 28px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.005em;
