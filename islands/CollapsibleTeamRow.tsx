@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import { ComponentChildren } from "preact";
 import TeamCrest from "../components/TeamCrest.tsx";
+import Sparkline from "../components/Sparkline.tsx";
 
 interface Props {
   /** Identificador interno (chave do dono) — usado pro TeamCrest */
@@ -17,6 +18,8 @@ interface Props {
   accent: string;
   /** É o time do usuário? Aplica modifier --mine */
   isMine?: boolean;
+  /** Histórico de pontos por rodada — vira sparkline no cabeçalho */
+  historico?: Record<string, number>;
   /** Conteúdo que aparece colapsado/expandido (Field SSR) */
   children: ComponentChildren;
 }
@@ -26,7 +29,17 @@ interface Props {
  * Renderiza summary (cabeçalho) com props simples + children (escalação).
  */
 export default function CollapsibleTeamRow(
-  { chave, pos, displayName, dono, totalFmt, accent, isMine, children }: Props,
+  {
+    chave,
+    pos,
+    displayName,
+    dono,
+    totalFmt,
+    accent,
+    isMine,
+    historico,
+    children,
+  }: Props,
 ) {
   const [open, setOpen] = useState(false);
   const isLider = pos === 1;
@@ -52,6 +65,9 @@ export default function CollapsibleTeamRow(
         <div class="bf-team-row__meta">
           <div class="bf-team-row__name">{displayName}</div>
           <div class="bf-team-row__owner">{dono}</div>
+          {historico && Object.keys(historico).length >= 2 && (
+            <Sparkline historico={historico} accent={accent} />
+          )}
         </div>
         <TeamCrest chave={chave} size={36} />
         <div class="bf-team-row__pts">

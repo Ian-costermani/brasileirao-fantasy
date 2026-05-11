@@ -1,5 +1,6 @@
-// SVG line chart pra evolução da pontuação por rodada da liga.
-// Uma linha por time, na cor accent dele.
+// Bump chart — posição (rank) por rodada. Y invertido (1 = topo).
+// Cada time tem uma linha na cor accent dele. Mostra trocas de posição
+// dramaticamente ao longo das rodadas.
 
 export interface LinhaTime {
   chave: string;
@@ -10,19 +11,19 @@ export interface LinhaTime {
 
 interface Props {
   times: LinhaTime[];
-  /** Destacar uma chave específica (ex: time do usuário) — outras ficam dimmed */
+  /** Destacar uma chave específica — outras ficam dimmed */
   destaque?: string;
 }
 
-const W = 320;
-const H = 180;
-const PAD_L = 28;
-const PAD_R = 8;
-const PAD_T = 12;
+const W = 360;
+const H = 220;
+const PAD_L = 14;
+const PAD_R = 14;
+const PAD_T = 14;
 const PAD_B = 22;
 
 export default function LeagueChart({ times, destaque }: Props) {
-  // Coletas todas as rodadas presentes (>0) em pelo menos um time
+  // Coleta rodadas presentes em qualquer time
   const rodadasSet = new Set<number>();
   for (const t of times) {
     for (const [r, p] of Object.entries(t.pontosPorRodada)) {
@@ -30,34 +31,42 @@ export default function LeagueChart({ times, destaque }: Props) {
     }
   }
   const rodadas = [...rodadasSet].sort((a, b) => a - b);
-
   if (rodadas.length < 2) {
-    return (
-      <div class="bf-empty-state">
-        Aguardando dados de rodadas
-      </div>
-    );
+    return <div class="bf-empty-state">Aguardando dados de rodadas</div>;
   }
 
-  // Max value pra escalar
-  let maxPts = 0;
-  for (const t of times) {
-    for (const r of rodadas) {
-      const p = t.pontosPorRodada[String(r)] ?? 0;
-      if (p > maxPts) maxPts = p;
+  // Pra cada rodada, ranquear times pelo total acumulado até essa rodada
+  // → posicao[chave][rodada] = 1..N
+  const N = times.length;
+  const totais: Record<string, number> = {};
+  for (const t of times) totais[t.chave] = 0;
+  const rankByTeamRound: Record<string, Record<number, number>> = {};
+  for (const t of times) rankByTeamRound[t.chave] = {};
+
+  for (const r of rodadas) {
+    for (const t of times) {
+      totais[t.chave] += t.pontosPorRodada[String(r)] ?? 0;
     }
+    const sorted = [...times].sort((a, b) => totais[b.chave] - totais[a.chave]);
+    sorted.forEach((t, i) => {
+      rankByTeamRound[t.chave][r] = i + 1;
+    });
   }
-  // Arredonda pro próximo múltiplo de 25
-  const yMax = Math.ceil(maxPts / 25) * 25;
-  const yStep = yMax / 4; // 4 gridlines
 
   const innerW = W - PAD_L - PAD_R;
   const innerH = H - PAD_T - PAD_B;
-
   const xFor = (i: number) =>
     PAD_L +
     (rodadas.length === 1 ? innerW / 2 : (i * innerW) / (rodadas.length - 1));
-  const yFor = (pts: number) => PAD_T + innerH - (pts / yMax) * innerH;
+  // Y invertido: rank 1 = topo (PAD_T), rank N = base
+  const yFor = (rank: number) => PAD_T + ((rank - 1) / (N - 1)) * innerH;
+
+  // Ordem de renderização: destaque por último pra ficar por cima
+  const ordered = [...times].sort((a, b) => {
+    if (a.chave === destaque) return 1;
+    if (b.chave === destaque) return -1;
+    return 0;
+  });
 
   return (
     <div class="bf-league-chart">
@@ -65,35 +74,35 @@ export default function LeagueChart({ times, destaque }: Props) {
         viewBox={`0 0 ${W} ${H}`}
         class="bf-league-chart__svg"
         role="img"
-        aria-label="Evolução da pontuação por rodada"
+        aria-label="Evolução da posição no ranking por rodada"
       >
-        {/* Gridlines horizontais + labels Y */}
-        {[0, 1, 2, 3, 4].map((i) => {
-          const v = i * yStep;
-          const y = yFor(v);
-          return (
-            <g key={i}>
-              <line
-                x1={PAD_L}
-                x2={W - PAD_R}
-                y1={y}
-                y2={y}
-                stroke="rgba(255,255,255,0.06)"
-                stroke-width="1"
-              />
-              <text
-                x={PAD_L - 6}
-                y={y + 3}
-                text-anchor="end"
-                class="bf-league-chart__y-label"
-              >
-                {Math.round(v)}
-              </text>
-            </g>
-          );
-        })}
+        {/* Linhas horizontais de cada posição (1 até N) */}
+        {Array.from({ length: N }, (_, i) => i + 1).map((rank) => (
+          <line
+            key={rank}
+            x1={PAD_L}
+            x2={W - PAD_R}
+            y1={yFor(rank)}
+            y2={yFor(rank)}
+            stroke="rgba(255,255,255,0.04)"
+            stroke-width="1"
+          />
+        ))}
 
-        {/* Labels X */}
+        {/* Labels Y — número da posição à esquerda */}
+        {Array.from({ length: N }, (_, i) => i + 1).map((rank) => (
+          <text
+            key={rank}
+            x={PAD_L - 4}
+            y={yFor(rank) + 3}
+            text-anchor="end"
+            class="bf-league-chart__y-label"
+          >
+            {rank}
+          </text>
+        ))}
+
+        {/* Labels X — número da rodada */}
         {rodadas.map((r, i) => (
           <text
             key={r}
@@ -106,101 +115,42 @@ export default function LeagueChart({ times, destaque }: Props) {
           </text>
         ))}
 
-        {/* Banda min-max da liga (área shaded sem o usuário) */}
-        {(() => {
-          const outros = times.filter((t) => t.chave !== destaque);
-          if (!outros.length) return null;
-          const bandData = rodadas.map((r, i) => {
-            const valores = outros
-              .map((t) => t.pontosPorRodada[String(r)] ?? 0)
-              .filter((v) => v > 0);
-            const min = valores.length ? Math.min(...valores) : 0;
-            const max = valores.length ? Math.max(...valores) : 0;
-            const median = valores.length
-              ? [...valores].sort((a, b) => a - b)[
-                Math.floor(valores.length / 2)
-              ]
-              : 0;
-            return { x: xFor(i), yMin: yFor(min), yMax: yFor(max), median };
-          });
-          // polygon path: top edge + bottom edge reverso
-          const topPoints = bandData.map((d) => `${d.x},${d.yMax}`).join(" ");
-          const botPoints = [...bandData].reverse().map((d) =>
-            `${d.x},${d.yMin}`
-          ).join(" ");
-          const medianPath = bandData.map((d, i) =>
-            `${i === 0 ? "M" : "L"}${d.x},${yFor(d.median)}`
-          ).join(" ");
-          return (
-            <g>
-              <polygon
-                points={`${topPoints} ${botPoints}`}
-                fill="rgba(255,255,255,0.05)"
-                stroke="none"
-              />
-              <path
-                d={medianPath}
-                fill="none"
-                stroke="rgba(255,255,255,0.28)"
-                stroke-width="1"
-                stroke-dasharray="3 3"
-                stroke-linejoin="round"
-              />
-            </g>
-          );
-        })()}
-
-        {/* Linha destacada (usuário) por cima — grossa, com pontos */}
-        {(() => {
-          const t = times.find((x) => x.chave === destaque);
-          if (!t) return null;
+        {/* Linhas de cada time */}
+        {ordered.map((t) => {
+          const isDestaque = t.chave === destaque;
           const pts = rodadas.map((r, i) => ({
             x: xFor(i),
-            y: yFor(t.pontosPorRodada[String(r)] ?? 0),
-            v: t.pontosPorRodada[String(r)] ?? 0,
+            y: yFor(rankByTeamRound[t.chave][r] ?? N),
+            rank: rankByTeamRound[t.chave][r] ?? N,
           }));
           return (
-            <g>
+            <g
+              key={t.chave}
+              opacity={destaque && !isDestaque ? "0.45" : "1"}
+            >
               <polyline
                 points={pts.map((p) => `${p.x},${p.y}`).join(" ")}
                 fill="none"
                 stroke={t.accent}
-                stroke-width="2.5"
+                stroke-width={isDestaque ? 3 : 1.5}
                 stroke-linejoin="round"
                 stroke-linecap="round"
               />
-              {pts.map((p, i) =>
-                p.v > 0 && (
-                  <circle key={i} cx={p.x} cy={p.y} r="2.8" fill={t.accent} />
-                )
-              )}
+              {pts.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={p.x}
+                  cy={p.y}
+                  r={isDestaque ? 3 : 2}
+                  fill={t.accent}
+                  stroke="var(--bf-chassis)"
+                  stroke-width={isDestaque ? 1.5 : 1}
+                />
+              ))}
             </g>
           );
-        })()}
+        })}
       </svg>
-
-      {/* Legenda mini com 2 linhas: a do user e a banda da liga */}
-      {destaque && (
-        <div class="bf-league-chart__caption">
-          <span
-            class="bf-league-chart__caption-item"
-            style={{
-              "--c": times.find((t) => t.chave === destaque)?.accent ?? "#fff",
-            } as Record<string, string>}
-          >
-            <span class="bf-league-chart__caption-line bf-league-chart__caption-line--solid" />
-            Você
-          </span>
-          <span class="bf-league-chart__caption-item bf-league-chart__caption-item--muted">
-            <span class="bf-league-chart__caption-line bf-league-chart__caption-line--dashed" />
-            Mediana da liga
-          </span>
-          <span class="bf-league-chart__caption-item bf-league-chart__caption-item--muted">
-            <span class="bf-league-chart__caption-band" />
-            Min–max
-          </span>
-        </div>
-      )}
     </div>
   );
 }

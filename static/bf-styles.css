@@ -432,6 +432,16 @@ body {
   text-transform: uppercase;
   color: var(--bf-fg-3);
 }
+.bf-sparkline {
+  margin-top: 3px;
+  display: block;
+}
+.bf-sparkline__last {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 8px;
+  letter-spacing: 0.05em;
+}
 .bf-team-row__pts {
   display: flex;
   flex-direction: column;

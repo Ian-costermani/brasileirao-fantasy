@@ -143,6 +143,7 @@ export default function Liga({ data }: PageProps<Data>) {
                 totalFmt={t.total.toFixed(1).replace(".", ",")}
                 accent={accent}
                 isMine={isMe}
+                historico={t.historico}
               >
                 <div class="bf-team-row__expanded">
                   {t.escalacao
