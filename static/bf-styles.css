@@ -369,13 +369,7 @@ body {
   gap: 8px;
   padding: 0 var(--bf-gutter);
 }
-/* Habilita animação de altura entre 0 e auto. Browsers recentes
-   (Chrome 129+, Safari 18.4+) suportam interpolate-size. */
-:root {
-  interpolate-size: allow-keywords;
-}
-
-/* Team row colapsável — <details> wrapper, <summary> é o cabeçalho.
+/* Team row colapsável — gerenciado pela island CollapsibleTeamRow.
    Cada time tem --accent (cor neon única) que pinta o left-stripe,
    a posição, valor de pontos e glow ao expandir. */
 .bf-team-row {
@@ -387,7 +381,7 @@ body {
   overflow: hidden;
   transition: box-shadow var(--bf-dur-normal) var(--bf-ease-out);
 }
-.bf-team-row[open] {
+.bf-team-row--open {
   box-shadow:
     0 0 16px color-mix(in srgb, var(--accent) 28%, transparent),
     var(--bf-shadow-card);
@@ -413,14 +407,16 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  list-style: none;
   -webkit-user-select: none;
   user-select: none;
   transition: background var(--bf-dur-normal) var(--bf-ease-out);
-}
-.bf-team-row__summary::-webkit-details-marker {
-  display: none;
 }
 .bf-team-row__summary:hover {
   background: rgba(255, 255, 255, 0.02);
@@ -491,28 +487,31 @@ body {
   flex-shrink: 0;
   transition: transform var(--bf-dur-normal) var(--bf-ease-out);
 }
-.bf-team-row[open] .bf-team-row__chev {
+.bf-team-row--open .bf-team-row__chev {
   transform: rotate(180deg);
+}
+
+/* Animação de altura via grid-template-rows trick — funciona em
+   Chrome 117+, Safari 17+, Firefox 117+ (universal). */
+.bf-team-row__expanded-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows 280ms var(--bf-ease-out),
+    opacity 220ms var(--bf-ease-out);
+  opacity: 0;
+}
+.bf-team-row--open .bf-team-row__expanded-wrap {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.bf-team-row__expanded-inner {
+  overflow: hidden;
+  min-height: 0;
 }
 .bf-team-row__expanded {
   padding: 4px 0 12px;
   border-top: 1px solid var(--bf-line);
-}
-
-/* Animação de abrir/fechar via ::details-content (Chrome 131+,
-   Safari 18.2+). Browsers antigos caem pro snap instantâneo. */
-.bf-team-row::details-content {
-  block-size: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition:
-    block-size 280ms var(--bf-ease-out),
-    opacity 220ms var(--bf-ease-out),
-    content-visibility 280ms allow-discrete;
-}
-.bf-team-row[open]::details-content {
-  block-size: auto;
-  opacity: 1;
 }
 
 /* ============================================================
