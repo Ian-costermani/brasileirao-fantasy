@@ -365,42 +365,124 @@ body {
   flex-shrink: 0;
 }
 .bf-event-row__events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.bf-event-row__pill {
-  display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   gap: 2px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid;
+}
+.bf-event-row__line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--bf-font-cond);
-  font-weight: 800;
-  font-size: 9px;
+  font-weight: 700;
+  font-size: 11px;
   letter-spacing: 0.04em;
   line-height: 1.2;
 }
-.bf-event-row__pill--positivo {
+.bf-event-row__line--positivo {
   color: var(--bf-lime);
-  border-color: rgba(182, 245, 0, 0.4);
 }
-.bf-event-row__pill--negativo {
+.bf-event-row__line--negativo {
   color: var(--bf-red);
-  border-color: rgba(255, 59, 59, 0.4);
 }
-.bf-event-row__pill--neutro {
+.bf-event-row__line--neutro {
   color: var(--bf-fg-2);
-  border-color: var(--bf-line-strong);
 }
-.bf-event-row__pill-icon {
+.bf-event-row__line-icon {
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+}
+.bf-event-row__line-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.bf-event-row__line-qtd {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
   font-size: 11px;
-  line-height: 1;
-}
-.bf-event-row__pill-qtd {
   opacity: 0.85;
+  margin-left: auto;
+  padding-left: 6px;
+}
+
+/* Banco de reservas — scroll horizontal compacto */
+.bf-bench {
+  display: flex;
+  gap: 8px;
+  padding: 0 var(--bf-gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.bf-bench::-webkit-scrollbar {
+  display: none;
+}
+.bf-bench__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 64px;
+  padding: 8px 6px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: var(--bf-radius-md);
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+.bf-bench__face {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  object-fit: cover;
+  object-position: center 18%;
+  background: var(--bf-ink);
+}
+.bf-bench__face--placeholder {
+  background: var(--bf-chassis-hover);
+  border: 1px dashed var(--bf-line-strong);
+}
+.bf-bench__name {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+  text-align: center;
+}
+.bf-bench__pos {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--bf-fg-3);
+}
+.bf-bench__pts {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 11px;
+  color: var(--bf-lime);
+  font-variant-numeric: tabular-nums;
+}
+.bf-bench__pts--neg {
+  color: var(--bf-red);
+}
+.bf-bench__bench {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--bf-fg-3);
+  text-transform: uppercase;
 }
 .bf-event-row__pts-value {
   font-family: var(--bf-font-display);
@@ -924,10 +1006,21 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   margin: 0 var(--bf-gutter);
   position: relative;
   overflow: hidden;
-  /* Neon border magenta — destaca que é o card do usuário (rule do DS:
-     --bf-magenta = "destaque do usuário, sotaque"). */
-  border-color: rgba(255, 27, 141, 0.65);
-  box-shadow: 0 0 18px var(--bf-magenta-glow), var(--bf-shadow-card);
+  /* Neon border + glow na cor accent do time do usuário (passada
+     inline via --user-accent). Fallback magenta. */
+  border-color: color-mix(
+    in srgb,
+    var(--user-accent, var(--bf-magenta)) 65%,
+    transparent
+  );
+  box-shadow:
+    0 0 18px
+    color-mix(
+      in srgb,
+      var(--user-accent, var(--bf-magenta)) 40%,
+      transparent
+    ),
+    var(--bf-shadow-card);
 }
 /* Right-edge splatter — assinatura do brand: cor accent do time
    sangrando do canto direito, mascarada via gradient pra não competir

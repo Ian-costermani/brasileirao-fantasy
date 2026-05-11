@@ -25,6 +25,8 @@ interface Props {
   accent: string;
   /** Escalados (titulares após substituição automática) */
   escalados: AtletaBase[];
+  /** Banco: reservas que não entraram nos titulares */
+  banco: AtletaBase[];
 }
 
 const POS_ABREV: Record<string, string> = {
@@ -76,7 +78,7 @@ interface CartolaPartidasResp {
 const POLL_MS = 30_000;
 
 export default function AoVivoLive(
-  { chave, displayName, accent, escalados }: Props,
+  { chave, displayName, accent, escalados, banco }: Props,
 ) {
   const [pontuados, setPontuados] = useState<CartolaPontuadosResp | null>(null);
   const [mercado, setMercado] = useState<CartolaMercadoResp | null>(null);
@@ -243,22 +245,24 @@ export default function AoVivoLive(
                     )}
                     {j.apelido}
                   </div>
-                  <div class="bf-event-row__events">
-                    {j.events.slice(0, 6).map((e: EventoScout) => (
-                      <span
-                        class={`bf-event-row__pill bf-event-row__pill--${e.info.tipo}`}
+                  <ul class="bf-event-row__events">
+                    {j.events.slice(0, 8).map((e: EventoScout) => (
+                      <li
+                        class={`bf-event-row__line bf-event-row__line--${e.info.tipo}`}
                         key={e.codigo}
-                        title={e.info.label}
                       >
-                        <span class="bf-event-row__pill-icon">
+                        <span class="bf-event-row__line-icon">
                           {e.info.icon}
                         </span>
+                        <span class="bf-event-row__line-label">
+                          {e.info.label}
+                        </span>
                         {e.qtd > 1 && (
-                          <span class="bf-event-row__pill-qtd">×{e.qtd}</span>
+                          <span class="bf-event-row__line-qtd">×{e.qtd}</span>
                         )}
-                      </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
                 <div class="bf-event-row__pts">
                   <span
@@ -272,6 +276,48 @@ export default function AoVivoLive(
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+      <SectionHeader>Banco de reservas</SectionHeader>
+      {banco.length === 0
+        ? <div class="bf-empty-state">Sem reservas</div>
+        : (
+          <div class="bf-bench">
+            {banco.map((j) => {
+              const live = pontuados?.atletas?.[String(j.atleta_id)];
+              const pts = live?.pontuacao ?? 0;
+              const entrou = !!live?.entrou_em_campo;
+              return (
+                <div class="bf-bench__item" key={j.atleta_id}>
+                  {j.foto
+                    ? (
+                      <img
+                        class="bf-bench__face"
+                        src={j.foto}
+                        alt=""
+                      />
+                    )
+                    : (
+                      <div class="bf-bench__face bf-bench__face--placeholder" />
+                    )}
+                  <span class="bf-bench__name">{j.apelido}</span>
+                  <span class="bf-bench__pos">{POS_ABREV[j.posicao]}</span>
+                  {entrou
+                    ? (
+                      <span
+                        class={`bf-bench__pts ${
+                          pts < 0 ? "bf-bench__pts--neg" : ""
+                        }`}
+                      >
+                        {pts > 0 ? "+" : ""}
+                        {pts.toFixed(1).replace(".", ",")}
+                      </span>
+                    )
+                    : <span class="bf-bench__bench">no banco</span>}
+                </div>
+              );
+            })}
           </div>
         )}
 

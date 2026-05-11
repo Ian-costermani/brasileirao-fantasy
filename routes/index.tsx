@@ -141,6 +141,16 @@ export const handler: Handlers<HomeData> = {
       >
     > = {};
 
+    // Pra ranking: usar TOTAL ACUMULADO do histórico (consistente com /liga).
+    // Fallback pra pontuação da rodada corrente quando histórico vazio.
+    const totaisPorChave = new Map<string, number>();
+    await Promise.all(
+      Object.keys(elencos).map(async (chave) => {
+        const h = await getHistorico(kv, chave);
+        totaisPorChave.set(chave, totalPontos(h));
+      }),
+    );
+
     const ranking: TimeRanking[] = Object.entries(elencos)
       .map(([chave, elenco]) => {
         const todos = Object.values(elenco.jogadores);
@@ -158,7 +168,12 @@ export const handler: Handlers<HomeData> = {
           pontuacao,
         };
       })
-      .sort((a, b) => b.pontuacao - a.pontuacao);
+      .sort((a, b) => {
+        const totA = totaisPorChave.get(a.chave) ?? 0;
+        const totB = totaisPorChave.get(b.chave) ?? 0;
+        if (totA !== totB) return totB - totA;
+        return b.pontuacao - a.pontuacao;
+      });
 
     const meuIdx = ranking.findIndex((t) => t.chave === CHAVE_USUARIO);
     const meuEscalados = escaladosPorChave[CHAVE_USUARIO] ?? [];
@@ -217,7 +232,12 @@ export default function Home({ data }: PageProps<HomeData>) {
       <div class="bf-viewport">
         <TopBar hasAlert />
 
-        <article class="bf-card bf-status-card">
+        <article
+          class="bf-card bf-status-card"
+          style={visual?.accent
+            ? { "--user-accent": visual.accent } as Record<string, string>
+            : undefined}
+        >
           {splatterUrl && (
             <div
               class="bf-status-card__splatter"

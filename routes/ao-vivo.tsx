@@ -16,6 +16,7 @@ interface Data {
   displayName: string;
   accent: string;
   escalados: AtletaBase[];
+  banco: AtletaBase[];
 }
 
 export const handler: Handlers<Data> = {
@@ -32,24 +33,25 @@ export const handler: Handlers<Data> = {
     const accent = visual?.accent ?? "#888";
 
     const elenco = elencos[CHAVE_USUARIO];
-    const escalados: AtletaBase[] = elenco
-      ? calcularMelhorTime(Object.values(elenco.jogadores))
-        .filter((j) => j.escalacao === "Sim")
-        .map((j) => ({
-          atleta_id: j.atleta_id,
-          apelido: j.apelido_api,
-          clube: j.clube,
-          posicao: j.posicao as AtletaBase["posicao"],
-          escudo: escudoUrl(j.clube),
-          foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
-        }))
-      : [];
+    const todos = elenco ? Object.values(elenco.jogadores) : [];
+    const calculados = todos.length ? calcularMelhorTime(todos) : [];
+    const map = (j: typeof calculados[number]): AtletaBase => ({
+      atleta_id: j.atleta_id,
+      apelido: j.apelido_api,
+      clube: j.clube,
+      posicao: j.posicao as AtletaBase["posicao"],
+      escudo: escudoUrl(j.clube),
+      foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
+    });
+    const escalados = calculados.filter((j) => j.escalacao === "Sim").map(map);
+    const banco = calculados.filter((j) => j.escalacao === "Banco").map(map);
 
     return ctx.render({
       chave: CHAVE_USUARIO,
       displayName,
       accent,
       escalados,
+      banco,
     });
   },
 };
@@ -68,6 +70,7 @@ export default function AoVivoPage({ data }: PageProps<Data>) {
           displayName={data.displayName}
           accent={data.accent}
           escalados={data.escalados}
+          banco={data.banco}
         />
         <BottomNav active="live" />
       </div>
