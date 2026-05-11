@@ -106,57 +106,56 @@ export default function LeagueChart({ times, destaque }: Props) {
           </text>
         ))}
 
-        {/* Linhas dos times */}
-        {times.map((t) => {
+        {/* Linhas dos demais times — finas e bem translúcidas */}
+        {times.filter((t) => t.chave !== destaque).map((t) => {
           const points = rodadas
             .map((r, i) => {
               const p = t.pontosPorRodada[String(r)] ?? 0;
               return `${xFor(i)},${yFor(p)}`;
             })
             .join(" ");
-          const dimmed = destaque && destaque !== t.chave;
           return (
-            <g key={t.chave} opacity={dimmed ? "0.32" : "1"}>
+            <polyline
+              key={t.chave}
+              points={points}
+              fill="none"
+              stroke={t.accent}
+              stroke-width="1"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              opacity="0.22"
+            />
+          );
+        })}
+
+        {/* Linha destacada (usuário) por cima — grossa, com pontos */}
+        {(() => {
+          const t = times.find((x) => x.chave === destaque);
+          if (!t) return null;
+          const pts = rodadas.map((r, i) => ({
+            x: xFor(i),
+            y: yFor(t.pontosPorRodada[String(r)] ?? 0),
+            v: t.pontosPorRodada[String(r)] ?? 0,
+          }));
+          return (
+            <g>
               <polyline
-                points={points}
+                points={pts.map((p) => `${p.x},${p.y}`).join(" ")}
                 fill="none"
                 stroke={t.accent}
-                stroke-width={destaque === t.chave ? 2.5 : 1.5}
+                stroke-width="2.5"
                 stroke-linejoin="round"
                 stroke-linecap="round"
               />
-              {/* Pontos */}
-              {rodadas.map((r, i) => {
-                const p = t.pontosPorRodada[String(r)] ?? 0;
-                if (p === 0) return null;
-                return (
-                  <circle
-                    key={r}
-                    cx={xFor(i)}
-                    cy={yFor(p)}
-                    r={destaque === t.chave ? 2.5 : 1.5}
-                    fill={t.accent}
-                  />
-                );
-              })}
+              {pts.map((p, i) =>
+                p.v > 0 && (
+                  <circle key={i} cx={p.x} cy={p.y} r="2.8" fill={t.accent} />
+                )
+              )}
             </g>
           );
-        })}
+        })()}
       </svg>
-
-      {/* Legenda */}
-      <div class="bf-league-chart__legend">
-        {times.map((t) => (
-          <span
-            key={t.chave}
-            class="bf-league-chart__legend-item"
-            style={{ "--c": t.accent } as Record<string, string>}
-          >
-            <span class="bf-league-chart__legend-dot" />
-            {t.nome}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
