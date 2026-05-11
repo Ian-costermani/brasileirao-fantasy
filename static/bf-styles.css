@@ -616,8 +616,11 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  min-width: 0;
-  max-width: 88px;
+  /* Largura fixa: space-around distribui pins identicamente, independente
+     do tamanho do nome. Sem isso, "Garro" (curto) e "Everton Ribeiro"
+     (longo) teriam pin widths diferentes e o pin do meio sairia do centro. */
+  width: 84px;
+  flex-shrink: 0;
 }
 .bf-pin__shirt {
   width: 44px;
@@ -682,17 +685,18 @@ body {
   text-align: center;
   word-break: break-word;
 }
-.bf-pin__escudo {
-  width: 18px;
-  height: 18px;
-  margin-top: -6px;
+.bf-pin__shirt-escudo {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 16px;
+  height: 16px;
   background: var(--bf-ink);
   border-radius: 999px;
-  padding: 2px;
+  padding: 1.5px;
   object-fit: contain;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  z-index: 2;
-  position: relative;
+  z-index: 1;
 }
 .bf-pin__pos {
   font-family: var(--bf-font-cond);
