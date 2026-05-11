@@ -121,9 +121,13 @@ export default function Liga({ data }: PageProps<Data>) {
         <header class="bf-liga-hero">
           <span class="bf-label-micro">Liga</span>
           <h1 class="bf-liga-hero__title">LIGA DA SEXTA</h1>
-          <span class="bf-label-micro">
-            {data.times.length} jogadores · Rodada {data.rodada}
-          </span>
+          <div class="bf-liga-hero__meta">
+            <span class="bf-liga-hero__rodada">Rodada {data.rodada}</span>
+            <span class="bf-liga-hero__sep">·</span>
+            <span class="bf-liga-hero__count">
+              {data.times.length} jogadores
+            </span>
+          </div>
         </header>
 
         <div class="bf-liga-list">
