@@ -136,6 +136,9 @@ export default function Home({ data }: PageProps<HomeData>) {
   const meta = CHAVES_TIMES[CHAVE_USUARIO];
   const displayName = visual?.displayName ?? meta?.nome_time ?? "Time";
   const pontosFmt = data.meu?.pontuacao.toFixed(1).replace(".", ",") ?? "—";
+  // Splatter accent na cor do crest do usuário (visual?.color = "magenta")
+  const splatterUrl = visual ? `/assets/splatter-${visual.color}.png` : null;
+  const top3 = data.posicao !== null && data.posicao <= 3;
 
   return (
     <>
@@ -153,6 +156,12 @@ export default function Home({ data }: PageProps<HomeData>) {
         </div>
 
         <article class="bf-card bf-status-card">
+          {splatterUrl && (
+            <div
+              class="bf-status-card__splatter"
+              style={{ backgroundImage: `url(${splatterUrl})` }}
+            />
+          )}
           <div class="bf-status-card__top">
             <TeamCrest chave={CHAVE_USUARIO} size={52} />
             <div class="bf-status-card__name">
@@ -177,7 +186,11 @@ export default function Home({ data }: PageProps<HomeData>) {
             <div class="bf-status-card__divider"></div>
             <div class="bf-status-card__metric">
               <span class="bf-label-micro">Posição</span>
-              <span class="bf-status-card__metric-value bf-status-card__metric-value--sm">
+              <span
+                class={`bf-status-card__metric-value bf-status-card__metric-value--sm ${
+                  top3 ? "bf-status-card__metric-value--lime" : ""
+                }`}
+              >
                 {data.posicao ? `${data.posicao}º` : "—"}
               </span>
               <span class="bf-status-card__metric-foot">
