@@ -323,9 +323,9 @@ body {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 60% 90% at 0% 50%,
-    color-mix(in srgb, var(--accent) 22%, transparent) 0%,
-    transparent 70%
+    ellipse 50% 80% at 0% 50%,
+    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
+    transparent 55%
   );
   pointer-events: none;
   z-index: 0;
