@@ -846,19 +846,18 @@ body {
   text-align: center;
   word-break: break-word;
 }
-.bf-pin__shirt--photo {
-  border-radius: 999px;
-  background: var(--bf-ink);
-  border: 1.5px solid rgba(0, 0, 0, 0.7);
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-}
+/* O shirt em si NÃO clipa nada — badges precisam transbordar nos cantos.
+   A foto se faz circular sozinha via border-radius no <img>. */
 .bf-pin__photo {
   width: 100%;
   height: 100%;
+  border-radius: 999px;
+  background: var(--bf-ink);
+  border: 1.5px solid rgba(0, 0, 0, 0.7);
   object-fit: cover;
   object-position: center 18%;
   display: block;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 }
 .bf-pin__shirt-escudo {
   position: absolute;
