@@ -917,6 +917,9 @@ body {
    FIELD — vertical pitch with absolutely-positioned rows
    ============================================================ */
 .bf-field {
+  /* --field-tint default = lime (gramado verde clássico); cada
+     time pode sobrescrever via prop accent no componente Field. */
+  --field-tint: #6eff3d;
   position: relative;
   width: calc(100% - calc(var(--bf-gutter) * 2));
   margin: 8px var(--bf-gutter);
@@ -924,14 +927,18 @@ body {
   background:
     radial-gradient(
       ellipse at center,
-      rgba(110, 255, 61, 0.06),
+      color-mix(in srgb, var(--field-tint) 8%, transparent),
       transparent 70%
     ),
-    linear-gradient(180deg, #0a160a 0%, #0a1a0a 45%, #050b05 100%);
+    linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--field-tint) 10%, #050505) 0%,
+    color-mix(in srgb, var(--field-tint) 6%, #050505) 45%,
+    #050505 100%
+  );
   border-radius: var(--bf-radius-lg);
-  /* Neon border lime — campo é território lime/play no DS */
-  border: 1px solid rgba(182, 245, 0, 0.35);
-  box-shadow: 0 0 20px rgba(182, 245, 0, 0.18);
+  border: 1px solid color-mix(in srgb, var(--field-tint) 35%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--field-tint) 18%, transparent);
   overflow: hidden;
   isolation: isolate;
 }
@@ -941,8 +948,8 @@ body {
   inset: 0;
   background: repeating-linear-gradient(
     180deg,
-    rgba(110, 255, 61, 0.04) 0,
-    rgba(110, 255, 61, 0.04) 9%,
+    color-mix(in srgb, var(--field-tint) 5%, transparent) 0,
+    color-mix(in srgb, var(--field-tint) 5%, transparent) 9%,
     transparent 9%,
     transparent 18%
   );

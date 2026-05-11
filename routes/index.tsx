@@ -294,6 +294,7 @@ export default function Home({ data }: PageProps<HomeData>) {
             <Field
               jogadores={data.escalacao}
               showPoints={data.status === "ao_vivo"}
+              accent={visual?.accent}
             />
           )
           : (

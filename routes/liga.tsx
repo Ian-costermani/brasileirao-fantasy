@@ -142,7 +142,13 @@ export default function Liga({ data }: PageProps<Data>) {
               >
                 <div class="bf-team-row__expanded">
                   {t.escalacao
-                    ? <Field jogadores={t.escalacao} showPoints />
+                    ? (
+                      <Field
+                        jogadores={t.escalacao}
+                        showPoints
+                        accent={accent}
+                      />
+                    )
                     : (
                       <div class="bf-empty-state">
                         Sem escalação no elenco

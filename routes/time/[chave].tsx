@@ -168,6 +168,7 @@ export default function TimeDetalhe({ data }: PageProps<Data>) {
             <Field
               jogadores={data.escalacao}
               showPoints
+              accent={visual?.accent}
             />
           )
           : <div class="bf-empty-state">Sem escalação no elenco</div>}

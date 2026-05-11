@@ -113,6 +113,8 @@ interface Props {
   jogadores?: Partial<Escalacao>;
   showPoints?: boolean;
   empty?: boolean;
+  /** Cor accent (hex) do time — tinge o gramado pra refletir o dono */
+  accent?: string;
 }
 
 const COLOR_VAR: Record<"yellow" | "blue" | "magenta" | "orange", string> = {
@@ -230,15 +232,18 @@ function PlayerPin(
 }
 
 export default function Field(
-  { jogadores, showPoints = false, empty = false }: Props,
+  { jogadores, showPoints = false, empty = false, accent }: Props,
 ) {
   const gk = jogadores?.gk ?? {};
   const def = jogadores?.def ?? [];
   const mid = jogadores?.mid ?? [];
   const ata = jogadores?.ata ?? [];
+  const style = accent
+    ? { "--field-tint": accent } as Record<string, string>
+    : undefined;
 
   return (
-    <div class="bf-field">
+    <div class="bf-field" style={style}>
       <svg
         class="bf-field__lines"
         viewBox="0 0 100 140"
