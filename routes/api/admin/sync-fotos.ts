@@ -57,8 +57,12 @@ export const handler: Handlers = {
       for (const atletaId of escaladosIds) {
         const ref = entryByAtleta.get(atletaId);
         if (!ref) continue;
-        // Skip se já tem foto não-silhueta
-        if (ref.entry.foto && !ref.entry.foto.includes("silh")) {
+        // Skip se já tem foto do TheSportsDB (cutout transparente, homogêneo
+        // no fundo preto). Reprocessa silhuetas Cartola e fotos com fundo
+        // sólido da API-Football (média-sports.io) — não casam com o tema.
+        const foto = ref.entry.foto;
+        const isCutout = foto && foto.includes("thesportsdb.com");
+        if (isCutout) {
           pulados++;
           continue;
         }
