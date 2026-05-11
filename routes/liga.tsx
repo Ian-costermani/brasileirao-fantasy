@@ -128,60 +128,28 @@ export default function Liga({ data }: PageProps<Data>) {
             const visual = timeLigaInfo(t.chave);
             const displayName = visual?.displayName ?? t.nome;
             const isMe = t.chave === data.meuChave;
-            const isLider = pos === 1;
             const accent = visual?.accent ?? "var(--bf-fg-2)";
-            const modifier = [
-              isMe ? "bf-team-row--mine" : "",
-              isLider ? "bf-team-row--lider" : "",
-            ].join(" ").trim();
             return (
               <CollapsibleTeamRow
                 key={t.chave}
+                chave={t.chave}
+                pos={pos}
+                displayName={displayName}
+                dono={t.dono}
+                totalFmt={t.total.toFixed(1).replace(".", ",")}
                 accent={accent}
-                modifier={modifier}
-                summary={
-                  <>
-                    <span class="bf-team-row__pos">
-                      {isLider ? "🏆" : `#${pos}`}
-                    </span>
-                    <div class="bf-team-row__meta">
-                      <div class="bf-team-row__name">{displayName}</div>
-                      <div class="bf-team-row__owner">{t.dono}</div>
-                    </div>
-                    <TeamCrest chave={t.chave} size={36} />
-                    <div class="bf-team-row__pts">
-                      <span class="bf-team-row__pts-value">
-                        {t.total.toFixed(1).replace(".", ",")}
-                      </span>
-                      <span class="bf-team-row__pts-foot">PTS</span>
-                    </div>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="rgba(255,255,255,0.4)"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="bf-team-row__chev"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </>
-                }
-                expanded={
-                  <div class="bf-team-row__expanded">
-                    {t.escalacao
-                      ? <Field jogadores={t.escalacao} showPoints />
-                      : (
-                        <div class="bf-empty-state">
-                          Sem escalação no elenco
-                        </div>
-                      )}
-                  </div>
-                }
-              />
+                isMine={isMe}
+              >
+                <div class="bf-team-row__expanded">
+                  {t.escalacao
+                    ? <Field jogadores={t.escalacao} showPoints />
+                    : (
+                      <div class="bf-empty-state">
+                        Sem escalação no elenco
+                      </div>
+                    )}
+                </div>
+              </CollapsibleTeamRow>
             );
           })}
         </div>

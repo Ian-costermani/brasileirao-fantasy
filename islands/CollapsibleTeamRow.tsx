@@ -1,28 +1,43 @@
 import { useState } from "preact/hooks";
 import { ComponentChildren } from "preact";
+import TeamCrest from "../components/TeamCrest.tsx";
 
 interface Props {
-  /** Cabeçalho clicável */
-  summary: ComponentChildren;
-  /** Conteúdo que expande/colapsa */
-  expanded: ComponentChildren;
-  /** Cor accent (CSS hex) usada no border-left, glow etc */
+  /** Identificador interno (chave do dono) — usado pro TeamCrest */
+  chave: string;
+  /** Posição no ranking (1, 2, 3...) */
+  pos: number;
+  /** Nome do time exibido */
+  displayName: string;
+  /** Nome do dono */
+  dono: string;
+  /** Total acumulado de pontos formatado (ex: "0,0") */
+  totalFmt: string;
+  /** Cor neon do time (hex) */
   accent: string;
-  /** Modifier extra (ex: "bf-team-row--mine bf-team-row--lider") */
-  modifier?: string;
+  /** É o time do usuário? Aplica modifier --mine */
+  isMine?: boolean;
+  /** Conteúdo que aparece colapsado/expandido (Field SSR) */
+  children: ComponentChildren;
 }
 
 /**
  * Linha colapsável animada via grid-template-rows trick (compat universal).
- * Substitui <details>/<summary> que dependiam de ::details-content novo demais.
+ * Renderiza summary (cabeçalho) com props simples + children (escalação).
  */
 export default function CollapsibleTeamRow(
-  { summary, expanded, accent, modifier = "" }: Props,
+  { chave, pos, displayName, dono, totalFmt, accent, isMine, children }: Props,
 ) {
   const [open, setOpen] = useState(false);
+  const isLider = pos === 1;
+  const cls = ["bf-team-row"];
+  if (open) cls.push("bf-team-row--open");
+  if (isLider) cls.push("bf-team-row--lider");
+  if (isMine) cls.push("bf-team-row--mine");
+
   return (
     <div
-      class={`bf-team-row ${open ? "bf-team-row--open" : ""} ${modifier}`}
+      class={cls.join(" ")}
       style={{ "--accent": accent } as Record<string, string>}
     >
       <button
@@ -31,11 +46,35 @@ export default function CollapsibleTeamRow(
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        {summary}
+        <span class="bf-team-row__pos">
+          {isLider ? "🏆" : `#${pos}`}
+        </span>
+        <div class="bf-team-row__meta">
+          <div class="bf-team-row__name">{displayName}</div>
+          <div class="bf-team-row__owner">{dono}</div>
+        </div>
+        <TeamCrest chave={chave} size={36} />
+        <div class="bf-team-row__pts">
+          <span class="bf-team-row__pts-value">{totalFmt}</span>
+          <span class="bf-team-row__pts-foot">PTS</span>
+        </div>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="rgba(255,255,255,0.4)"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="bf-team-row__chev"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
       <div class="bf-team-row__expanded-wrap" aria-hidden={!open}>
         <div class="bf-team-row__expanded-inner">
-          {expanded}
+          {children}
         </div>
       </div>
     </div>
