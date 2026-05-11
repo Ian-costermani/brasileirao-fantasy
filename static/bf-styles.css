@@ -1187,12 +1187,13 @@ body {
 .bf-pin__head-img {
   width: 100%;
   height: 100%;
+  border-radius: 999px;
   object-fit: cover;
   object-position: center 22%;
   display: block;
-  /* Remove o fundo branco dos bustos locais via feColorMatrix em _app.tsx.
-     Sem background-color/border pra deixar a transparência mostrar o campo
-     direto (não criar moldura ao redor do busto). */
+  /* Crop circular + filtro feColorMatrix (em _app.tsx) faz pixels brancos
+     virarem transparentes. Sem bg-color/border — o que era branco mostra
+     o campo direto, e o player fica como silhouette dentro do círculo. */
   filter: url(#bf-remove-white) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
 }
 .bf-pin__head-jersey {
