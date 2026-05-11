@@ -373,6 +373,10 @@ body {
   margin: 0 var(--bf-gutter);
   position: relative;
   overflow: hidden;
+  /* Neon border magenta — destaca que é o card do usuário (rule do DS:
+     --bf-magenta = "destaque do usuário, sotaque"). */
+  border-color: rgba(255, 27, 141, 0.65);
+  box-shadow: 0 0 18px var(--bf-magenta-glow), var(--bf-shadow-card);
 }
 /* Right-edge splatter — assinatura do brand: cor accent do time
    sangrando do canto direito, mascarada via gradient pra não competir
@@ -585,8 +589,9 @@ body {
 .bf-empty-state {
   margin: 0 var(--bf-gutter);
   padding: 32px 18px;
-  border: 1px dashed var(--bf-line-strong);
+  border: 1.5px dashed rgba(31, 168, 255, 0.35);
   border-radius: var(--bf-radius-lg);
+  background: rgba(31, 168, 255, 0.04);
   text-align: center;
   color: var(--bf-fg-2);
   font-family: var(--bf-font-cond);
@@ -612,7 +617,9 @@ body {
     ),
     linear-gradient(180deg, #0a160a 0%, #0a1a0a 45%, #050b05 100%);
   border-radius: var(--bf-radius-lg);
-  border: 1px solid var(--bf-line);
+  /* Neon border lime — campo é território lime/play no DS */
+  border: 1px solid rgba(182, 245, 0, 0.35);
+  box-shadow: 0 0 20px rgba(182, 245, 0, 0.18);
   overflow: hidden;
   isolation: isolate;
 }
