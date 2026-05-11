@@ -317,15 +317,16 @@ body {
   isolation: isolate;
   transition: box-shadow var(--bf-dur-normal) var(--bf-ease-out);
 }
-/* Glow interno sutil partindo da borda accent */
+/* Glow interno sutil — toda a lateral esquerda do card, fading pra direita */
 .bf-team-row::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse 50% 80% at 0% 50%,
-    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
-    transparent 55%
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 6%, transparent) 25%,
+    transparent 60%
   );
   pointer-events: none;
   z-index: 0;
