@@ -532,43 +532,84 @@ body {
 }
 
 /* ============================================================
-   GAME ROW (próximos jogos na home)
+   GAMES — lista de partidas da rodada (home)
    ============================================================ */
-.bf-game-row {
+.bf-games {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 var(--bf-gutter);
+}
+.bf-game-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
   align-items: center;
   gap: 12px;
   background: var(--bf-chassis);
   border: 1px solid var(--bf-line);
   border-radius: var(--bf-radius-md);
-  padding: 12px 14px;
-  margin: 0 var(--bf-gutter) 8px;
+  padding: 10px 14px;
 }
 .bf-game-row__when {
   font-family: var(--bf-font-cond);
   font-weight: 800;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--bf-fg-2);
-  min-width: 56px;
+  text-align: center;
+}
+.bf-game-row__when--live {
+  color: var(--bf-lime);
+  text-shadow: 0 0 8px var(--bf-lime-glow);
+}
+.bf-game-row__when--final {
+  color: var(--bf-fg-3);
 }
 .bf-game-row__teams {
-  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
   font-family: var(--bf-font-cond);
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.bf-game-row__action {
-  font-family: var(--bf-font-cond);
+.bf-game-row__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.bf-game-row__team--away {
+  justify-content: flex-end;
+}
+.bf-game-row__shield {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+.bf-game-row__vs {
+  font-size: 10px;
+  color: var(--bf-fg-3);
+  font-weight: 700;
+}
+.bf-game-row__score {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--bf-font-display);
   font-weight: 900;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--bf-lime);
-  cursor: pointer;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.bf-game-row__score-sep {
+  color: var(--bf-fg-3);
+  font-weight: 700;
 }
 
 /* ============================================================
@@ -611,6 +652,23 @@ body {
 }
 .bf-btn--ghost:hover {
   background: var(--bf-chassis-hover);
+}
+
+.bf-section-footer {
+  text-align: center;
+  padding: 8px var(--bf-gutter) 0;
+}
+.bf-section-footer__link {
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bf-fg-2);
+  text-decoration: none;
+}
+.bf-section-footer__link:hover {
+  color: var(--bf-lime);
 }
 
 /* Empty state placeholder card (used while screens are WIP) */

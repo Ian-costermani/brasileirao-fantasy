@@ -7,13 +7,19 @@ import {
   TODAS_CHAVES,
 } from "../lib/kv.ts";
 import { calcularMelhorTime } from "../lib/substituicao.ts";
-import { fetchMercadoStatus } from "../lib/cartola.ts";
+import {
+  type CartolaClube,
+  type CartolaPartida,
+  fetchMercadoStatus,
+  fetchPartidas,
+} from "../lib/cartola.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
 import TeamCrest from "../components/TeamCrest.tsx";
 import SectionHeader from "../components/SectionHeader.tsx";
 import Pill from "../components/Pill.tsx";
 import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
+import Partidas from "../components/Partidas.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { timeLigaInfo } from "../lib/times-liga.ts";
@@ -39,6 +45,8 @@ interface HomeData {
   esquema: string | null;
   /** "Mercado fecha em 2d 3h 12min" — null se mercado fechado ou erro */
   fechamentoTexto: string | null;
+  partidas: CartolaPartida[];
+  clubesPartidas: Record<string, CartolaClube>;
 }
 
 function formatCountdown(unixSeconds: number): string | null {
@@ -98,11 +106,12 @@ function montarEscalacao(
 export const handler: Handlers<HomeData> = {
   async GET(_req, ctx) {
     const kv = await Deno.openKv();
-    const [elencos, rodada, mercado] = await Promise.all([
+    const [elencos, rodada, mercado, partidasResp] = await Promise.all([
       getAllElencos(kv),
       getRodadaStatus(kv),
       // Cartola direto — caso de timeout/erro, fica null e oculta countdown
       fetchMercadoStatus().catch(() => null),
+      fetchPartidas().catch(() => null),
     ]);
 
     const escaladosPorChave: Record<
@@ -159,6 +168,8 @@ export const handler: Handlers<HomeData> = {
       escalacao,
       esquema,
       fechamentoTexto,
+      partidas: partidasResp?.partidas ?? [],
+      clubesPartidas: partidasResp?.clubes ?? {},
     };
 
     return ctx.render(data);
@@ -268,9 +279,18 @@ export default function Home({ data }: PageProps<HomeData>) {
           )}
 
         <SectionHeader>Próximos</SectionHeader>
-        <div class="bf-empty-state">
-          API de partidas em construção
-        </div>
+        <Partidas
+          partidas={data.partidas}
+          clubes={data.clubesPartidas}
+          limit={5}
+        />
+        {data.partidas.length > 5 && (
+          <div class="bf-section-footer">
+            <a href="/partidas" class="bf-section-footer__link">
+              Ver todos
+            </a>
+          </div>
+        )}
 
         <BottomNav active="home" />
       </div>
