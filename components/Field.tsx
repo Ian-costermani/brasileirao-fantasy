@@ -130,7 +130,8 @@ function PlayerPin(
     empty: boolean;
   },
 ) {
-  const isEmpty = empty && !p.num && !p.cores;
+  const isEmpty = empty && !p.num && !p.cores && !p.foto;
+  const hasFotoReal = !!(p.foto && !p.foto.includes("silh"));
   const cls = ["bf-pin"];
   if (isEmpty) cls.push("bf-pin--empty");
   const pts = showPoints && p.pts != null ? p.pts : null;
@@ -142,8 +143,20 @@ function PlayerPin(
 
   return (
     <div class={cls.join(" ")}>
-      <div class="bf-pin__shirt" style={shirtStyle}>
-        {p.cores
+      <div
+        class={`bf-pin__shirt ${hasFotoReal ? "bf-pin__shirt--photo" : ""}`}
+        style={shirtStyle}
+      >
+        {hasFotoReal
+          ? (
+            <img
+              class="bf-pin__photo"
+              src={p.foto!}
+              alt=""
+              loading="lazy"
+            />
+          )
+          : p.cores
           ? (
             <svg
               viewBox="0 0 100 100"
@@ -179,9 +192,6 @@ function PlayerPin(
               {isEmpty ? "+" : (p.num ?? "")}
             </span>
           )}
-        {p.foto && !p.foto.includes("silh") && (
-          <img class="bf-pin__head" src={p.foto} alt="" loading="lazy" />
-        )}
         {p.escudo && <img class="bf-pin__shirt-escudo" src={p.escudo} alt="" />}
         {p.capt && <span class="bf-pin__capt-badge">C</span>}
         {(() => {

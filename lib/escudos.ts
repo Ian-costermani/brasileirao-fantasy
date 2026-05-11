@@ -1,11 +1,13 @@
-// Resolve URL do escudo do clube. Prefere o CDN oficial do Cartola
-// (sempre atualizado, cobre Athletico-PR que faltava no fallback local),
-// e cai pros JPGs em /static/escudos/ se a abreviação for desconhecida.
+// Resolve URL do escudo do clube. Prefere os JPGs locais em
+// /static/escudos/ — são os escudos OFICIAIS curados manualmente.
+// O CDN da Cartola serve só placeholders estilizados (sigla colorida),
+// então fica como último fallback caso apareça clube novo sem JPG.
 
 import { escudoCdnUrl } from "./clubes-cdn.ts";
 
-const FALLBACK_LOCAL: Record<string, string> = {
+const LOCAL: Record<string, string> = {
   "Athletico-PR": "athletico-pr.jpg",
+  "Athlético-PR": "athletico-pr.jpg",
   "Atlético-MG": "atletico-mg.jpg",
   "Bahia": "bahia.jpg",
   "Botafogo": "botafogo.jpg",
@@ -30,8 +32,7 @@ const FALLBACK_LOCAL: Record<string, string> = {
 
 export function escudoUrl(clube: string | null | undefined): string | null {
   if (!clube) return null;
-  const cdn = escudoCdnUrl(clube);
-  if (cdn) return cdn;
-  const local = FALLBACK_LOCAL[clube];
-  return local ? `/escudos/${local}` : null;
+  const local = LOCAL[clube];
+  if (local) return `/escudos/${local}`;
+  return escudoCdnUrl(clube);
 }

@@ -8,13 +8,15 @@ import {
 } from "./cartola.ts";
 import {
   getAllElencos,
-  setElenco,
+  getAtletasCache,
   getRodadaStatus,
-  setRodadaStatus,
-  setPartidasCache,
   POSICAO_CHAVES_CACHE,
+  setElenco,
+  setPartidasCache,
+  setRodadaStatus,
 } from "./kv.ts";
-import type { AtletaCacheKV } from "./types.ts";
+import { fetchPlayerPhoto, sleep } from "./sportsdb.ts";
+import type { AtletaCacheEntry, AtletaCacheKV } from "./types.ts";
 
 async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
   const [data, partidasData] = await Promise.all([
@@ -23,8 +25,17 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
   ]);
   const now = new Date().toISOString();
 
+  // Carrega cache atual pra preservar fotos REAIS já encontradas
+  // (TheSportsDB) e não sobrescrever com silhueta da Cartola
+  const cacheAtual = new Map<string, AtletaCacheEntry>();
+  for (const pos of POSICAO_CHAVES_CACHE) {
+    const c = await getAtletasCache(kv, pos);
+    if (!c) continue;
+    for (const [id, e] of Object.entries(c.atletas)) cacheAtual.set(id, e);
+  }
+
   // Cache de atletas por posição (para busca/troca)
-  const grupos: Record<string, Record<string, { apelido: string; clube: string; clube_id: number; posicao: string; posicao_id: number }>> = {};
+  const grupos: Record<string, Record<string, AtletaCacheEntry>> = {};
   for (const c of POSICAO_CHAVES_CACHE) grupos[c] = {};
 
   const statusMap = new Map<number, number | null>();
@@ -37,13 +48,22 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
     if (!posChave || !grupos[posChave]) continue;
     const clube = data.clubes[String(a.clube_id)];
     const clubeNome = clube?.nome_fantasia ?? clube?.nome ?? "";
-    grupos[posChave][String(a.atleta_id)] = {
-      apelido:    a.apelido,
-      clube:      clubeNome,
-      clube_id:   a.clube_id,
-      posicao:    posNome,
+    const idStr = String(a.atleta_id);
+    const fotoExistente = cacheAtual.get(idStr)?.foto;
+    // Mantém foto real (TheSportsDB) se já tem; senão usa o que vier
+    // da Cartola (silhueta). "FORMATO" é placeholder de tamanho.
+    const cartolaFoto = a.foto ? a.foto.replace("FORMATO", "220x220") : null;
+    const foto = fotoExistente && !fotoExistente.includes("silh")
+      ? fotoExistente
+      : cartolaFoto;
+    grupos[posChave][idStr] = {
+      apelido: a.apelido,
+      clube: clubeNome,
+      clube_id: a.clube_id,
+      posicao: posNome,
       posicao_id: a.posicao_id,
-      status_id:  a.status_id ?? null,
+      status_id: a.status_id ?? null,
+      foto,
     };
     statusMap.set(a.atleta_id, a.status_id ?? null);
     clubeNomeMap.set(a.atleta_id, clubeNome);

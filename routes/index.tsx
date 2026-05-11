@@ -165,6 +165,17 @@ export const handler: Handlers<HomeData> = {
         ? formatCountdown(mercado.fechamento.timestamp)
         : null;
 
+    // Sobrescreve URLs dos escudos das partidas pra preferir locais
+    // (Cartola serve placeholders coloridos por sigla, não escudos reais)
+    const clubesPartidas: Record<string, CartolaClube> = {};
+    for (const [id, c] of Object.entries(partidasResp?.clubes ?? {})) {
+      const nome = c.nome_fantasia ?? c.nome ?? "";
+      const url = escudoUrl(nome);
+      clubesPartidas[id] = url
+        ? { ...c, escudos: { ...(c.escudos ?? {}), "30x30": url } }
+        : c;
+    }
+
     const data: HomeData = {
       rodada: rodada?.rodada ?? mercado?.rodada_atual ?? 0,
       status: rodada?.status ?? "aguardando",
@@ -175,7 +186,7 @@ export const handler: Handlers<HomeData> = {
       esquema,
       fechamentoTexto,
       partidas: partidasResp?.partidas ?? [],
-      clubesPartidas: partidasResp?.clubes ?? {},
+      clubesPartidas,
     };
 
     return ctx.render(data);
