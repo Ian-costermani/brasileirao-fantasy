@@ -24,6 +24,7 @@ import Partidas from "../components/Partidas.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { timeLigaInfo } from "../lib/times-liga.ts";
+import { getHistorico, rodadasJogadas, totalPontos } from "../lib/historico.ts";
 
 // Time do usuário "logado". Sem auth ainda — hardcoded por enquanto.
 // Trocar pra cookie/sessão quando login entrar.
@@ -43,7 +44,9 @@ interface HomeData {
   posicao: number | null;
   totalTimes: number;
   escalacao: Escalacao | null;
-  esquema: string | null;
+  /** Soma de pontos de todas as rodadas anteriores (sem a corrente) */
+  total: number;
+  rodadasJogadas: number;
   /** "Mercado fecha em 2d 3h 12min" — null se mercado fechado ou erro */
   fechamentoTexto: string | null;
   partidas: CartolaPartida[];
@@ -110,14 +113,16 @@ function montarEscalacao(
 export const handler: Handlers<HomeData> = {
   async GET(_req, ctx) {
     const kv = await Deno.openKv();
-    const [elencos, rodada, mercado, partidasResp, fotos] = await Promise.all([
-      getAllElencos(kv),
-      getRodadaStatus(kv),
-      // Cartola direto — caso de timeout/erro, fica null e oculta countdown
-      fetchMercadoStatus().catch(() => null),
-      fetchPartidas().catch(() => null),
-      getFotos(kv),
-    ]);
+    const [elencos, rodada, mercado, partidasResp, fotos, historico] =
+      await Promise.all([
+        getAllElencos(kv),
+        getRodadaStatus(kv),
+        // Cartola direto — caso de timeout/erro, fica null e oculta countdown
+        fetchMercadoStatus().catch(() => null),
+        fetchPartidas().catch(() => null),
+        getFotos(kv),
+        getHistorico(kv, CHAVE_USUARIO),
+      ]);
 
     const escaladosPorChave: Record<
       string,
@@ -157,9 +162,6 @@ export const handler: Handlers<HomeData> = {
     const escalacao = meuEscalados.length
       ? montarEscalacao(meuEscalados, fotos)
       : null;
-    const esquema = escalacao
-      ? `${escalacao.def.length}-${escalacao.mid.length}-${escalacao.ata.length}`
-      : null;
     const fechamentoTexto =
       mercado && mercado.status_mercado === 2 && mercado.fechamento?.timestamp
         ? formatCountdown(mercado.fechamento.timestamp)
@@ -183,7 +185,8 @@ export const handler: Handlers<HomeData> = {
       posicao: meuIdx >= 0 ? meuIdx + 1 : null,
       totalTimes: ranking.length || TODAS_CHAVES.length,
       escalacao,
-      esquema,
+      total: totalPontos(historico),
+      rodadasJogadas: rodadasJogadas(historico),
       fechamentoTexto,
       partidas: partidasResp?.partidas ?? [],
       clubesPartidas,
@@ -270,12 +273,16 @@ export default function Home({ data }: PageProps<HomeData>) {
             </div>
             <div class="bf-status-card__divider"></div>
             <div class="bf-status-card__metric">
-              <span class="bf-label-micro">Esquema</span>
+              <span class="bf-label-micro">Total</span>
               <span class="bf-status-card__metric-value bf-status-card__metric-value--sm">
-                {data.esquema ?? "—"}
+                {data.rodadasJogadas > 0
+                  ? data.total.toFixed(1).replace(".", ",")
+                  : "—"}
               </span>
               <span class="bf-status-card__metric-foot">
-                titulares
+                {data.rodadasJogadas > 0
+                  ? `${data.rodadasJogadas} rodadas`
+                  : "sem histórico"}
               </span>
             </div>
           </div>

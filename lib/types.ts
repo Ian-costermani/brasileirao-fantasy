@@ -46,7 +46,7 @@ export interface RodadaStatus {
   status: "aguardando" | "aguardando_inicio" | "ao_vivo";
   rodada: number;
   atualizadoEm?: string;
-  fechamento?: { dia: string; hora: string };
+  fechamento?: CartolaMercadoStatus["fechamento"];
 }
 
 // Cartola API
