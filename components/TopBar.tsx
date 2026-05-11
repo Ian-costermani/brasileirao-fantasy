@@ -20,10 +20,15 @@ export default function TopBar({ hasAlert = false }: Props) {
           <line x1="4" y1="17" x2="20" y2="17" />
         </svg>
       </button>
-      <div class="bf-minlogo">
-        <span class="bf-minlogo__main">Brasileirão</span>
-        <span class="bf-minlogo__sub">fantasy</span>
-      </div>
+      <a href="/" class="bf-minlogo" aria-label="Brasileirão Fantasy">
+        <img
+          src="/logo_site.png"
+          alt="Brasileirão Fantasy"
+          class="bf-minlogo__img"
+          width="120"
+          height="38"
+        />
+      </a>
       <button
         type="button"
         class={`bf-iconbtn ${hasAlert ? "bf-iconbtn--alert" : ""}`}
