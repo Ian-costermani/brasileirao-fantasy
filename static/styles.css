@@ -775,15 +775,15 @@ img.campo-svg-bg {
 .campo-pts-verde {
   color: var(--neon);
   text-shadow: none;
-  font-size: 9px;
+  font-size: 11px;
 }
 .campo-pts-zero {
   color: rgba(255, 255, 255, 0.22);
-  font-size: 9px;
+  font-size: 11px;
 }
 .campo-pts-neg {
   color: #ef4444;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 /* Banco de reservas */

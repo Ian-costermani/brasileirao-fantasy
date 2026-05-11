@@ -23,20 +23,22 @@ export const handler: Handlers = {
 
       const times = Object.values(elencos).map((elenco) => {
         const todos = Object.values(elenco.jogadores);
+        const originalEsc = new Map(todos.map((j) => [j.atleta_id, j.escalacao]));
         const comSub = calcularMelhorTime(todos);
 
         const jogadores = comSub.map((j) => ({
-          atleta_id:       j.atleta_id,
-          nome:            j.apelido_api,
-          posicao:         j.posicao,
-          pontuacao:       j.pontos ?? 0,
-          escalacao:       j.escalacao,
-          status_id:       j.status_id,
-          clube:           j.clube,
-          substituido:     j.substituido,
-          entrou_em_campo: j.entrou_em_campo,
-          clube_casa:      j.clube_casa,
-          clube_fora:      j.clube_fora,
+          atleta_id:        j.atleta_id,
+          nome:             j.apelido_api,
+          posicao:          j.posicao,
+          pontuacao:        j.pontos ?? 0,
+          escalacao:        j.escalacao,
+          escalacao_elenco: originalEsc.get(j.atleta_id) ?? j.escalacao,
+          status_id:        j.status_id,
+          clube:            j.clube,
+          substituido:      j.substituido,
+          entrou_em_campo:  j.entrou_em_campo,
+          clube_casa:       j.clube_casa,
+          clube_fora:       j.clube_fora,
         }));
 
         const pontuacao = Math.round(

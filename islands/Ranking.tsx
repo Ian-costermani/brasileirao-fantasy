@@ -15,6 +15,7 @@ interface Jogador {
   posicao: string;
   pontuacao: number;
   escalacao: "Sim" | "Banco" | "Não";
+  escalacao_elenco: "Sim" | "Banco" | "Não";
   status_id: number | null;
   clube: string;
   substituido: boolean;
@@ -296,7 +297,7 @@ export default function Ranking() {
           t.chave !== chave ? t : {
             ...t,
             jogadores: t.jogadores.map((j) =>
-              j.atleta_id !== atletaId ? j : { ...j, escalacao }
+              j.atleta_id !== atletaId ? j : { ...j, escalacao, escalacao_elenco: escalacao }
             ),
           }
         ),
@@ -454,14 +455,16 @@ export default function Ranking() {
               {expandidos.has(index) && (
                 <>
                   <CampoFutebol
-                    jogadores={time.jogadores}
+                    jogadores={modoElenco
+                      ? time.jogadores.map((j) => ({ ...j, escalacao: j.escalacao_elenco }))
+                      : time.jogadores}
                     modoAoVivo={aba === "ao_vivo"}
                     corTime={CORES_TIMES[time.nome]}
                     escudo={ESCUDOS_TIMES[time.nome]}
                   />
                   {modoElenco && (
                     <PainelGerenciamento
-                      jogadores={time.jogadores}
+                      jogadores={time.jogadores.map((j) => ({ ...j, escalacao: j.escalacao_elenco }))}
                       chave={time.chave}
                       onAtualizar={buscarDados}
                       onEscalacao={(atletaId, escalacao) => mudarEscalacaoTime(time.chave, atletaId, escalacao)}
