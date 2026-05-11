@@ -522,6 +522,19 @@ body {
   font-size: 8px;
   letter-spacing: 0.08em;
 }
+.bf-league-chart__tooltip-title {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+.bf-league-chart__tooltip-body {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 9px;
+  fill: var(--bf-fg-1);
+  font-variant-numeric: tabular-nums;
+}
 .bf-league-chart__legend {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

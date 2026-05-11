@@ -1,6 +1,9 @@
 // Bump chart — posição (rank) por rodada. Y invertido (1 = topo).
 // Cada time tem uma linha na cor accent dele. Mostra trocas de posição
-// dramaticamente ao longo das rodadas.
+// dramaticamente ao longo das rodadas. Tap num ponto/crest mostra
+// tooltip com time/rodada/posição (compatível mobile).
+
+import { useState } from "preact/hooks";
 
 export interface LinhaTime {
   chave: string;
@@ -63,6 +66,10 @@ export default function LeagueChart({ times, destaque }: Props) {
   // Y invertido: rank 1 = topo (PAD_T), rank N = base
   const yFor = (rank: number) => PAD_T + ((rank - 1) / (N - 1)) * innerH;
 
+  const [active, setActive] = useState<
+    null | { chave: string; rodada: number }
+  >(null);
+
   // Ordem de renderização: destaque por último pra ficar por cima
   const ordered = [...times].sort((a, b) => {
     if (a.chave === destaque) return 1;
@@ -77,6 +84,7 @@ export default function LeagueChart({ times, destaque }: Props) {
         class="bf-league-chart__svg"
         role="img"
         aria-label="Evolução da posição no ranking por rodada"
+        onClick={() => setActive(null)}
       >
         {/* Linhas horizontais de cada posição (1 até N) */}
         {Array.from({ length: N }, (_, i) => i + 1).map((rank) => (
@@ -145,17 +153,18 @@ export default function LeagueChart({ times, destaque }: Props) {
                   key={p.rodada}
                   cx={p.x}
                   cy={p.y}
-                  r={isDestaque ? 3 : 2}
+                  r={isDestaque ? 4 : 3}
                   fill={t.accent}
                   stroke="var(--bf-chassis)"
                   stroke-width={isDestaque ? 1.5 : 1}
-                >
-                  <title>
-                    {`${t.nome} — Rodada ${p.rodada}, ${p.rank}º lugar`}
-                  </title>
-                </circle>
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive({ chave: t.chave, rodada: p.rodada });
+                  }}
+                />
               ))}
-              {/* Crest no fim da linha */}
+              {/* Crest no fim da linha — tap mostra última rodada */}
               {t.logo && (
                 <image
                   href={t.logo}
@@ -164,13 +173,70 @@ export default function LeagueChart({ times, destaque }: Props) {
                   width="18"
                   height="18"
                   preserveAspectRatio="xMidYMid meet"
-                >
-                  <title>{t.nome}</title>
-                </image>
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive({
+                      chave: t.chave,
+                      rodada: rodadas[rodadas.length - 1],
+                    });
+                  }}
+                />
               )}
             </g>
           );
         })}
+
+        {/* Tooltip overlay */}
+        {(() => {
+          if (!active) return null;
+          const t = times.find((x) => x.chave === active.chave);
+          if (!t) return null;
+          const rank = rankByTeamRound[t.chave][active.rodada];
+          const pts = t.pontosPorRodada[String(active.rodada)] ?? 0;
+          const idx = rodadas.indexOf(active.rodada);
+          if (idx < 0) return null;
+          const x = xFor(idx);
+          const y = yFor(rank);
+          // Tooltip box dimensões
+          const TW = 110;
+          const TH = 34;
+          // Posiciona acima do ponto, clamp nas bordas
+          let tx = x - TW / 2;
+          if (tx < PAD_L) tx = PAD_L;
+          if (tx + TW > W - PAD_R) tx = W - PAD_R - TW;
+          let ty = y - TH - 8;
+          if (ty < 2) ty = y + 10; // se não couber em cima, mostra embaixo
+          return (
+            <g class="bf-league-chart__tooltip" pointer-events="none">
+              <rect
+                x={tx}
+                y={ty}
+                width={TW}
+                height={TH}
+                rx={4}
+                fill="rgba(5,5,7,0.96)"
+                stroke={t.accent}
+                stroke-width="1"
+              />
+              <text
+                x={tx + 8}
+                y={ty + 13}
+                class="bf-league-chart__tooltip-title"
+                fill={t.accent}
+              >
+                {t.nome.toUpperCase().slice(0, 18)}
+              </text>
+              <text
+                x={tx + 8}
+                y={ty + 26}
+                class="bf-league-chart__tooltip-body"
+              >
+                R{active.rodada} · {rank}º · {pts.toFixed(1).replace(".", ",")}
+              </text>
+            </g>
+          );
+        })()}
       </svg>
 
       {/* Legenda com crests + nomes */}

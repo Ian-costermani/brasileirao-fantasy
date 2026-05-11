@@ -8,7 +8,7 @@ import BottomNav from "../components/BottomNav.tsx";
 import TeamCrest from "../components/TeamCrest.tsx";
 import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
 import CollapsibleTeamRow from "../islands/CollapsibleTeamRow.tsx";
-import LeagueChart, { type LinhaTime } from "../components/LeagueChart.tsx";
+import LeagueChart, { type LinhaTime } from "../islands/LeagueChart.tsx";
 import SectionHeader from "../components/SectionHeader.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";

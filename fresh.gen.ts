@@ -24,6 +24,7 @@ import * as $liga from "./routes/liga.tsx";
 import * as $ranking from "./routes/ranking.tsx";
 import * as $time_chave_ from "./routes/time/[chave].tsx";
 import * as $CollapsibleTeamRow from "./islands/CollapsibleTeamRow.tsx";
+import * as $LeagueChart from "./islands/LeagueChart.tsx";
 import * as $Ranking from "./islands/Ranking.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -55,6 +56,7 @@ const manifest = {
   },
   islands: {
     "./islands/CollapsibleTeamRow.tsx": $CollapsibleTeamRow,
+    "./islands/LeagueChart.tsx": $LeagueChart,
     "./islands/Ranking.tsx": $Ranking,
   },
   baseUrl: import.meta.url,
