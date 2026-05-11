@@ -319,6 +319,12 @@ body {
   gap: 8px;
   padding: 0 var(--bf-gutter);
 }
+/* Habilita animação de altura entre 0 e auto. Browsers recentes
+   (Chrome 129+, Safari 18.4+) suportam interpolate-size. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
 /* Team row colapsável — <details> wrapper, <summary> é o cabeçalho.
    Cada time tem --accent (cor neon única) que pinta o left-stripe,
    a posição, valor de pontos e glow ao expandir. */
@@ -443,6 +449,22 @@ body {
 .bf-team-row__expanded {
   padding: 4px 0 12px;
   border-top: 1px solid var(--bf-line);
+}
+
+/* Animação de abrir/fechar via ::details-content (Chrome 131+,
+   Safari 18.2+). Browsers antigos caem pro snap instantâneo. */
+.bf-team-row::details-content {
+  block-size: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    block-size 280ms var(--bf-ease-out),
+    opacity 220ms var(--bf-ease-out),
+    content-visibility 280ms allow-discrete;
+}
+.bf-team-row[open]::details-content {
+  block-size: auto;
+  opacity: 1;
 }
 
 /* ============================================================
