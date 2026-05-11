@@ -4,6 +4,7 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $ao_vivo from "./routes/ao-vivo.tsx";
 import * as $api_admin_atualizar from "./routes/api/admin/atualizar.ts";
 import * as $api_admin_seed from "./routes/api/admin/seed.ts";
 import * as $api_admin_sync_atletas from "./routes/api/admin/sync-atletas.ts";
@@ -32,6 +33,7 @@ const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
+    "./routes/ao-vivo.tsx": $ao_vivo,
     "./routes/api/admin/atualizar.ts": $api_admin_atualizar,
     "./routes/api/admin/seed.ts": $api_admin_seed,
     "./routes/api/admin/sync-atletas.ts": $api_admin_sync_atletas,

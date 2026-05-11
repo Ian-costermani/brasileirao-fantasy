@@ -272,6 +272,150 @@ body {
 }
 
 /* ============================================================
+   AO VIVO — hero + lista de eventos
+   ============================================================ */
+.bf-aovivo-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px var(--bf-gutter) 8px;
+}
+.bf-aovivo-hero__total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+.bf-aovivo-hero__total-value {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--bf-lime);
+  text-shadow: 0 0 18px var(--bf-lime-glow);
+  font-variant-numeric: tabular-nums;
+}
+.bf-aovivo-hero__total-foot {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
+}
+.bf-aovivo-hero__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bf-fg-2);
+}
+
+.bf-events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 var(--bf-gutter);
+}
+.bf-event-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: var(--bf-radius-md);
+  padding: 8px 12px;
+}
+.bf-event-row__face {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  object-position: center 18%;
+  border-radius: 999px;
+  background: var(--bf-ink);
+}
+.bf-event-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.bf-event-row__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.bf-event-row__escudo {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bf-event-row__events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.bf-event-row__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid;
+  font-family: var(--bf-font-cond);
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.bf-event-row__pill--positivo {
+  color: var(--bf-lime);
+  border-color: rgba(182, 245, 0, 0.4);
+}
+.bf-event-row__pill--negativo {
+  color: var(--bf-red);
+  border-color: rgba(255, 59, 59, 0.4);
+}
+.bf-event-row__pill--neutro {
+  color: var(--bf-fg-2);
+  border-color: var(--bf-line-strong);
+}
+.bf-event-row__pill-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+.bf-event-row__pill-qtd {
+  opacity: 0.85;
+}
+.bf-event-row__pts-value {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--bf-lime);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 8px var(--bf-lime-glow);
+}
+.bf-event-row__pts-value--neg {
+  color: var(--bf-red);
+  text-shadow: 0 0 8px var(--bf-red-glow);
+}
+
+/* ============================================================
    LIGA HERO — header das telas de liga
    ============================================================ */
 .bf-liga-hero {
