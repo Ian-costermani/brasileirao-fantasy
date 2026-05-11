@@ -319,38 +319,69 @@ body {
   gap: 8px;
   padding: 0 var(--bf-gutter);
 }
+/* Team row colapsável — <details> wrapper, <summary> é o cabeçalho.
+   Cada time tem --accent (cor neon única) que pinta o left-stripe,
+   a posição, valor de pontos e glow ao expandir. */
 .bf-team-row {
-  display: grid;
-  grid-template-columns: 36px 36px 1fr auto 14px;
-  align-items: center;
-  gap: 12px;
   background: var(--bf-chassis);
   border: 1px solid var(--bf-line);
+  border-left: 4px solid var(--accent, var(--bf-fg-2));
   border-radius: var(--bf-radius-lg);
-  padding: 10px 14px;
-  text-decoration: none;
-  color: var(--bf-fg-1);
   box-shadow: var(--bf-shadow-card);
-  transition: background var(--bf-dur-normal) var(--bf-ease-out);
+  overflow: hidden;
+  transition: box-shadow var(--bf-dur-normal) var(--bf-ease-out);
 }
-.bf-team-row:hover {
-  background: var(--bf-chassis-hover);
+.bf-team-row[open] {
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--accent) 28%, transparent),
+    var(--bf-shadow-card);
 }
 .bf-team-row--mine {
   border-color: rgba(255, 27, 141, 0.55);
   box-shadow: 0 0 16px var(--bf-magenta-glow), var(--bf-shadow-card);
 }
+.bf-team-row--lider {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 14%, var(--bf-chassis)) 0%,
+    var(--bf-chassis) 60%
+  );
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--accent) 35%, transparent),
+    var(--bf-shadow-card);
+}
+
+.bf-team-row__summary {
+  display: grid;
+  grid-template-columns: 40px 1fr 36px auto 14px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-team-row__summary::-webkit-details-marker {
+  display: none;
+}
+.bf-team-row__summary:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .bf-team-row__pos {
   font-family: var(--bf-font-display);
   font-weight: 900;
-  font-size: 18px;
+  font-size: 16px;
   text-align: center;
-  color: var(--bf-fg-2);
+  color: var(--accent, var(--bf-fg-2));
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
 }
-.bf-team-row__pos--top {
-  color: var(--bf-lime);
-  text-shadow: 0 0 10px var(--bf-lime-glow);
+.bf-team-row--lider .bf-team-row__pos {
+  font-size: 22px;
+  text-shadow: none;
 }
 .bf-team-row__meta {
   display: flex;
@@ -387,8 +418,12 @@ body {
 .bf-team-row__pts-value {
   font-family: var(--bf-font-display);
   font-weight: 900;
-  font-size: 16px;
-  color: #fff;
+  font-size: 18px;
+  color: var(--accent, #fff);
+}
+.bf-team-row--lider .bf-team-row__pts-value {
+  font-size: 20px;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
 }
 .bf-team-row__pts-foot {
   font-family: var(--bf-font-cond);
@@ -400,6 +435,14 @@ body {
 }
 .bf-team-row__chev {
   flex-shrink: 0;
+  transition: transform var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-team-row[open] .bf-team-row__chev {
+  transform: rotate(180deg);
+}
+.bf-team-row__expanded {
+  padding: 4px 0 12px;
+  border-top: 1px solid var(--bf-line);
 }
 
 /* ============================================================

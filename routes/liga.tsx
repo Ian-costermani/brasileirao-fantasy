@@ -1,14 +1,26 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { CHAVES_TIMES, getAllElencos, getRodadaStatus } from "../lib/kv.ts";
+import { getAllElencos, getFotos, getRodadaStatus } from "../lib/kv.ts";
 import { calcularMelhorTime } from "../lib/substituicao.ts";
 import { getHistorico, totalPontos } from "../lib/historico.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
 import TeamCrest from "../components/TeamCrest.tsx";
+import Field, { type Escalacao, type Pino } from "../components/Field.tsx";
+import { escudoUrl } from "../lib/escudos.ts";
+import { coresClube } from "../lib/cores.ts";
 import { timeLigaInfo } from "../lib/times-liga.ts";
 
 const CHAVE_USUARIO = "aguiar";
+
+const POS_ABREV: Record<string, string> = {
+  "Goleiro": "GOL",
+  "Lateral": "LAT",
+  "Zagueiro": "ZAG",
+  "Meia": "MEI",
+  "Atacante": "ATK",
+  "Técnico": "TEC",
+};
 
 interface TimeLinha {
   chave: string;
@@ -17,6 +29,7 @@ interface TimeLinha {
   pontuacaoRodada: number;
   total: number;
   rodadasJogadas: number;
+  escalacao: Escalacao | null;
 }
 
 interface Data {
@@ -28,9 +41,10 @@ interface Data {
 export const handler: Handlers<Data> = {
   async GET(_req, ctx) {
     const kv = await Deno.openKv();
-    const [elencos, rodada] = await Promise.all([
+    const [elencos, rodada, fotos] = await Promise.all([
       getAllElencos(kv),
       getRodadaStatus(kv),
+      getFotos(kv),
     ]);
 
     const times: TimeLinha[] = [];
@@ -41,6 +55,31 @@ export const handler: Handlers<Data> = {
         escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
       ) / 100;
       const historico = await getHistorico(kv, chave);
+
+      const pino = (j: typeof escalados[number]): Pino => ({
+        nome: j.apelido_api,
+        pts: j.pontos,
+        escudo: escudoUrl(j.clube),
+        cores: coresClube(j.clube),
+        pos: POS_ABREV[j.posicao],
+        statusId: j.status_id,
+        foto: fotos[String(j.atleta_id)] ?? null,
+      });
+      const gk = escalados.find((j) => j.posicao === "Goleiro");
+      const def = escalados.filter((j) =>
+        j.posicao === "Zagueiro" || j.posicao === "Lateral"
+      );
+      const mid = escalados.filter((j) => j.posicao === "Meia");
+      const ata = escalados.filter((j) => j.posicao === "Atacante");
+      const escalacao: Escalacao | null = escalados.length
+        ? {
+          gk: gk ? pino(gk) : {},
+          def: def.map(pino),
+          mid: mid.map(pino),
+          ata: ata.map(pino),
+        }
+        : null;
+
       times.push({
         chave,
         nome: elenco.nome_time,
@@ -48,11 +87,10 @@ export const handler: Handlers<Data> = {
         pontuacaoRodada: ptsRodada,
         total: totalPontos(historico),
         rodadasJogadas: Object.keys(historico).length,
+        escalacao,
       });
     }
 
-    // Ordena por total da temporada desc; quando todos zero (rodada 0)
-    // o sort fica estável e segue ordem de inserção
     times.sort((a, b) =>
       b.total - a.total || b.pontuacaoRodada - a.pontuacaoRodada
     );
@@ -89,47 +127,55 @@ export default function Liga({ data }: PageProps<Data>) {
             const visual = timeLigaInfo(t.chave);
             const displayName = visual?.displayName ?? t.nome;
             const isMe = t.chave === data.meuChave;
-            const top3 = pos <= 3;
+            const isLider = pos === 1;
+            const accent = visual?.accent ?? "var(--bf-fg-2)";
             return (
-              <a
-                href={`/time/${t.chave}`}
-                class={`bf-team-row ${isMe ? "bf-team-row--mine" : ""}`}
+              <details
+                class={`bf-team-row ${isMe ? "bf-team-row--mine" : ""} ${
+                  isLider ? "bf-team-row--lider" : ""
+                }`}
+                style={{ "--accent": accent } as Record<string, string>}
                 key={t.chave}
               >
-                <span
-                  class={`bf-team-row__pos ${
-                    top3 ? "bf-team-row__pos--top" : ""
-                  }`}
-                >
-                  {pos}º
-                </span>
-                <TeamCrest chave={t.chave} size={36} />
-                <div class="bf-team-row__meta">
-                  <div class="bf-team-row__name">{displayName}</div>
-                  <div class="bf-team-row__owner">{t.dono}</div>
-                </div>
-                <div class="bf-team-row__pts">
-                  <span class="bf-team-row__pts-value">
-                    {t.total.toFixed(1).replace(".", ",")}
+                <summary class="bf-team-row__summary">
+                  <span class="bf-team-row__pos">
+                    {isLider ? "🏆" : `#${pos}`}
                   </span>
-                  <span class="bf-team-row__pts-foot">
-                    {t.rodadasJogadas > 0 ? "total" : "—"}
-                  </span>
+                  <div class="bf-team-row__meta">
+                    <div class="bf-team-row__name">{displayName}</div>
+                    <div class="bf-team-row__owner">{t.dono}</div>
+                  </div>
+                  <TeamCrest chave={t.chave} size={36} />
+                  <div class="bf-team-row__pts">
+                    <span class="bf-team-row__pts-value">
+                      {t.total.toFixed(1).replace(".", ",")}
+                    </span>
+                    <span class="bf-team-row__pts-foot">PTS</span>
+                  </div>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.4)"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="bf-team-row__chev"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </summary>
+                <div class="bf-team-row__expanded">
+                  {t.escalacao
+                    ? <Field jogadores={t.escalacao} showPoints />
+                    : (
+                      <div class="bf-empty-state">
+                        Sem escalação no elenco
+                      </div>
+                    )}
                 </div>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.4)"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="bf-team-row__chev"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </a>
+              </details>
             );
           })}
         </div>
