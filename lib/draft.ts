@@ -109,6 +109,53 @@ export async function avancarRodadaDraft(
   return { ordem: novaOrdem, meta: novaMeta, resetou: false };
 }
 
+/* --- Dias da semana em que conflitos do draft são resolvidos --------- */
+
+const DIAS_KEY = ["draft_dias_resolucao"];
+/** Default: quarta-feira. Admin pode alterar. */
+const DIAS_DEFAULT = [3];
+
+/** Lê os dias da semana (0=domingo, 6=sábado) em que o admin resolve
+ *  conflitos do draft. */
+export async function getDiasResolucao(kv: Deno.Kv): Promise<number[]> {
+  const r = await kv.get<number[]>(DIAS_KEY);
+  if (r.value && r.value.length > 0) {
+    return r.value.filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b);
+  }
+  return [...DIAS_DEFAULT];
+}
+
+export async function setDiasResolucao(
+  kv: Deno.Kv,
+  dias: number[],
+): Promise<void> {
+  const limpos = [
+    ...new Set(dias.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)),
+  ].sort((a, b) => a - b);
+  await kv.set(DIAS_KEY, limpos);
+}
+
+/** Calcula a próxima data (a partir de `from`, default = agora) em que
+ *  algum dos `dias` da semana acontece. Considera "hoje" como válido se
+ *  bater. Retorna null se a lista estiver vazia. */
+export function proximaResolucao(
+  dias: number[],
+  from: Date = new Date(),
+): Date | null {
+  if (dias.length === 0) return null;
+  const base = new Date(from);
+  base.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 8; i++) {
+    const dia = (base.getDay() + i) % 7;
+    if (dias.includes(dia)) {
+      const r = new Date(base);
+      r.setDate(base.getDate() + i);
+      return r;
+    }
+  }
+  return null;
+}
+
 /** Inicializa o draft se ainda não foi: ordem = inverso da classificação,
  *  meta = ciclo 1 rodadaCiclo 1. Idempotente: não faz nada se já existir meta. */
 export async function inicializarDraftSeNecessario(

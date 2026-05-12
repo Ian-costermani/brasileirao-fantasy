@@ -67,6 +67,10 @@ interface Props {
   draftMeta?: DraftMetaProp | null;
   /** Meus interesses em ordem de prioridade (top = primeiro). */
   meusInteresses?: MeuInteresse[];
+  /** Dias até fechamento do mercado da Cartola (null = sem info). */
+  diasAteFechamento?: number | null;
+  /** Dias até a próxima resolução do draft (null = sem config). */
+  diasAteResolucao?: number | null;
 }
 
 const POS_ABREV: Record<string, string> = {
@@ -100,6 +104,8 @@ export default function MercadoBrowser(
     draftOrdem = [],
     draftMeta = null,
     meusInteresses = [],
+    diasAteFechamento = null,
+    diasAteResolucao = null,
   }: Props,
 ) {
   const [jogadores, setJogadores] = useState<AtletaMercado[]>(inicial);
@@ -371,8 +377,37 @@ export default function MercadoBrowser(
     }).sort((a, b) => (b.mediaPontos ?? 0) - (a.mediaPontos ?? 0));
   }, [jogadores, meu, busca, posicao, status, clube, tipo]);
 
+  function tDias(n: number, sing: string, plur: string): string {
+    if (n === 0) return "hoje";
+    if (n === 1) return `em 1 ${sing}`;
+    return `em ${n} ${plur}`;
+  }
+
   return (
     <div class="bf-mercado">
+      {(diasAteFechamento != null || diasAteResolucao != null) && (
+        <div class="bf-mercado__timings">
+          {diasAteFechamento != null && (
+            <span class="bf-mercado__timing">
+              <span class="bf-mercado__timing-lbl">Mercado fecha</span>
+              <span class="bf-mercado__timing-val">
+                {diasAteFechamento === 0
+                  ? "agora"
+                  : tDias(diasAteFechamento, "dia", "dias")}
+              </span>
+            </span>
+          )}
+          {diasAteResolucao != null && (
+            <span class="bf-mercado__timing">
+              <span class="bf-mercado__timing-lbl">Conflitos resolvem</span>
+              <span class="bf-mercado__timing-val">
+                {tDias(diasAteResolucao, "dia", "dias")}
+              </span>
+            </span>
+          )}
+        </div>
+      )}
+
       {minhaChave && (
         <div class="bf-mercado__stats">
           <button

@@ -11,7 +11,12 @@ import {
   getMinhaPrioridade,
   getRodadaStatus,
 } from "../lib/kv.ts";
-import { type DraftMeta, inicializarDraftSeNecessario } from "../lib/draft.ts";
+import {
+  type DraftMeta,
+  getDiasResolucao,
+  inicializarDraftSeNecessario,
+  proximaResolucao,
+} from "../lib/draft.ts";
 import { fetchAtletasMercado } from "../lib/cartola.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import { coresClube } from "../lib/cores.ts";
@@ -50,6 +55,10 @@ interface Data {
   draftMeta: DraftMeta;
   /** Meus interesses em ordem de prioridade (top = primeiro). */
   meusInteresses: MeuInteresse[];
+  /** Dias até fechamento do mercado (Cartola). null se mercado já fechado. */
+  diasAteFechamento: number | null;
+  /** Dias até a próxima resolução de conflitos. null se sem dias configurados. */
+  diasAteResolucao: number | null;
   userEmail: string | null;
   userRole: "admin" | "user" | null;
   userNome: string | null;
@@ -229,6 +238,33 @@ export const handler: Handlers<Data, State> = {
       }
     }
 
+    // Dias até fechamento do mercado (Cartola fornece timestamp em UTC s)
+    let diasAteFechamento: number | null = null;
+    const fech = rodadaStatus?.fechamento;
+    if (fech?.timestamp) {
+      const agora = Date.now();
+      const alvo = fech.timestamp * 1000;
+      const ms = alvo - agora;
+      if (ms > 0) {
+        // arredonda pra cima — "1 dia restante" se faltar 12h
+        diasAteFechamento = Math.ceil(ms / (24 * 60 * 60 * 1000));
+      } else {
+        diasAteFechamento = 0; // mercado fechado/em rodada
+      }
+    }
+
+    // Próxima resolução do draft (dias da semana configurados pelo admin)
+    const diasResolucao = await getDiasResolucao(kv);
+    const prox = proximaResolucao(diasResolucao);
+    let diasAteResolucao: number | null = null;
+    if (prox) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      diasAteResolucao = Math.round(
+        (prox.getTime() - hoje.getTime()) / (24 * 60 * 60 * 1000),
+      );
+    }
+
     return ctx.render({
       jogadores,
       clubes,
@@ -239,6 +275,8 @@ export const handler: Handlers<Data, State> = {
       draftOrdem,
       draftMeta,
       meusInteresses,
+      diasAteFechamento,
+      diasAteResolucao,
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,
       userNome: ctx.state.session?.name ?? null,
@@ -252,7 +290,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=60" />
+        <link rel="stylesheet" href="/bf-styles.css?v=61" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -271,6 +309,8 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           draftOrdem={data.draftOrdem}
           draftMeta={data.draftMeta}
           meusInteresses={data.meusInteresses}
+          diasAteFechamento={data.diasAteFechamento}
+          diasAteResolucao={data.diasAteResolucao}
         />
         <BottomNav active="mercado" />
       </div>

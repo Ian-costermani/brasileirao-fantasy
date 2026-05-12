@@ -8,6 +8,7 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin from "./routes/admin.tsx";
 import * as $ao_vivo from "./routes/ao-vivo.tsx";
 import * as $api_admin_atualizar from "./routes/api/admin/atualizar.ts";
+import * as $api_admin_draft_dias from "./routes/api/admin/draft-dias.ts";
 import * as $api_admin_draft_fechar from "./routes/api/admin/draft-fechar.ts";
 import * as $api_admin_draft_ordem from "./routes/api/admin/draft-ordem.ts";
 import * as $api_admin_email_map from "./routes/api/admin/email-map.ts";
@@ -65,6 +66,7 @@ const manifest = {
     "./routes/admin.tsx": $admin,
     "./routes/ao-vivo.tsx": $ao_vivo,
     "./routes/api/admin/atualizar.ts": $api_admin_atualizar,
+    "./routes/api/admin/draft-dias.ts": $api_admin_draft_dias,
     "./routes/api/admin/draft-fechar.ts": $api_admin_draft_fechar,
     "./routes/api/admin/draft-ordem.ts": $api_admin_draft_ordem,
     "./routes/api/admin/email-map.ts": $api_admin_email_map,
