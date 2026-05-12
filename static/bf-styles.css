@@ -2412,36 +2412,31 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
 .bf-mercado__timings {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: 6px;
   padding: 8px 4px 0;
-  font-family: var(--bf-font-body);
-  font-size: 11px;
+}
+/* Variante de pill pra contadores: label + valor em destaque. */
+.bf-pill__lbl {
   color: var(--bf-fg-3);
-  line-height: 1.3;
+  font-weight: 700;
 }
-.bf-mercado__timing {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+.bf-pill__val {
+  color: var(--bf-fg-0);
+  font-weight: 800;
+  margin-left: 2px;
 }
-.bf-mercado__timing-lbl {
-  color: var(--bf-fg-3);
+.bf-pill--timing-warn {
+  border-color: color-mix(in srgb, var(--bf-yellow) 50%, transparent);
 }
-.bf-mercado__timing-val {
-  color: var(--bf-fg-1);
-  font-weight: 600;
-}
-.bf-mercado__timing--warn .bf-mercado__timing-val,
-.bf-mercado__timing--warn .bf-mercado__timing-lbl {
+.bf-pill--timing-warn .bf-pill__val {
   color: var(--bf-yellow);
 }
-.bf-mercado__timing--danger .bf-mercado__timing-val,
-.bf-mercado__timing--danger .bf-mercado__timing-lbl {
-  color: var(--bf-red);
+.bf-pill--timing-danger {
+  border-color: color-mix(in srgb, var(--bf-red) 60%, transparent);
+  background: color-mix(in srgb, var(--bf-red) 10%, var(--bf-chassis));
 }
-.bf-mercado__timing--warn .bf-mercado__timing-val,
-.bf-mercado__timing--danger .bf-mercado__timing-val {
-  font-weight: 700;
+.bf-pill--timing-danger .bf-pill__val {
+  color: var(--bf-red);
 }
 .bf-mercado__stats {
   display: flex;
@@ -2763,14 +2758,29 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   padding: 10px 14px;
   background: var(--bf-ink);
   border: 1px solid var(--bf-line-strong);
-  border-radius: var(--bf-radius-md);
-  color: #fff;
+  border-radius: var(--bf-radius-sm);
+  color: var(--bf-fg-0);
   font-family: var(--bf-font-body);
-  font-size: 14px;
+  font-size: 13px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.bf-mercado__busca::placeholder {
+  font-family: var(--bf-font-cond);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
 }
 .bf-mercado__busca:focus {
   outline: none;
   border-color: var(--bf-lime);
+}
+/* Remove o X nativo do <input type="search"> em alguns browsers */
+.bf-mercado__busca::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 .bf-mercado__chips {
   display: flex;

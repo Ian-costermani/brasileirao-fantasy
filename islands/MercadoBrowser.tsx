@@ -403,19 +403,15 @@ export default function MercadoBrowser(
       {(tFech || tResol) && (
         <div class="bf-mercado__timings">
           {tFech && (
-            <span
-              class={`bf-mercado__timing bf-mercado__timing--${tFech.severity}`}
-            >
-              <span class="bf-mercado__timing-lbl">Mercado fecha</span>
-              <span class="bf-mercado__timing-val">{tFech.texto}</span>
+            <span class={`bf-pill bf-pill--timing-${tFech.severity}`}>
+              <span class="bf-pill__lbl">Mercado fecha</span>
+              <span class="bf-pill__val">{tFech.texto}</span>
             </span>
           )}
           {tResol && (
-            <span
-              class={`bf-mercado__timing bf-mercado__timing--${tResol.severity}`}
-            >
-              <span class="bf-mercado__timing-lbl">Conflitos resolvem</span>
-              <span class="bf-mercado__timing-val">{tResol.texto}</span>
+            <span class={`bf-pill bf-pill--timing-${tResol.severity}`}>
+              <span class="bf-pill__lbl">Conflitos resolvem</span>
+              <span class="bf-pill__val">{tResol.texto}</span>
             </span>
           )}
         </div>
