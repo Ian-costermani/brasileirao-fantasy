@@ -28,6 +28,12 @@ export interface DraftEntry {
   nome: string;
 }
 
+export interface DraftMetaProp {
+  ciclo: number;
+  rodadaCiclo: number;
+  rodadaBase: number;
+}
+
 interface Props {
   jogadores: AtletaMercado[];
   /** Chave do meu time (pra saber se já estou interessado) */
@@ -40,6 +46,8 @@ interface Props {
   posicaoDraft?: number | null;
   /** Ordem do draft pra abrir num menu */
   draftOrdem?: DraftEntry[];
+  /** Estado do ciclo: ciclo + rodadaCiclo + rodadaBase */
+  draftMeta?: DraftMetaProp | null;
 }
 
 const POS_ABREV: Record<string, string> = {
@@ -71,6 +79,7 @@ export default function MercadoBrowser(
     qtdAVenda = 0,
     posicaoDraft = null,
     draftOrdem = [],
+    draftMeta = null,
   }: Props,
 ) {
   const [jogadores, setJogadores] = useState<AtletaMercado[]>(inicial);
@@ -267,39 +276,27 @@ export default function MercadoBrowser(
           <button
             type="button"
             class="bf-mercado__stat bf-mercado__stat--btn"
-            onClick={() => setDraftAberto((v) => !v)}
+            onClick={() => setDraftAberto(true)}
             disabled={draftOrdem.length === 0}
             title="Ver ordem do draft"
           >
             <span class="bf-mercado__stat-val">
               {posicaoDraft ? `${posicaoDraft}º` : "—"}
             </span>
-            <span class="bf-mercado__stat-lbl">no draft</span>
+            <span class="bf-mercado__stat-lbl">
+              {draftMeta ? `draft · r${draftMeta.rodadaCiclo}/5` : "no draft"}
+            </span>
           </button>
         </div>
       )}
 
       {draftAberto && draftOrdem.length > 0 && (
-        <div class="bf-mercado__draft">
-          <div class="bf-mercado__draft-titulo">Ordem do draft</div>
-          <ol class="bf-mercado__draft-lista">
-            {draftOrdem.map((d, i) => (
-              <li
-                key={d.chave}
-                class={d.chave === minhaChave
-                  ? "bf-mercado__draft-item bf-mercado__draft-item--meu"
-                  : "bf-mercado__draft-item"}
-              >
-                <span class="bf-mercado__draft-pos">{i + 1}º</span>
-                <span class="bf-mercado__draft-nome">{d.nome}</span>
-              </li>
-            ))}
-          </ol>
-          <div class="bf-mercado__draft-foot">
-            Empate no interesse por free agent → quem está mais alto na lista
-            leva.
-          </div>
-        </div>
+        <ModalDraft
+          ordem={draftOrdem}
+          minhaChave={minhaChave}
+          meta={draftMeta}
+          onClose={() => setDraftAberto(false)}
+        />
       )}
 
       <div class="bf-mercado__filtros">
@@ -485,7 +482,12 @@ function ModalOferta(
   return (
     <div class="bf-modal" onClick={onClose}>
       <div class="bf-modal__card" onClick={(e) => e.stopPropagation()}>
-        <button class="bf-modal__close" onClick={onClose} aria-label="Fechar">
+        <button
+          type="button"
+          class="bf-modal__close"
+          onClick={onClose}
+          aria-label="Fechar"
+        >
           ×
         </button>
         <h3 class="bf-modal__titulo">
@@ -753,5 +755,69 @@ function CardMeu(
         {j.aVenda ? "À venda ✓" : "Pôr à venda"}
       </button>
     </article>
+  );
+}
+
+function ModalDraft(
+  { ordem, minhaChave, meta, onClose }: {
+    ordem: DraftEntry[];
+    minhaChave: string | null;
+    meta: DraftMetaProp | null;
+    onClose: () => void;
+  },
+) {
+  return (
+    <div class="bf-modal" onClick={onClose}>
+      <div class="bf-modal__card" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          class="bf-modal__close"
+          onClick={onClose}
+          aria-label="Fechar"
+        >
+          ×
+        </button>
+        <h3 class="bf-modal__titulo">Draft</h3>
+        {meta && (
+          <div class="bf-draft__meta">
+            <div class="bf-draft__meta-cel">
+              <span class="bf-label-micro">Ciclo</span>
+              <span class="bf-draft__meta-val">{meta.ciclo}</span>
+            </div>
+            <div class="bf-draft__meta-cel">
+              <span class="bf-label-micro">Rodada do ciclo</span>
+              <span class="bf-draft__meta-val">{meta.rodadaCiclo}/5</span>
+            </div>
+          </div>
+        )}
+        <ol class="bf-draft__lista">
+          {ordem.map((d, i) => (
+            <li
+              key={d.chave}
+              class={d.chave === minhaChave
+                ? "bf-draft__item bf-draft__item--meu"
+                : "bf-draft__item"}
+            >
+              <span class="bf-draft__pos">{i + 1}º</span>
+              <span class="bf-draft__nome">{d.nome}</span>
+            </li>
+          ))}
+        </ol>
+        <div class="bf-draft__regras">
+          <p>
+            Ordem inicial = inverso da classificação. Quem não usa o pick sobe;
+            quem usa vai pro fim da fila.
+          </p>
+          <p>
+            A cada <strong>5 rodadas</strong>{" "}
+            (ciclo completo) a ordem reseta pro inverso da classificação atual.
+          </p>
+          <p>
+            Empate no interesse por free agent → quem está mais alto na lista
+            leva.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

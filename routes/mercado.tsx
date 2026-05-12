@@ -8,7 +8,9 @@ import {
   getDraftOrdem,
   getFotos,
   getInteressadosBatch,
+  getRodadaStatus,
 } from "../lib/kv.ts";
+import { type DraftMeta, inicializarDraftSeNecessario } from "../lib/draft.ts";
 import { fetchAtletasMercado } from "../lib/cartola.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import TopBar from "../components/TopBar.tsx";
@@ -41,6 +43,8 @@ interface Data {
   posicaoDraft: number | null;
   /** Ordem completa do draft pra exibir contexto (tooltip/listagem) */
   draftOrdem: { chave: string; nome: string }[];
+  /** Estado do ciclo: ciclo + rodadaCiclo (1..5) + rodadaBase */
+  draftMeta: DraftMeta;
   userEmail: string | null;
   userRole: "admin" | "user" | null;
   userNome: string | null;
@@ -50,6 +54,12 @@ interface Data {
 export const handler: Handlers<Data, State> = {
   async GET(_req, ctx) {
     const kv = await Deno.openKv();
+    const rodadaStatus = await getRodadaStatus(kv);
+    const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
+    // Bootstrap do draft no primeiro acesso (ciclo 1, ordem = inverso
+    // da classificação). Idempotente: nada acontece se já inicializado.
+    const draftInit = await inicializarDraftSeNecessario(kv, rodadaAtualBR);
+
     const [elencos, fotos, mercadoResp, aVenda, draftOrdemKeys] = await Promise
       .all([
         getAllElencos(kv),
@@ -58,6 +68,7 @@ export const handler: Handlers<Data, State> = {
         getAVendaGlobal(kv),
         getDraftOrdem(kv),
       ]);
+    const draftMeta = draftInit.meta;
 
     // Dono de cada atleta (chave). Atletas sem dono → "free agent".
     const dono: Record<number, string> = {};
@@ -171,6 +182,7 @@ export const handler: Handlers<Data, State> = {
       qtdAVenda,
       posicaoDraft,
       draftOrdem,
+      draftMeta,
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,
       userNome: ctx.state.session?.name ?? null,
@@ -184,7 +196,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=54" />
+        <link rel="stylesheet" href="/bf-styles.css?v=55" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -201,6 +213,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           qtdAVenda={data.qtdAVenda}
           posicaoDraft={data.posicaoDraft}
           draftOrdem={data.draftOrdem}
+          draftMeta={data.draftMeta}
         />
         <BottomNav active="mercado" />
       </div>

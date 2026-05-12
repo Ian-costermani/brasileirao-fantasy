@@ -2408,70 +2408,91 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   background: var(--bf-line);
   margin: 4px 0;
 }
-.bf-mercado__draft {
-  margin: -4px 0 10px;
-  padding: 12px 14px;
-  background: var(--bf-ink);
-  border: 1px solid var(--bf-line);
-  border-radius: var(--bf-radius-md);
+.bf-draft__meta {
+  display: flex;
+  gap: 0;
+  margin: 8px 0 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bf-line);
+  border-bottom: 1px solid var(--bf-line);
 }
-.bf-mercado__draft-titulo {
+.bf-draft__meta-cel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.bf-draft__meta-val {
   font-family: var(--bf-font-cond);
   font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bf-fg-3);
-  margin-bottom: 8px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--bf-lime);
 }
-.bf-mercado__draft-lista {
+.bf-draft__lista {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  max-height: 45vh;
+  overflow-y: auto;
 }
-.bf-mercado__draft-item {
+.bf-draft__item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-family: var(--bf-font-body);
   font-size: 13px;
   color: var(--bf-fg-1);
   border-radius: var(--bf-radius-sm);
+  background: var(--bf-ink);
 }
-.bf-mercado__draft-item--meu {
-  background: color-mix(in srgb, var(--bf-lime) 12%, transparent);
+.bf-draft__item--meu {
+  background: color-mix(in srgb, var(--bf-lime) 14%, transparent);
   color: #fff;
 }
-.bf-mercado__draft-pos {
+.bf-draft__pos {
   font-family: var(--bf-font-cond);
   font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  letter-spacing: 0.06em;
   color: var(--bf-lime);
-  width: 28px;
+  width: 30px;
   text-align: right;
 }
-.bf-mercado__draft-item--meu .bf-mercado__draft-pos {
+.bf-draft__item--meu .bf-draft__pos {
   color: #fff;
 }
-.bf-mercado__draft-nome {
+.bf-draft__nome {
   flex: 1;
   text-transform: uppercase;
   font-family: var(--bf-font-cond);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.06em;
 }
-.bf-mercado__draft-foot {
-  margin-top: 10px;
+.bf-draft__regras {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bf-line);
   font-family: var(--bf-font-body);
-  font-size: 11px;
-  color: var(--bf-fg-3);
-  line-height: 1.4;
+  font-size: 12px;
+  color: var(--bf-fg-2);
+  line-height: 1.5;
+}
+.bf-draft__regras p {
+  margin: 0 0 6px;
+}
+.bf-draft__regras p:last-child {
+  margin: 0;
+}
+.bf-draft__regras strong {
+  color: var(--bf-lime);
+  font-weight: 700;
 }
 .bf-mercado__filtros {
   display: flex;
