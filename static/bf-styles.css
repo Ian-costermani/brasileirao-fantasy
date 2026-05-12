@@ -184,6 +184,11 @@ body {
   justify-content: space-between;
   padding: 16px var(--bf-gutter) 8px;
   gap: 12px;
+  flex-wrap: nowrap;
+}
+.bf-section-header > .bf-section-header__title {
+  flex: 0 1 auto;
+  min-width: 0;
 }
 .bf-section-header__title {
   font-family: var(--bf-font-graffiti);
@@ -2411,15 +2416,18 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
 
 .bf-mercado__timings {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
 }
-/* Encolhe a fonte das pills no header pra caber ao lado do título */
+/* Pills compactas pra caber ao lado do título mesmo em mobile */
 .bf-mercado__timings .bf-pill {
-  font-size: 10px;
-  padding: 4px 9px;
-  letter-spacing: 0.08em;
+  font-size: 9px;
+  padding: 3px 8px;
+  letter-spacing: 0.06em;
+  gap: 4px;
+  white-space: nowrap;
 }
 /* Variante de pill pra contadores: label + valor em destaque. */
 .bf-pill__lbl {

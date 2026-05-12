@@ -298,6 +298,15 @@ function formatTiming(
   return { texto: d === 1 ? "em 1 dia" : `em ${d} dias`, severity: "normal" };
 }
 
+/** Formata "em 4 dias" → "4D" / "em 6h" → "6H" — compacto pra caber no header. */
+function compacto(t: { texto: string }): string {
+  return t.texto
+    .replace("em 1 dia", "1D")
+    .replace(/em (\d+) dias?/, "$1D")
+    .replace(/em (\d+)h/, "$1H")
+    .replace("agora", "0H");
+}
+
 function renderTimingPills(data: Data) {
   const tFech = data.msAteFechamento != null
     ? formatTiming(data.msAteFechamento)
@@ -309,15 +318,21 @@ function renderTimingPills(data: Data) {
   return (
     <div class="bf-mercado__timings">
       {tFech && (
-        <span class={`bf-pill bf-pill--timing-${tFech.severity}`}>
-          <span class="bf-pill__lbl">Mercado fecha</span>
-          <span class="bf-pill__val">{tFech.texto}</span>
+        <span
+          class={`bf-pill bf-pill--timing-${tFech.severity}`}
+          title={`Mercado fecha ${tFech.texto}`}
+        >
+          <span class="bf-pill__lbl">Mkt</span>
+          <span class="bf-pill__val">{compacto(tFech)}</span>
         </span>
       )}
       {tResol && (
-        <span class={`bf-pill bf-pill--timing-${tResol.severity}`}>
-          <span class="bf-pill__lbl">Conflitos</span>
-          <span class="bf-pill__val">{tResol.texto}</span>
+        <span
+          class={`bf-pill bf-pill--timing-${tResol.severity}`}
+          title={`Conflitos resolvem ${tResol.texto}`}
+        >
+          <span class="bf-pill__lbl">Draft</span>
+          <span class="bf-pill__val">{compacto(tResol)}</span>
         </span>
       )}
     </div>
@@ -329,7 +344,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=65" />
+        <link rel="stylesheet" href="/bf-styles.css?v=66" />
       </Head>
       <div class="bf-viewport">
         <TopBar
