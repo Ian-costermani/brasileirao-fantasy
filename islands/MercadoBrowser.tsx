@@ -429,7 +429,6 @@ export default function MercadoBrowser(
       {interessesAberto && (
         <ModalInteresses
           itens={interesses}
-          posicaoDraft={posicaoDraft}
           onClose={() => setInteressesAberto(false)}
           onMover={moverInteresse}
           onPedirRemover={(m) =>
@@ -956,58 +955,59 @@ function ModalDraft(
           ×
         </button>
         <h3 class="bf-modal__titulo">Draft</h3>
-        {meta && (
-          <div class="bf-draft__meta">
-            <div class="bf-draft__meta-cel">
-              <span class="bf-label-micro">Ciclo</span>
-              <span class="bf-draft__meta-val">{meta.ciclo}</span>
+        <div class="bf-modal__body">
+          {meta && (
+            <div class="bf-draft__meta">
+              <div class="bf-draft__meta-cel">
+                <span class="bf-label-micro">Ciclo</span>
+                <span class="bf-draft__meta-val">{meta.ciclo}</span>
+              </div>
+              <div class="bf-draft__meta-cel">
+                <span class="bf-label-micro">Rodada do ciclo</span>
+                <span class="bf-draft__meta-val">{meta.rodadaCiclo}/5</span>
+              </div>
             </div>
-            <div class="bf-draft__meta-cel">
-              <span class="bf-label-micro">Rodada do ciclo</span>
-              <span class="bf-draft__meta-val">{meta.rodadaCiclo}/5</span>
+          )}
+          <ol class="bf-draft__lista">
+            {ordem.map((d, i) => (
+              <li
+                key={d.chave}
+                class={d.chave === minhaChave
+                  ? "bf-draft__item bf-draft__item--meu"
+                  : "bf-draft__item"}
+              >
+                <span class="bf-draft__pos">{i + 1}º</span>
+                <span class="bf-draft__nome">{d.nome}</span>
+              </li>
+            ))}
+          </ol>
+          <details class="bf-regras">
+            <summary>Como funciona</summary>
+            <div class="bf-regras__body">
+              <p>
+                Ordem inicial = inverso da classificação. Quem não usa o pick
+                sobe; quem usa vai pro fim da fila.
+              </p>
+              <p>
+                A cada <strong>5 rodadas</strong>{" "}
+                (ciclo completo) a ordem reseta pro inverso da classificação
+                atual.
+              </p>
+              <p>
+                Empate no interesse por free agent → quem está mais alto na
+                lista leva.
+              </p>
             </div>
-          </div>
-        )}
-        <ol class="bf-draft__lista">
-          {ordem.map((d, i) => (
-            <li
-              key={d.chave}
-              class={d.chave === minhaChave
-                ? "bf-draft__item bf-draft__item--meu"
-                : "bf-draft__item"}
-            >
-              <span class="bf-draft__pos">{i + 1}º</span>
-              <span class="bf-draft__nome">{d.nome}</span>
-            </li>
-          ))}
-        </ol>
-        <details class="bf-regras">
-          <summary>Como funciona</summary>
-          <div class="bf-regras__body">
-            <p>
-              Ordem inicial = inverso da classificação. Quem não usa o pick
-              sobe; quem usa vai pro fim da fila.
-            </p>
-            <p>
-              A cada <strong>5 rodadas</strong>{" "}
-              (ciclo completo) a ordem reseta pro inverso da classificação
-              atual.
-            </p>
-            <p>
-              Empate no interesse por free agent → quem está mais alto na lista
-              leva.
-            </p>
-          </div>
-        </details>
+          </details>
+        </div>
       </div>
     </div>
   );
 }
 
 function ModalInteresses(
-  { itens, posicaoDraft, onClose, onMover, onPedirRemover }: {
+  { itens, onClose, onMover, onPedirRemover }: {
     itens: MeuInteresse[];
-    posicaoDraft: number | null;
     onClose: () => void;
     onMover: (atletaId: number, dir: -1 | 1) => void;
     onPedirRemover: (m: MeuInteresse) => void;
@@ -1025,97 +1025,98 @@ function ModalInteresses(
           ×
         </button>
         <h3 class="bf-modal__titulo">Meus interesses</h3>
-        <p class="bf-modal__txt">
-          Ordene por prioridade. Se você ganhar o draft, vence o atleta no topo
-          que ainda tiver disponível.
-          {posicaoDraft ? ` Sua posição no draft: ${posicaoDraft}º.` : ""}
-        </p>
-        {itens.length === 0
-          ? (
-            <div class="bf-empty-state" style="margin:8px 4px">
-              Você não tem interesses ativos. Demonstre interesse num free agent
-              pra empilhar.
-            </div>
-          )
-          : (
-            <ol class="bf-int__lista">
-              {itens.map((m, i) => (
-                <li class="bf-int__item" key={m.atleta_id}>
-                  <span class="bf-int__pos">{i + 1}º</span>
-                  <div class="bf-int__foto">
-                    {m.foto
-                      ? <img src={m.foto} alt="" loading="lazy" />
-                      : (
-                        <JerseySvg
-                          cores={m.cores}
-                          class="bf-int__foto-jersey"
-                        />
-                      )}
-                  </div>
-                  <div class="bf-int__txt">
-                    <div class="bf-int__nome">
-                      {m.nome}
-                      <span class="bf-int__poschip">
-                        {POS_ABREV[m.posicao]}
-                      </span>
+        <div class="bf-modal__body">
+          <p class="bf-modal__txt">
+            Ordene por prioridade. Vence o do topo que ainda estiver livre
+            quando chegar sua vez.
+          </p>
+          {itens.length === 0
+            ? (
+              <div class="bf-empty-state" style="margin:8px 4px">
+                Você não tem interesses ativos. Demonstre interesse num free
+                agent pra empilhar.
+              </div>
+            )
+            : (
+              <ol class="bf-int__lista">
+                {itens.map((m, i) => (
+                  <li class="bf-int__item" key={m.atleta_id}>
+                    <span class="bf-int__pos">{i + 1}º</span>
+                    <div class="bf-int__foto">
+                      {m.foto
+                        ? <img src={m.foto} alt="" loading="lazy" />
+                        : (
+                          <JerseySvg
+                            cores={m.cores}
+                            class="bf-int__foto-jersey"
+                          />
+                        )}
                     </div>
-                    <div class="bf-int__sub">
-                      {m.clubeNome} · empenhou{" "}
-                      <strong>{m.oferecidoNome}</strong>
-                    </div>
-                    {m.totalInteressados > 1 && (
-                      <div class="bf-int__sub bf-int__sub--alerta">
-                        Disputado por {m.totalInteressados} times
+                    <div class="bf-int__txt">
+                      <div class="bf-int__nome">
+                        {m.nome}
+                        <span class="bf-int__poschip">
+                          {POS_ABREV[m.posicao]}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  <div class="bf-int__acoes">
-                    <button
-                      type="button"
-                      class="bf-int__btn"
-                      onClick={() => onMover(m.atleta_id, -1)}
-                      disabled={i === 0}
-                      aria-label="Subir"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      class="bf-int__btn"
-                      onClick={() => onMover(m.atleta_id, 1)}
-                      disabled={i === itens.length - 1}
-                      aria-label="Descer"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      class="bf-int__btn bf-int__btn--del"
-                      onClick={() => onPedirRemover(m)}
-                      aria-label="Remover"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        <details class="bf-regras">
-          <summary>Como funciona</summary>
-          <div class="bf-regras__body">
-            <p>
-              Conflitos com outros times resolvem por{" "}
-              <strong>posição do draft</strong>: quem está mais alto leva
-              primeiro.
-            </p>
-            <p>
-              Seus empates internos resolvem por <strong>essa ordem</strong>
-              {" "}
-              (do topo pra baixo).
-            </p>
-          </div>
-        </details>
+                      <div class="bf-int__sub">
+                        {m.clubeNome} · empenhou{" "}
+                        <strong>{m.oferecidoNome}</strong>
+                      </div>
+                      {m.totalInteressados > 1 && (
+                        <div class="bf-int__sub bf-int__sub--alerta">
+                          Disputado por {m.totalInteressados} times
+                        </div>
+                      )}
+                    </div>
+                    <div class="bf-int__acoes">
+                      <button
+                        type="button"
+                        class="bf-int__btn"
+                        onClick={() => onMover(m.atleta_id, -1)}
+                        disabled={i === 0}
+                        aria-label="Subir"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        class="bf-int__btn"
+                        onClick={() => onMover(m.atleta_id, 1)}
+                        disabled={i === itens.length - 1}
+                        aria-label="Descer"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        class="bf-int__btn bf-int__btn--del"
+                        onClick={() => onPedirRemover(m)}
+                        aria-label="Remover"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          <details class="bf-regras">
+            <summary>Como funciona</summary>
+            <div class="bf-regras__body">
+              <p>
+                Conflitos com outros times resolvem por{" "}
+                <strong>posição do draft</strong>: quem está mais alto leva
+                primeiro.
+              </p>
+              <p>
+                Seus empates internos resolvem por <strong>essa ordem</strong>
+                {" "}
+                (do topo pra baixo).
+              </p>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   );

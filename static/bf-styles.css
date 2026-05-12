@@ -2481,23 +2481,22 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   font-size: 13px;
   letter-spacing: 0.06em;
 }
-/* Bloco de regras colapsável — sutil por padrão. Expande no click. */
+/* Bloco de regras colapsável — bem discreto. */
 .bf-regras {
-  margin-top: 10px;
+  margin-top: 6px;
   border-top: 1px solid var(--bf-line);
   padding-top: 8px;
 }
 .bf-regras > summary {
   list-style: none;
   cursor: pointer;
-  font-family: var(--bf-font-cond);
-  font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--bf-font-body);
+  font-weight: 400;
+  font-size: 12px;
   color: var(--bf-fg-3);
   padding: 2px 0;
   transition: color 120ms;
+  user-select: none;
 }
 .bf-regras > summary::-webkit-details-marker {
   display: none;
@@ -2519,12 +2518,12 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
 .bf-regras__body {
   margin-top: 6px;
   font-family: var(--bf-font-body);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--bf-fg-3);
   line-height: 1.5;
 }
 .bf-regras__body p {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 .bf-regras__body p:last-child {
   margin: 0;
@@ -3086,6 +3085,29 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   font-family: var(--bf-font-body);
   font-size: 13px;
   color: var(--bf-fg-2);
+  line-height: 1.45;
+}
+/* Wrapper scrollable do conteúdo do modal — depois do título.
+   Garante que o usuário sempre consegue chegar ao final mesmo com
+   regras expandidas. Padding horizontal aqui (children não precisam
+   ter padding lateral). */
+.bf-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bf-modal__body .bf-modal__txt {
+  padding: 0;
+  margin: 0;
+}
+.bf-modal__body .bf-int__lista,
+.bf-modal__body .bf-draft__lista {
+  max-height: none;
+  overflow: visible;
 }
 .bf-modal__lista {
   flex: 1;
