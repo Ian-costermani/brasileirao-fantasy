@@ -17,7 +17,7 @@ import {
   inicializarDraftSeNecessario,
   proximaResolucao,
 } from "../lib/draft.ts";
-import { fetchAtletasMercado } from "../lib/cartola.ts";
+import { fetchAtletasMercado, fetchMercadoStatus } from "../lib/cartola.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import { coresClube } from "../lib/cores.ts";
 import TopBar from "../components/TopBar.tsx";
@@ -238,18 +238,29 @@ export const handler: Handlers<Data, State> = {
       }
     }
 
-    // Dias até fechamento do mercado (Cartola fornece timestamp em UTC s)
+    // Dias até fechamento do mercado (Cartola fornece timestamp em UTC s).
+    // Tenta KV primeiro (preenchido pelo cron); fallback fetch direto da
+    // Cartola caso o KV não tenha (deploy novo / mercado em rodada).
     let diasAteFechamento: number | null = null;
-    const fech = rodadaStatus?.fechamento;
-    if (fech?.timestamp) {
-      const agora = Date.now();
-      const alvo = fech.timestamp * 1000;
-      const ms = alvo - agora;
+    let fechTimestamp: number | null = rodadaStatus?.fechamento?.timestamp ??
+      null;
+    if (!fechTimestamp) {
+      try {
+        const m = await fetchMercadoStatus();
+        if (m.status_mercado === 1 && !m.bola_rolando) {
+          fechTimestamp = m.fechamento?.timestamp ?? null;
+        }
+      } catch {
+        // ignora — indicador some
+      }
+    }
+    if (fechTimestamp) {
+      const ms = fechTimestamp * 1000 - Date.now();
       if (ms > 0) {
         // arredonda pra cima — "1 dia restante" se faltar 12h
         diasAteFechamento = Math.ceil(ms / (24 * 60 * 60 * 1000));
       } else {
-        diasAteFechamento = 0; // mercado fechado/em rodada
+        diasAteFechamento = 0; // mercado fechado / em rodada
       }
     }
 
