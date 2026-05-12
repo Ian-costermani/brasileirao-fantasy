@@ -39,9 +39,7 @@ export default function TopBar(
           height="38"
         />
       </a>
-      {userRole === "user"
-        ? <NotifBell />
-        : <span class="bf-iconbtn" aria-hidden="true" />}
+      <NotifBell />
     </div>
   );
 }
