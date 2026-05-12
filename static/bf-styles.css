@@ -2768,7 +2768,7 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 60px 12px 12px;
+  padding: 78px 12px 12px;
   background: var(--bf-chassis);
   border: 1px solid var(--bf-line);
   border-top: 2px solid color-mix(in srgb, var(--pos-color) 55%, transparent);
@@ -2790,14 +2790,16 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
 }
 .bf-merc-card__foto {
   position: absolute;
-  top: -6px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
+  width: 90px;
+  height: 90px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  /* z-index pra ficar acima do .bf-merc-card__top */
+  z-index: 1;
 }
 .bf-merc-card__foto img {
   width: 100%;
@@ -2808,19 +2810,37 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   background: var(--bf-ink);
   border: 1px solid var(--bf-line-strong);
 }
-/* Cutout transparente: trata como sem fundo, mostra full body */
+/* Cutout transparente: deixa o corpo do jogador escapar pra baixo do
+   container e fade-out via mask pra suavizar o corte. */
+.bf-merc-card--cutout .bf-merc-card__foto {
+  overflow: visible;
+}
 .bf-merc-card--cutout .bf-merc-card__foto img {
+  width: 110%;
+  height: 130%;
   object-fit: contain;
   object-position: center bottom;
   border-radius: 0;
   background: transparent;
   border: none;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 /* Fallback: camisa SVG renderizada com cores do clube */
 .bf-merc-card__jersey {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 .bf-merc-card__foto-placeholder {
@@ -2844,6 +2864,7 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   justify-content: space-between;
   gap: 4px;
   margin-top: 0;
+  min-height: 18px;
 }
 .bf-merc-card__pos {
   font-family: var(--bf-font-cond);
@@ -2853,12 +2874,21 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   color: var(--pos-color);
 }
 .bf-merc-card__status {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid var(--st-color, var(--bf-fg-3));
   font-family: var(--bf-font-cond);
-  font-weight: 700;
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 11px;
+  line-height: 1;
   color: var(--st-color, var(--bf-fg-3));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
 }
 .bf-merc-card__nome {
   font-family: var(--bf-font-cond);
