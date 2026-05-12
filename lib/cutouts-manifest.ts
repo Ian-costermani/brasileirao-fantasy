@@ -144,6 +144,7 @@ export const CUTOUTS_DISPONIVEIS = new Set<string>([
   "105584",
   "105647",
   "105949",
+  "105990",
   "106202",
   "106294",
   "106302",
