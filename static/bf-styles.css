@@ -2412,8 +2412,14 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
 .bf-mercado__timings {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
-  padding: 8px 4px 0;
+}
+/* Encolhe a fonte das pills no header pra caber ao lado do título */
+.bf-mercado__timings .bf-pill {
+  font-size: 10px;
+  padding: 4px 9px;
+  letter-spacing: 0.08em;
 }
 /* Variante de pill pra contadores: label + valor em destaque. */
 .bf-pill__lbl {

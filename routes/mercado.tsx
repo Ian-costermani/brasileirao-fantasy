@@ -283,12 +283,53 @@ export const handler: Handlers<Data, State> = {
   },
 };
 
+function formatTiming(
+  ms: number,
+): { texto: string; severity: "normal" | "warn" | "danger" } {
+  const H = 60 * 60 * 1000;
+  if (ms <= 0) return { texto: "agora", severity: "danger" };
+  if (ms < 6 * H) {
+    return { texto: `em ${Math.ceil(ms / H)}h`, severity: "danger" };
+  }
+  if (ms < 24 * H) {
+    return { texto: `em ${Math.ceil(ms / H)}h`, severity: "warn" };
+  }
+  const d = Math.ceil(ms / (24 * H));
+  return { texto: d === 1 ? "em 1 dia" : `em ${d} dias`, severity: "normal" };
+}
+
+function renderTimingPills(data: Data) {
+  const tFech = data.msAteFechamento != null
+    ? formatTiming(data.msAteFechamento)
+    : null;
+  const tResol = data.msAteResolucao != null
+    ? formatTiming(data.msAteResolucao)
+    : null;
+  if (!tFech && !tResol) return null;
+  return (
+    <div class="bf-mercado__timings">
+      {tFech && (
+        <span class={`bf-pill bf-pill--timing-${tFech.severity}`}>
+          <span class="bf-pill__lbl">Mercado fecha</span>
+          <span class="bf-pill__val">{tFech.texto}</span>
+        </span>
+      )}
+      {tResol && (
+        <span class={`bf-pill bf-pill--timing-${tResol.severity}`}>
+          <span class="bf-pill__lbl">Conflitos</span>
+          <span class="bf-pill__val">{tResol.texto}</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function MercadoPage({ data }: PageProps<Data>) {
   return (
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=64" />
+        <link rel="stylesheet" href="/bf-styles.css?v=65" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -297,7 +338,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           userNome={data.userNome}
           userPicture={data.userPicture}
         />
-        <SectionHeader>Mercado</SectionHeader>
+        <SectionHeader right={renderTimingPills(data)}>Mercado</SectionHeader>
         <MercadoBrowser
           jogadores={data.jogadores}
           minhaChave={data.minhaChave}
@@ -307,8 +348,6 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           draftOrdem={data.draftOrdem}
           draftMeta={data.draftMeta}
           meusInteresses={data.meusInteresses}
-          msAteFechamento={data.msAteFechamento}
-          msAteResolucao={data.msAteResolucao}
         />
         <BottomNav active="mercado" />
       </div>
