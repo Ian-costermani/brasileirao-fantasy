@@ -1,6 +1,11 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { CHAVES_TIMES, getAllElencos, getFotos } from "../lib/kv.ts";
+import {
+  CHAVES_TIMES,
+  getAllElencos,
+  getFotos,
+  getRodadaStatus,
+} from "../lib/kv.ts";
 import { calcularMelhorTime } from "../lib/substituicao.ts";
 import { fetchMercadoStatus } from "../lib/cartola.ts";
 import TopBar from "../components/TopBar.tsx";
@@ -41,16 +46,18 @@ export const handler: Handlers<Data, State> = {
   async GET(_req, ctx) {
     const CHAVE_USUARIO = ctx.state.session?.chave ?? CHAVE_FALLBACK_DEV;
     const kv = await Deno.openKv();
-    const [elencos, fotos, mercado] = await Promise.all([
+    const [elencos, fotos, mercado, rodadaStatus] = await Promise.all([
       getAllElencos(kv),
       getFotos(kv),
       fetchMercadoStatus().catch(() => null),
+      getRodadaStatus(kv),
     ]);
 
-    // Disponibilidade: ao vivo só faz sentido quando o mercado está fechado
-    // (status_mercado === 2 → rodada acontecendo) ou bola_rolando explícito.
+    // Disponibilidade: ao vivo da Cartola real (bola_rolando ou
+    // status_mercado=2) OU simulação ativa (rodadaStatus.status === "ao_vivo").
     const aoVivoOk = !!mercado?.bola_rolando ||
-      mercado?.status_mercado === 2;
+      mercado?.status_mercado === 2 ||
+      rodadaStatus?.status === "ao_vivo";
     const userInfo: UserInfo = {
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,
