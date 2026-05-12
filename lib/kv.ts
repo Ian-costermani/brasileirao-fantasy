@@ -105,12 +105,12 @@ export async function getAVendaGlobal(
 /* --- Lista de interessados em atletas (free agents) -------------------- */
 
 /** Manifestação de interesse num free agent: além de marcar interesse,
-    o time precisa empenhar um jogador da mesma posição em troca. Quando o
+    o time precisa oferecer um jogador da mesma posição em troca. Quando o
     draft é resolvido, o time com melhor posição leva o free agent e o
-    jogador empenhado vira free agent (ou volta pro pool). */
+    jogador oferecido vira free agent (ou volta pro pool). */
 export interface InteresseRegistro {
   chave: string;
-  /** atleta_id que o time empenhou em troca */
+  /** atleta_id que o time ofereceu em troca */
   oferecido: number;
 }
 

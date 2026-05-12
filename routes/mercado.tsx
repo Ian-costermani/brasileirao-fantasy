@@ -194,7 +194,7 @@ export const handler: Handlers<Data, State> = {
     }));
 
     // Meus interesses em ordem de prioridade. Cada entrada inclui o
-    // jogador empenhado pra exibir nome no card.
+    // jogador oferecido pra exibir nome no card.
     const meusInteresses: MeuInteresse[] = [];
     if (chaveLogada) {
       const prioridade = await getMinhaPrioridade(kv, chaveLogada);
@@ -290,7 +290,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=61" />
+        <link rel="stylesheet" href="/bf-styles.css?v=62" />
       </Head>
       <div class="bf-viewport">
         <TopBar

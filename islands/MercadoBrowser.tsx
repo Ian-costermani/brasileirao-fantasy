@@ -19,7 +19,7 @@ export interface AtletaMercado {
   donoTime: string | null;
   /** Times que demonstraram interesse (chaves) — só pra free agents */
   interessados: string[];
-  /** atleta_id que EU empenhei (se já marquei interesse). null caso contrário. */
+  /** atleta_id que EU ofereci (se já marquei interesse). null caso contrário. */
   meuOferecido?: number | null;
 }
 
@@ -128,7 +128,7 @@ export default function MercadoBrowser(
 
   // Modal único — distingue por modo:
   // - "oferta": trade entre times (precisa enviar pra dono)
-  // - "interesse": empenhar jogador pelo free agent
+  // - "interesse": oferecer jogador pelo free agent
   const [modal, setModal] = useState<
     | { modo: "oferta"; pedido: AtletaMercado }
     | { modo: "interesse"; pedido: AtletaMercado }
@@ -347,7 +347,7 @@ export default function MercadoBrowser(
       setConfirma({
         titulo: "Remover interesse?",
         texto:
-          "O jogador empenhado é liberado e seu interesse some da fila do draft.",
+          "O jogador oferecido é liberado e seu interesse some da fila do draft.",
         onOk: () => removerInteresse(j.atleta_id),
       });
       return;
@@ -470,7 +470,7 @@ export default function MercadoBrowser(
             setConfirma({
               titulo: "Remover interesse?",
               texto:
-                `Tira ${m.nome} da fila e libera ${m.oferecidoNome} do empenho.`,
+                `Tira ${m.nome} da fila e libera ${m.oferecidoNome} da oferta.`,
               onOk: () => removerInteresse(m.atleta_id),
             })}
         />
@@ -679,7 +679,7 @@ function ModalOferta(
             {modo === "interesse"
               ? (
                 <>
-                  Você empenhou um jogador por{" "}
+                  Você ofereceu um jogador por{" "}
                   <strong>{pedido.nome}</strong>. Se mais alguém marcar
                   interesse, vence quem está mais alto no draft.
                 </>
@@ -720,9 +720,9 @@ function ModalOferta(
         </h3>
         <p class="bf-modal__txt">
           {modo === "interesse"
-            ? `Empenhe um jogador da mesma posição (${
+            ? `Ofereça um jogador da mesma posição (${
               POS_ABREV[pedido.posicao]
-            }). Se você ganhar o draft, ele entra no seu time e o empenhado vira free agent.`
+            }). Se você ganhar o draft, ele entra no seu time e o oferecido vira free agent.`
             : `Escolha um jogador do seu time da mesma posição (${
               POS_ABREV[pedido.posicao]
             }).`}
@@ -885,13 +885,13 @@ function CardJogador(
             onClick={() => podeInteressar && onInteresse(j)}
             disabled={!podeInteressar || pendendo}
             title={interessado
-              ? `Empenhou: ${nomeOferecido ?? "?"} — clique pra desistir`
-              : "Empenhar jogador em troca dele"}
+              ? `Ofereceu: ${nomeOferecido ?? "?"} — clique pra desistir`
+              : "Oferecer jogador em troca dele"}
           >
             {interessado
               ? (
                 <>
-                  Empenhou <strong>{nomeOferecido ?? "?"}</strong>
+                  Ofereceu <strong>{nomeOferecido ?? "?"}</strong>
                 </>
               )
               : "Tenho interesse"}
@@ -1095,7 +1095,7 @@ function ModalInteresses(
                         </span>
                       </div>
                       <div class="bf-int__sub">
-                        {m.clubeNome} · empenhou{" "}
+                        {m.clubeNome} · ofereceu{" "}
                         <strong>{m.oferecidoNome}</strong>
                       </div>
                       {m.totalInteressados > 1 && (

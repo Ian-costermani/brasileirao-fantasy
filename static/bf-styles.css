@@ -2907,13 +2907,13 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   -webkit-mask-image: linear-gradient(
     to bottom,
     #000 0%,
-    #000 78%,
+    #000 90%,
     rgba(0, 0, 0, 0) 100%
   );
   mask-image: linear-gradient(
     to bottom,
     #000 0%,
-    #000 78%,
+    #000 90%,
     rgba(0, 0, 0, 0) 100%
   );
 }

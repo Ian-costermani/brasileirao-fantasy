@@ -29,7 +29,7 @@ export const handler: Handlers<unknown, State> = {
 
     // Body opcional: { atleta_oferecido?: number, remover?: true }
     // - remover=true → tira interesse
-    // - atleta_oferecido → registra interesse com a oferta empenhada
+    // - atleta_oferecido → registra interesse com o jogador oferecido
     let body: { atleta_oferecido?: number; remover?: boolean } = {};
     try {
       body = await req.json();
@@ -65,7 +65,7 @@ export const handler: Handlers<unknown, State> = {
       return new Response(
         JSON.stringify({
           ok: false,
-          erro: "atleta_oferecido obrigatório (empenhe um jogador em troca)",
+          erro: "atleta_oferecido obrigatório (ofereça um jogador em troca)",
         }),
         { status: 400, headers: H },
       );
