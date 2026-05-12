@@ -373,49 +373,47 @@ export default function MercadoBrowser(
 
   return (
     <div class="bf-mercado">
-      {minhaChave && (
-        <div class="bf-mercado__stats">
-          <button
-            type="button"
-            class={`bf-mercado__stat bf-mercado__stat--btn ${
-              tipo === "minhas-venda" ? "bf-mercado__stat--ativo" : ""
-            }`}
-            onClick={() =>
-              setTipo(tipo === "minhas-venda" ? "todos" : "minhas-venda")}
-            disabled={qtdAVenda === 0}
-            title="Filtrar meus jogadores à venda"
-          >
-            <span class="bf-mercado__stat-val">{qtdAVenda}</span>
-            <span class="bf-mercado__stat-lbl">à venda</span>
-          </button>
-          <div class="bf-mercado__stat-div" />
-          <button
-            type="button"
-            class="bf-mercado__stat bf-mercado__stat--btn"
-            onClick={() => setInteressesAberto(true)}
-            disabled={interesses.length === 0}
-            title="Ver e ordenar interesses"
-          >
-            <span class="bf-mercado__stat-val">{interesses.length}</span>
-            <span class="bf-mercado__stat-lbl">interesses</span>
-          </button>
-          <div class="bf-mercado__stat-div" />
-          <button
-            type="button"
-            class="bf-mercado__stat bf-mercado__stat--btn"
-            onClick={() => setDraftAberto(true)}
-            disabled={draftOrdem.length === 0}
-            title="Ver ordem do draft"
-          >
-            <span class="bf-mercado__stat-val">
-              {posicaoDraft ? `${posicaoDraft}º` : "—"}
-            </span>
-            <span class="bf-mercado__stat-lbl">
-              {draftMeta ? `draft · r${draftMeta.rodadaCiclo}/5` : "no draft"}
-            </span>
-          </button>
-        </div>
-      )}
+      <div class="bf-mercado__stats">
+        <button
+          type="button"
+          class={`bf-mercado__stat bf-mercado__stat--btn ${
+            tipo === "minhas-venda" ? "bf-mercado__stat--ativo" : ""
+          }`}
+          onClick={() =>
+            setTipo(tipo === "minhas-venda" ? "todos" : "minhas-venda")}
+          disabled={!minhaChave || qtdAVenda === 0}
+          title="Filtrar meus jogadores à venda"
+        >
+          <span class="bf-mercado__stat-val">{qtdAVenda}</span>
+          <span class="bf-mercado__stat-lbl">à venda</span>
+        </button>
+        <div class="bf-mercado__stat-div" />
+        <button
+          type="button"
+          class="bf-mercado__stat bf-mercado__stat--btn"
+          onClick={() => setInteressesAberto(true)}
+          disabled={!minhaChave || interesses.length === 0}
+          title="Ver e ordenar interesses"
+        >
+          <span class="bf-mercado__stat-val">{interesses.length}</span>
+          <span class="bf-mercado__stat-lbl">interesses</span>
+        </button>
+        <div class="bf-mercado__stat-div" />
+        <button
+          type="button"
+          class="bf-mercado__stat bf-mercado__stat--btn"
+          onClick={() => setDraftAberto(true)}
+          disabled={draftOrdem.length === 0}
+          title="Ver ordem do draft"
+        >
+          <span class="bf-mercado__stat-val">
+            {posicaoDraft ? `${posicaoDraft}º` : "—"}
+          </span>
+          <span class="bf-mercado__stat-lbl">
+            {draftMeta ? `draft · r${draftMeta.rodadaCiclo}/5` : "no draft"}
+          </span>
+        </button>
+      </div>
 
       {draftAberto && draftOrdem.length > 0 && (
         <ModalDraft
