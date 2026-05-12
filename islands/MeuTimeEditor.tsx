@@ -29,8 +29,10 @@ interface Props {
   accent: string;
   /** True se rodada está ao vivo (mostra contador de subs) */
   aoVivo: boolean;
-  /** Quantas substituições já foram usadas nesta rodada */
+  /** Quantas substituições já foram usadas nesta rodada (manuais via swap) */
   subsUsadasInicial: number;
+  /** Quantas substituições automáticas foram aplicadas pelo algoritmo */
+  subsAuto?: number;
   /** Limite de substituições */
   subsMax: number;
   /** Mostrar pontos parciais nos pinos */
@@ -65,6 +67,7 @@ export default function MeuTimeEditor(
     accent,
     aoVivo,
     subsUsadasInicial,
+    subsAuto = 0,
     subsMax,
     showPoints,
     editandoInicial = false,
@@ -103,7 +106,9 @@ export default function MeuTimeEditor(
   const [pendendo, setPendendo] = useState(false);
   const [editando, setEditando] = useState(editandoInicial);
   // FLIP: snapshot da posição dos pins envolvidos no último swap
-  const pendingFlip = useRef<{ ids: [number, number]; rects: Map<number, DOMRect> } | null>(
+  const pendingFlip = useRef<
+    { ids: [number, number]; rects: Map<number, DOMRect> } | null
+  >(
     null,
   );
 
@@ -171,7 +176,9 @@ export default function MeuTimeEditor(
     if (!a || !b) return;
     if (!compativel(a, b)) {
       setErro(
-        `Posições incompatíveis: ${POS_ABREV[a.posicao]} ↔ ${POS_ABREV[b.posicao]}`,
+        `Posições incompatíveis: ${POS_ABREV[a.posicao]} ↔ ${
+          POS_ABREV[b.posicao]
+        }`,
       );
       setSelecionado(atletaId);
       return;
@@ -190,7 +197,9 @@ export default function MeuTimeEditor(
     // FLIP: snapshot da posição visual atual
     const rects = new Map<number, DOMRect>();
     for (const id of [a.atleta_id, b.atleta_id]) {
-      const el = document.querySelector<HTMLElement>(`[data-atleta-id="${id}"]`);
+      const el = document.querySelector<HTMLElement>(
+        `[data-atleta-id="${id}"]`,
+      );
       if (el) rects.set(id, el.getBoundingClientRect());
     }
     pendingFlip.current = { ids: [a.atleta_id, b.atleta_id], rects };
@@ -306,15 +315,21 @@ export default function MeuTimeEditor(
     >
       <div class="bf-meu-time__bar">
         <span class="bf-meu-time__titulo">Sua escalação</span>
-        {fechamentoTexto && (
+        {!aoVivo && fechamentoTexto && (
           <span class="bf-meu-time__market">
             <span class="bf-meu-time__market-dot" aria-hidden="true"></span>
             Mercado fecha em <strong>{fechamentoTexto}</strong>
           </span>
         )}
-        {editando && aoVivo && (
-          <span class="bf-meu-time__subs">
-            <strong>{subsUsadas}/{subsMax}</strong> subs
+        {aoVivo && (
+          <span
+            class={`bf-pill bf-pill--timing-${
+              subsAuto >= subsMax ? "danger" : "normal"
+            }`}
+            title="Substituições automáticas aplicadas"
+          >
+            <span class="bf-pill__lbl">Subs</span>
+            <span class="bf-pill__val">{subsAuto}/{subsMax}</span>
           </span>
         )}
         {editando && selecionado != null && (
@@ -498,9 +513,9 @@ function NaoSection(
               type="button"
               class={`bf-pool__item bf-pool__item--${
                 POS_ABREV[p.posicao].toLowerCase()
-              } ${
-                p.atleta_id === selecionado ? "bf-pool__item--sel" : ""
-              } ${desbotado ? "bf-pool__item--desbotado" : ""}`}
+              } ${p.atleta_id === selecionado ? "bf-pool__item--sel" : ""} ${
+                desbotado ? "bf-pool__item--desbotado" : ""
+              }`}
               key={p.atleta_id}
               onClick={() => onSelect(p.atleta_id)}
               data-atleta-id={p.atleta_id}
@@ -547,4 +562,3 @@ function NaoSection(
     </div>
   );
 }
-

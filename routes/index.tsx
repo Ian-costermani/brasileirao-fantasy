@@ -28,9 +28,7 @@ import {
   type Escalacao,
   type Pino,
 } from "../components/Field.tsx";
-import MeuTimeEditor, {
-  type AtletaElenco,
-} from "../islands/MeuTimeEditor.tsx";
+import MeuTimeEditor, { type AtletaElenco } from "../islands/MeuTimeEditor.tsx";
 import PartidasExpandable from "../islands/PartidasExpandable.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
@@ -79,6 +77,7 @@ interface HomeData {
   atletas: AtletaElenco[];
   /** Substituições já usadas (somente quando ao vivo) */
   subsUsadas: number;
+  subsAuto: number;
   /** Limite de substituições no ao vivo */
   subsMax: number;
   /** Edição da escalação bloqueada (mercado fechado / rodada rolando) */
@@ -272,13 +271,6 @@ export const handler: Handlers<HomeData, State> = {
           entrouEmCampo: !!livePts[String(j.atleta_id)]?.entrou_em_campo,
         }))
       : [];
-    // Countdown só faz sentido com mercado aberto (status_mercado===1)
-    const fechamentoTexto =
-      mercado && mercado.status_mercado === 1 && mercado.fechamento?.timestamp
-        ? formatCountdown(mercado.fechamento.timestamp)
-        : null;
-
-
     // Sobrescreve URLs dos escudos das partidas pra preferir locais
     // (Cartola serve placeholders coloridos por sigla, não escudos reais)
     const clubesPartidas: Record<string, CartolaClube> = {};
@@ -293,8 +285,24 @@ export const handler: Handlers<HomeData, State> = {
     const rodadaAtual = rodada?.rodada ?? mercado?.rodada_atual ?? 0;
     const aoVivoReal = !!mercado?.bola_rolando ||
       (rodada?.status === "ao_vivo");
+
+    // Countdown só faz sentido com mercado aberto E rodada não rolando.
+    // Durante o ao vivo escondemos o "mercado fecha em X" porque ele
+    // não tem mais ação útil — substituições passam a ser automáticas.
+    const fechamentoTexto = !aoVivoReal &&
+        mercado && mercado.status_mercado === 1 &&
+        mercado.fechamento?.timestamp
+      ? formatCountdown(mercado.fechamento.timestamp)
+      : null;
     const subsUsadas = aoVivoReal
       ? await getSubsUsadas(kv, rodadaAtual, CHAVE_USUARIO)
+      : 0;
+    // Contagem de auto-subs aplicadas pelo algoritmo (bench que rendeu
+    // mais que titular). Usado pra exibir "X/3 subs" durante o ao vivo.
+    const subsAuto = meuElenco
+      ? calcularMelhorTime(Object.values(meuElenco.jogadores))
+        .filter((j) => j.escalacao === "Sim" && j.substituido)
+        .length
       : 0;
     const aVendaIds = await getAVenda(kv, CHAVE_USUARIO);
     const parcialLive = meuIdx >= 0 ? ranking[meuIdx].pontuacao : 0;
@@ -344,9 +352,11 @@ export const handler: Handlers<HomeData, State> = {
       banco,
       atletas,
       subsUsadas,
+      subsAuto,
       subsMax: MAX_SUBS_AO_VIVO,
-      // Edição só permitida com mercado aberto (status_mercado===1)
-      edicaoBloqueada: mercado?.status_mercado !== 1,
+      // Edição: bloqueada durante a rodada ao vivo (subs são automáticas)
+      // ou quando o mercado da Cartola estiver fechado.
+      edicaoBloqueada: aoVivoReal || mercado?.status_mercado !== 1,
       aVendaIds,
       total: totalPontos(historico),
       rodadasJogadas: rodadasJogadas(historico),
@@ -377,7 +387,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=70" />
+        <link rel="stylesheet" href="/bf-styles.css?v=71" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -431,9 +441,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               </span>
               <span
                 class={`bf-status-card__metric-foot ${
-                  data.exibidaParcial
-                    ? "bf-status-card__metric-foot--lime"
-                    : ""
+                  data.exibidaParcial ? "bf-status-card__metric-foot--lime" : ""
                 }`}
               >
                 {data.aoVivoReal
@@ -482,6 +490,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               accent={visual?.accent ?? "#888"}
               aoVivo={data.aoVivoReal}
               subsUsadasInicial={data.subsUsadas}
+              subsAuto={data.subsAuto}
               subsMax={data.subsMax}
               showPoints={data.aoVivoReal}
               edicaoBloqueada={data.edicaoBloqueada}
