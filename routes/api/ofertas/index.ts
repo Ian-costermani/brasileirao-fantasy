@@ -1,9 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
-import {
-  criarOferta,
-  listarOfertasRecebidas,
-} from "../../../lib/ofertas.ts";
-import { getAllElencos, getAVendaGlobal } from "../../../lib/kv.ts";
+import { criarOferta, listarOfertasRecebidas } from "../../../lib/ofertas.ts";
+import { getAllElencos, getAVendaGlobal, isAoVivo } from "../../../lib/kv.ts";
 import type { State } from "../../_middleware.ts";
 
 const H = { "Content-Type": "application/json" };
@@ -58,6 +55,15 @@ export const handler: Handlers<unknown, State> = {
     }
 
     const kv = await Deno.openKv();
+    if (await isAoVivo(kv)) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          erro: "Mercado fechado durante a rodada",
+        }),
+        { status: 423, headers: H },
+      );
+    }
     const elencos = await getAllElencos(kv);
 
     // Valida: oferecido está no meu elenco
@@ -108,7 +114,8 @@ export const handler: Handlers<unknown, State> = {
       return new Response(
         JSON.stringify({
           ok: false,
-          erro: `Posições incompatíveis: ${jogOferecido.posicao} ↔ ${jogPedido.posicao}`,
+          erro:
+            `Posições incompatíveis: ${jogOferecido.posicao} ↔ ${jogPedido.posicao}`,
         }),
         { status: 400, headers: H },
       );

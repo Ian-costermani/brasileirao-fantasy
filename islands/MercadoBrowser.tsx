@@ -52,6 +52,8 @@ export interface DraftMetaProp {
 }
 
 interface Props {
+  /** Rodada rolando — gating de ações de mutação. */
+  aoVivo?: boolean;
   jogadores: AtletaMercado[];
   /** Chave do meu time (pra saber se já estou interessado) */
   minhaChave?: string | null;
@@ -92,6 +94,7 @@ function norm(s: string): string {
 
 export default function MercadoBrowser(
   {
+    aoVivo = false,
     jogadores: inicial,
     minhaChave = null,
     meuElenco = [],
@@ -311,6 +314,7 @@ export default function MercadoBrowser(
   }
 
   async function toggleAVenda(j: AtletaMeuTime) {
+    if (aoVivo) return;
     if (!minhaChave) return;
     setPendendo(j.atleta_id);
     const prev = j.aVenda;
@@ -341,6 +345,7 @@ export default function MercadoBrowser(
   }
 
   function abrirInteresse(j: AtletaMercado) {
+    if (aoVivo) return;
     if (!minhaChave || j.donoChave) return;
     if (j.interessados.includes(minhaChave)) {
       setConfirma({
@@ -521,6 +526,7 @@ export default function MercadoBrowser(
                 j={j as AtletaMeuTime}
                 onToggleVenda={toggleAVenda}
                 pendendo={pendendo === j.atleta_id}
+                aoVivo={aoVivo}
               />
             )
             : (
@@ -530,8 +536,11 @@ export default function MercadoBrowser(
                 minhaChave={minhaChave}
                 meuElenco={meu}
                 onInteresse={abrirInteresse}
-                onOfertar={(jj) => setModal({ modo: "oferta", pedido: jj })}
+                onOfertar={aoVivo
+                  ? undefined
+                  : (jj) => setModal({ modo: "oferta", pedido: jj })}
                 pendendo={pendendo === j.atleta_id}
+                aoVivo={aoVivo}
               />
             )
         )}
@@ -768,13 +777,14 @@ function Chip(
 }
 
 function CardJogador(
-  { j, minhaChave, meuElenco, onInteresse, onOfertar, pendendo }: {
+  { j, minhaChave, meuElenco, onInteresse, onOfertar, pendendo, aoVivo }: {
     j: AtletaMercado;
     minhaChave: string | null;
     meuElenco: AtletaMeuTime[];
     onInteresse: (j: AtletaMercado) => void;
     onOfertar?: (j: AtletaMercado) => void;
     pendendo: boolean;
+    aoVivo: boolean;
   },
 ) {
   const nomeOferecido = j.meuOferecido
@@ -783,9 +793,9 @@ function CardJogador(
   const hasFoto = !!j.foto;
   const st = j.statusId != null ? STATUS_LABEL[j.statusId] : null;
   const interessado = !!minhaChave && j.interessados.includes(minhaChave);
-  const podeInteressar = !!minhaChave && !j.donoChave;
+  const podeInteressar = !!minhaChave && !j.donoChave && !aoVivo;
   const podeOfertar = !!minhaChave && !!j.donoChave &&
-    j.donoChave !== minhaChave;
+    j.donoChave !== minhaChave && !aoVivo;
   const ultima = j.pontosUltima != null
     ? j.pontosUltima.toFixed(1).replace(".", ",")
     : "—";
@@ -873,10 +883,11 @@ function CardJogador(
 }
 
 function CardMeu(
-  { j, onToggleVenda, pendendo }: {
+  { j, onToggleVenda, pendendo, aoVivo }: {
     j: AtletaMeuTime;
     onToggleVenda: (j: AtletaMeuTime) => void;
     pendendo: boolean;
+    aoVivo: boolean;
   },
 ) {
   const hasFoto = !!j.foto;
@@ -929,8 +940,12 @@ function CardMeu(
           j.aVenda ? "bf-merc-card__venda-btn--on" : ""
         }`}
         onClick={() => onToggleVenda(j)}
-        disabled={pendendo}
-        title={j.aVenda ? "Tirar da venda" : "Pôr à venda"}
+        disabled={pendendo || aoVivo}
+        title={aoVivo
+          ? "Mercado fechado"
+          : j.aVenda
+          ? "Tirar da venda"
+          : "Pôr à venda"}
       >
         {j.aVenda ? "À venda ✓" : "Pôr à venda"}
       </button>

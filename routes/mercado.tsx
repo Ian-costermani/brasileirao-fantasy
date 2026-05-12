@@ -39,6 +39,8 @@ const POSICAO: Record<number, AtletaMercado["posicao"]> = {
 };
 
 interface Data {
+  /** Rodada rolando: mercado em modo read-only. */
+  aoVivo: boolean;
   jogadores: AtletaMercado[];
   clubes: Record<string, string>; // clube_id → nome
   /** Chave do meu time (pra saber se já estou interessado) */
@@ -264,6 +266,7 @@ export const handler: Handlers<Data, State> = {
     const msAteResolucao = prox ? prox.getTime() - Date.now() : null;
 
     return ctx.render({
+      aoVivo: rodadaStatus?.status === "ao_vivo",
       jogadores,
       clubes,
       minhaChave: ctx.state.session?.chave ?? null,
@@ -344,7 +347,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=69" />
+        <link rel="stylesheet" href="/bf-styles.css?v=70" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -354,7 +357,15 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           userPicture={data.userPicture}
         />
         <SectionHeader right={renderTimingPills(data)}>Mercado</SectionHeader>
+        {data.aoVivo && (
+          <div class="bf-mercado__fechado">
+            Mercado <strong>fechado</strong>{" "}
+            durante a rodada. Você pode visualizar, mas trocas e interesses só
+            voltam quando a rodada terminar.
+          </div>
+        )}
         <MercadoBrowser
+          aoVivo={data.aoVivo}
           jogadores={data.jogadores}
           minhaChave={data.minhaChave}
           meuElenco={data.meuElenco}

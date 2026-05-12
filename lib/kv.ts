@@ -287,6 +287,12 @@ export async function getRodadaStatus(
   return r.value;
 }
 
+/** Verifica se a rodada está rolando ao vivo (KV ou simulação admin). */
+export async function isAoVivo(kv: Deno.Kv): Promise<boolean> {
+  const s = await getRodadaStatus(kv);
+  return s?.status === "ao_vivo";
+}
+
 export async function setRodadaStatus(
   kv: Deno.Kv,
   status: RodadaStatus,

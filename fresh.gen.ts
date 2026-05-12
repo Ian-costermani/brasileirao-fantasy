@@ -13,6 +13,7 @@ import * as $api_admin_draft_fechar from "./routes/api/admin/draft-fechar.ts";
 import * as $api_admin_draft_ordem from "./routes/api/admin/draft-ordem.ts";
 import * as $api_admin_email_map from "./routes/api/admin/email-map.ts";
 import * as $api_admin_seed from "./routes/api/admin/seed.ts";
+import * as $api_admin_simular_rodada from "./routes/api/admin/simular-rodada.ts";
 import * as $api_admin_sync_atletas from "./routes/api/admin/sync-atletas.ts";
 import * as $api_admin_sync_fotos_apifootball from "./routes/api/admin/sync-fotos-apifootball.ts";
 import * as $api_admin_sync_fotos_ogol from "./routes/api/admin/sync-fotos-ogol.ts";
@@ -47,6 +48,7 @@ import * as $ranking from "./routes/ranking.tsx";
 import * as $time_chave_ from "./routes/time/[chave].tsx";
 import * as $AdminDraftDias from "./islands/AdminDraftDias.tsx";
 import * as $AdminEmailMap from "./islands/AdminEmailMap.tsx";
+import * as $AdminSimularRodada from "./islands/AdminSimularRodada.tsx";
 import * as $AoVivoLive from "./islands/AoVivoLive.tsx";
 import * as $CollapsibleTeamRow from "./islands/CollapsibleTeamRow.tsx";
 import * as $LeagueChart from "./islands/LeagueChart.tsx";
@@ -72,6 +74,7 @@ const manifest = {
     "./routes/api/admin/draft-ordem.ts": $api_admin_draft_ordem,
     "./routes/api/admin/email-map.ts": $api_admin_email_map,
     "./routes/api/admin/seed.ts": $api_admin_seed,
+    "./routes/api/admin/simular-rodada.ts": $api_admin_simular_rodada,
     "./routes/api/admin/sync-atletas.ts": $api_admin_sync_atletas,
     "./routes/api/admin/sync-fotos-apifootball.ts":
       $api_admin_sync_fotos_apifootball,
@@ -111,6 +114,7 @@ const manifest = {
   islands: {
     "./islands/AdminDraftDias.tsx": $AdminDraftDias,
     "./islands/AdminEmailMap.tsx": $AdminEmailMap,
+    "./islands/AdminSimularRodada.tsx": $AdminSimularRodada,
     "./islands/AoVivoLive.tsx": $AoVivoLive,
     "./islands/CollapsibleTeamRow.tsx": $CollapsibleTeamRow,
     "./islands/LeagueChart.tsx": $LeagueChart,

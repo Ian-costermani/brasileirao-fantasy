@@ -1,13 +1,13 @@
 import { Handlers } from "$fresh/server.ts";
 import {
   getElenco,
+  getRodadaStatus,
   getSubsUsadas,
   incrementSubsUsadas,
   MAX_SUBS_AO_VIVO,
   setElenco,
   TODAS_CHAVES,
 } from "../../../../lib/kv.ts";
-import { fetchMercadoStatus } from "../../../../lib/cartola.ts";
 
 const H = { "Content-Type": "application/json" };
 
@@ -86,7 +86,8 @@ export const handler: Handlers = {
       return new Response(
         JSON.stringify({
           ok: false,
-          erro: "Atletas precisam estar em categorias diferentes (Sim/Banco/Não)",
+          erro:
+            "Atletas precisam estar em categorias diferentes (Sim/Banco/Não)",
         }),
         { status: 400, headers: H },
       );
@@ -104,11 +105,12 @@ export const handler: Handlers = {
     }
 
     // Modo ao vivo: limita substituições somente quando a troca afeta a
-    // escala (alguém entra ou sai do "Sim").
+    // escala (alguém entra ou sai do "Sim"). Usa o KV (rodadaStatus) em
+    // vez do Cartola direto — assim a simulação do admin também trava.
     const afetaEscala = sai.escalacao === "Sim" || entra.escalacao === "Sim";
-    const mercado = await fetchMercadoStatus().catch(() => null);
-    const aoVivo = !!mercado?.bola_rolando;
-    const rodadaAtual = mercado?.rodada_atual ?? 0;
+    const rodadaStatus = await getRodadaStatus(kv);
+    const aoVivo = rodadaStatus?.status === "ao_vivo";
+    const rodadaAtual = rodadaStatus?.rodada ?? 0;
     let subsUsadas = 0;
     if (aoVivo && afetaEscala) {
       subsUsadas = await getSubsUsadas(kv, rodadaAtual, chave);
@@ -116,7 +118,8 @@ export const handler: Handlers = {
         return new Response(
           JSON.stringify({
             ok: false,
-            erro: `Limite de ${MAX_SUBS_AO_VIVO} substituições atingido nesta rodada`,
+            erro:
+              `Limite de ${MAX_SUBS_AO_VIVO} substituições atingido nesta rodada`,
             subsUsadas,
             subsMax: MAX_SUBS_AO_VIVO,
           }),

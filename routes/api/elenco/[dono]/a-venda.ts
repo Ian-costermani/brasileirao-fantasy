@@ -1,5 +1,10 @@
 import { Handlers } from "$fresh/server.ts";
-import { getElenco, TODAS_CHAVES, toggleAVenda } from "../../../../lib/kv.ts";
+import {
+  getElenco,
+  isAoVivo,
+  TODAS_CHAVES,
+  toggleAVenda,
+} from "../../../../lib/kv.ts";
 import type { State } from "../../../_middleware.ts";
 
 const H = { "Content-Type": "application/json" };
@@ -39,6 +44,15 @@ export const handler: Handlers<unknown, State> = {
       );
     }
     const kv = await Deno.openKv();
+    if (await isAoVivo(kv)) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          erro: "Mercado fechado durante a rodada",
+        }),
+        { status: 423, headers: H },
+      );
+    }
     const elenco = await getElenco(kv, chave);
     if (!elenco?.jogadores[String(body.atleta_id)]) {
       return new Response(

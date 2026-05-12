@@ -2,6 +2,7 @@ import { Handlers } from "$fresh/server.ts";
 import {
   appendPrioridade,
   getAllElencos,
+  isAoVivo,
   removeInteresse,
   removePrioridade,
   setInteresse,
@@ -36,6 +37,15 @@ export const handler: Handlers<unknown, State> = {
     } catch { /* permite body vazio */ }
 
     const kv = await Deno.openKv();
+    if (await isAoVivo(kv)) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          erro: "Mercado fechado durante a rodada",
+        }),
+        { status: 423, headers: H },
+      );
+    }
     const elencos = await getAllElencos(kv);
 
     // Bloqueia interesse em atletas que já pertencem a algum elenco

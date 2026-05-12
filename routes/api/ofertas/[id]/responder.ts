@@ -1,12 +1,9 @@
 import { Handlers } from "$fresh/server.ts";
-import {
-  criarNotif,
-  getOferta,
-  setOferta,
-} from "../../../../lib/ofertas.ts";
+import { criarNotif, getOferta, setOferta } from "../../../../lib/ofertas.ts";
 import {
   getAVenda,
   getElenco,
+  isAoVivo,
   setAVenda,
   setElenco,
 } from "../../../../lib/kv.ts";
@@ -41,6 +38,16 @@ export const handler: Handlers<unknown, State> = {
       );
     }
     const kv = await Deno.openKv();
+    if (body.decisao === "aceita" && await isAoVivo(kv)) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          erro:
+            "Mercado fechado durante a rodada — só pode aceitar ofertas fora dela",
+        }),
+        { status: 423, headers: H },
+      );
+    }
     const oferta = await getOferta(kv, ofertaId);
     if (!oferta) {
       return new Response(

@@ -5,6 +5,7 @@ import {
   getAllElencos,
   getFotos,
   getRodadaStatus,
+  MAX_SUBS_AO_VIVO,
 } from "../../lib/kv.ts";
 import { calcularMelhorTime } from "../../lib/substituicao.ts";
 import { getHistorico, totalPontos } from "../../lib/historico.ts";
@@ -38,6 +39,9 @@ interface Data {
   posicao: number | null;
   totalTimes: number;
   escalacao: Escalacao | null;
+  aoVivo: boolean;
+  subsAplicadas: number;
+  subsMax: number;
   userEmail: string | null;
   userRole: "admin" | "user" | null;
   userNome: string | null;
@@ -76,9 +80,10 @@ export const handler: Handlers<Data, State> = {
       .sort((a, b) => b.pts - a.pts);
     const posicao = ranking.findIndex((t) => t.chave === chave) + 1;
 
-    // Escalação do time
-    const escalados = calcularMelhorTime(Object.values(elenco.jogadores))
-      .filter((j) => j.escalacao === "Sim");
+    // Escalação do time (com auto-subs aplicadas pelo algoritmo, máx 3)
+    const calculados = calcularMelhorTime(Object.values(elenco.jogadores));
+    const escalados = calculados.filter((j) => j.escalacao === "Sim");
+    const subsAplicadas = escalados.filter((j) => j.substituido).length;
     const ptsRodada = Math.round(
       escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
     ) / 100;
@@ -116,6 +121,9 @@ export const handler: Handlers<Data, State> = {
       posicao: posicao || null,
       totalTimes: ranking.length,
       escalacao: escalados.length ? escalacao : null,
+      aoVivo: rodada?.status === "ao_vivo",
+      subsAplicadas,
+      subsMax: MAX_SUBS_AO_VIVO,
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,
       userNome: ctx.state.session?.name ?? null,
@@ -133,7 +141,7 @@ export default function TimeDetalhe({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>{displayName} · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=69" />
+        <link rel="stylesheet" href="/bf-styles.css?v=70" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -178,7 +186,24 @@ export default function TimeDetalhe({ data }: PageProps<Data>) {
           </div>
         </article>
 
-        <SectionHeader>Escalação</SectionHeader>
+        <SectionHeader
+          right={data.aoVivo
+            ? (
+              <span
+                class={`bf-pill bf-pill--timing-${
+                  data.subsAplicadas >= data.subsMax ? "danger" : "normal"
+                }`}
+              >
+                <span class="bf-pill__lbl">Subs</span>
+                <span class="bf-pill__val">
+                  {data.subsAplicadas}/{data.subsMax}
+                </span>
+              </span>
+            )
+            : null}
+        >
+          Escalação
+        </SectionHeader>
         {data.escalacao
           ? (
             <Field

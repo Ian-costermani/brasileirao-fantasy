@@ -2494,6 +2494,22 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"] {
   align-items: center;
   gap: 4px;
 }
+/* Banner exibido enquanto a rodada está ao vivo: mercado é só-leitura */
+.bf-mercado__fechado {
+  margin: 4px var(--bf-gutter) 12px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--bf-red) 14%, var(--bf-chassis));
+  border: 1px solid color-mix(in srgb, var(--bf-red) 50%, transparent);
+  border-radius: var(--bf-radius-md);
+  font-family: var(--bf-font-body);
+  font-size: 13px;
+  color: var(--bf-fg-0);
+  line-height: 1.4;
+}
+.bf-mercado__fechado strong {
+  color: var(--bf-red);
+  font-weight: 700;
+}
 /* Pills compactas pra caber ao lado do título mesmo em mobile */
 .bf-mercado__timings .bf-pill {
   font-size: 9px;
