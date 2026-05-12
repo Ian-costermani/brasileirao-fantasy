@@ -759,8 +759,7 @@ body {
 }
 
 .bf-team-row__summary {
-  display: grid;
-  grid-template-columns: 40px 1fr 36px auto 14px;
+  display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
@@ -774,6 +773,21 @@ body {
   -webkit-user-select: none;
   user-select: none;
   transition: background var(--bf-dur-normal) var(--bf-ease-out);
+}
+.bf-team-row__summary > .bf-team-row__pos {
+  flex: 0 0 40px;
+}
+.bf-team-row__summary > .bf-team-row__meta {
+  flex: 1 1 auto;
+}
+.bf-team-row__summary > .bf-team-row__subs {
+  flex: 0 0 auto;
+}
+.bf-team-row__summary > .bf-team-row__pts {
+  flex: 0 0 auto;
+}
+.bf-team-row__summary > .bf-team-row__chev {
+  flex: 0 0 14px;
 }
 .bf-team-row__summary:hover {
   background: rgba(255, 255, 255, 0.02);
