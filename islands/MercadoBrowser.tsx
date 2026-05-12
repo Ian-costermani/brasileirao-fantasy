@@ -28,6 +28,18 @@ export interface DraftEntry {
   nome: string;
 }
 
+export interface MeuInteresse {
+  atleta_id: number;
+  nome: string;
+  posicao: "Goleiro" | "Lateral" | "Zagueiro" | "Meia" | "Atacante";
+  clubeNome: string;
+  foto: string | null;
+  statusId: number | null;
+  oferecidoId: number;
+  oferecidoNome: string;
+  totalInteressados: number;
+}
+
 export interface DraftMetaProp {
   ciclo: number;
   rodadaCiclo: number;
@@ -48,6 +60,8 @@ interface Props {
   draftOrdem?: DraftEntry[];
   /** Estado do ciclo: ciclo + rodadaCiclo + rodadaBase */
   draftMeta?: DraftMetaProp | null;
+  /** Meus interesses em ordem de prioridade (top = primeiro). */
+  meusInteresses?: MeuInteresse[];
 }
 
 const POS_ABREV: Record<string, string> = {
@@ -80,6 +94,7 @@ export default function MercadoBrowser(
     posicaoDraft = null,
     draftOrdem = [],
     draftMeta = null,
+    meusInteresses = [],
   }: Props,
 ) {
   const [jogadores, setJogadores] = useState<AtletaMercado[]>(inicial);
@@ -93,6 +108,8 @@ export default function MercadoBrowser(
   >("todos");
   const [pendendo, setPendendo] = useState<number | null>(null);
   const [draftAberto, setDraftAberto] = useState(false);
+  const [interesses, setInteresses] = useState<MeuInteresse[]>(meusInteresses);
+  const [interessesAberto, setInteressesAberto] = useState(false);
 
   // Modal único — distingue por modo:
   // - "oferta": trade entre times (precisa enviar pra dono)
@@ -150,6 +167,35 @@ export default function MercadoBrowser(
               : x
           )
         );
+        // Append na lista local de interesses (no fim = menor prioridade)
+        setInteresses((arr) => {
+          if (arr.some((m) => m.atleta_id === pedido.atleta_id)) {
+            // Atualiza oferecido se já existe
+            return arr.map((m) =>
+              m.atleta_id === pedido.atleta_id
+                ? {
+                  ...m,
+                  oferecidoId: oferecido.atleta_id,
+                  oferecidoNome: oferecido.nome,
+                }
+                : m
+            );
+          }
+          return [
+            ...arr,
+            {
+              atleta_id: pedido.atleta_id,
+              nome: pedido.nome,
+              posicao: pedido.posicao,
+              clubeNome: pedido.clubeNome,
+              foto: pedido.foto,
+              statusId: pedido.statusId,
+              oferecidoId: oferecido.atleta_id,
+              oferecidoNome: oferecido.nome,
+              totalInteressados: pedido.interessados.length + 1,
+            },
+          ];
+        });
       }
       return d;
     } catch (e) {
@@ -157,14 +203,16 @@ export default function MercadoBrowser(
     }
   }
 
-  async function removerInteresse(j: AtletaMercado) {
+  async function removerInteresse(atletaId: number) {
     if (!minhaChave) return;
-    setPendendo(j.atleta_id);
-    const prevInter = j.interessados;
-    const prevOf = j.meuOferecido;
+    setPendendo(atletaId);
+    const alvo = jogadores.find((x) => x.atleta_id === atletaId);
+    const prevInter = alvo?.interessados;
+    const prevOf = alvo?.meuOferecido;
+    const prevInteresses = interesses;
     setJogadores((arr) =>
       arr.map((x) =>
-        x.atleta_id === j.atleta_id
+        x.atleta_id === atletaId
           ? {
             ...x,
             interessados: x.interessados.filter((c) => c !== minhaChave),
@@ -173,33 +221,65 @@ export default function MercadoBrowser(
           : x
       )
     );
+    setInteresses((arr) => arr.filter((m) => m.atleta_id !== atletaId));
     try {
-      const r = await fetch(`/api/atleta/${j.atleta_id}/interesse`, {
+      const r = await fetch(`/api/atleta/${atletaId}/interesse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ remover: true }),
       });
       const d = await r.json();
       if (!d.ok) {
+        if (prevInter !== undefined) {
+          setJogadores((arr) =>
+            arr.map((x) =>
+              x.atleta_id === atletaId
+                ? { ...x, interessados: prevInter, meuOferecido: prevOf }
+                : x
+            )
+          );
+        }
+        setInteresses(prevInteresses);
+      }
+    } catch {
+      if (prevInter !== undefined) {
         setJogadores((arr) =>
           arr.map((x) =>
-            x.atleta_id === j.atleta_id
+            x.atleta_id === atletaId
               ? { ...x, interessados: prevInter, meuOferecido: prevOf }
               : x
           )
         );
       }
-    } catch {
-      setJogadores((arr) =>
-        arr.map((x) =>
-          x.atleta_id === j.atleta_id
-            ? { ...x, interessados: prevInter, meuOferecido: prevOf }
-            : x
-        )
-      );
+      setInteresses(prevInteresses);
     } finally {
       setPendendo(null);
     }
+  }
+
+  async function persistirOrdemInteresses(ordem: number[]) {
+    try {
+      await fetch("/api/me/prioridade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ordem }),
+      });
+    } catch {
+      // silencioso — próximo refresh corrige
+    }
+  }
+
+  function moverInteresse(atletaId: number, dir: -1 | 1) {
+    setInteresses((arr) => {
+      const idx = arr.findIndex((m) => m.atleta_id === atletaId);
+      if (idx < 0) return arr;
+      const novoIdx = idx + dir;
+      if (novoIdx < 0 || novoIdx >= arr.length) return arr;
+      const novo = [...arr];
+      [novo[idx], novo[novoIdx]] = [novo[novoIdx], novo[idx]];
+      persistirOrdemInteresses(novo.map((m) => m.atleta_id));
+      return novo;
+    });
   }
 
   async function toggleAVenda(j: AtletaMeuTime) {
@@ -237,7 +317,7 @@ export default function MercadoBrowser(
     if (j.interessados.includes(minhaChave)) {
       // já interessado → confirma remoção em vez de abrir modal de troca
       if (confirm("Remover interesse e liberar o jogador empenhado?")) {
-        removerInteresse(j);
+        removerInteresse(j.atleta_id);
       }
       return;
     }
@@ -276,6 +356,17 @@ export default function MercadoBrowser(
           <button
             type="button"
             class="bf-mercado__stat bf-mercado__stat--btn"
+            onClick={() => setInteressesAberto(true)}
+            disabled={interesses.length === 0}
+            title="Ver e ordenar interesses"
+          >
+            <span class="bf-mercado__stat-val">{interesses.length}</span>
+            <span class="bf-mercado__stat-lbl">interesses</span>
+          </button>
+          <div class="bf-mercado__stat-div" />
+          <button
+            type="button"
+            class="bf-mercado__stat bf-mercado__stat--btn"
             onClick={() => setDraftAberto(true)}
             disabled={draftOrdem.length === 0}
             title="Ver ordem do draft"
@@ -296,6 +387,16 @@ export default function MercadoBrowser(
           minhaChave={minhaChave}
           meta={draftMeta}
           onClose={() => setDraftAberto(false)}
+        />
+      )}
+
+      {interessesAberto && (
+        <ModalInteresses
+          itens={interesses}
+          posicaoDraft={posicaoDraft}
+          onClose={() => setInteressesAberto(false)}
+          onMover={moverInteresse}
+          onRemover={removerInteresse}
         />
       )}
 
@@ -815,6 +916,126 @@ function ModalDraft(
           <p>
             Empate no interesse por free agent → quem está mais alto na lista
             leva.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModalInteresses(
+  { itens, posicaoDraft, onClose, onMover, onRemover }: {
+    itens: MeuInteresse[];
+    posicaoDraft: number | null;
+    onClose: () => void;
+    onMover: (atletaId: number, dir: -1 | 1) => void;
+    onRemover: (atletaId: number) => void;
+  },
+) {
+  return (
+    <div class="bf-modal" onClick={onClose}>
+      <div class="bf-modal__card" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          class="bf-modal__close"
+          onClick={onClose}
+          aria-label="Fechar"
+        >
+          ×
+        </button>
+        <h3 class="bf-modal__titulo">Meus interesses</h3>
+        <p class="bf-modal__txt">
+          Ordene por prioridade. Se você ganhar o draft, vence o atleta no topo
+          que ainda tiver disponível.
+          {posicaoDraft ? ` Sua posição no draft: ${posicaoDraft}º.` : ""}
+        </p>
+        {itens.length === 0
+          ? (
+            <div class="bf-empty-state" style="margin:8px 4px">
+              Você não tem interesses ativos. Demonstre interesse num free agent
+              pra empilhar.
+            </div>
+          )
+          : (
+            <ol class="bf-int__lista">
+              {itens.map((m, i) => (
+                <li class="bf-int__item" key={m.atleta_id}>
+                  <span class="bf-int__pos">{i + 1}º</span>
+                  <div class="bf-int__foto">
+                    {m.foto
+                      ? <img src={m.foto} alt="" loading="lazy" />
+                      : (
+                        <div class="bf-int__foto-placeholder">
+                          {m.nome.charAt(0)}
+                        </div>
+                      )}
+                  </div>
+                  <div class="bf-int__txt">
+                    <div class="bf-int__nome">
+                      {m.nome}
+                      <span class="bf-int__poschip">
+                        {POS_ABREV[m.posicao]}
+                      </span>
+                    </div>
+                    <div class="bf-int__sub">
+                      {m.clubeNome} · empenhou{" "}
+                      <strong>{m.oferecidoNome}</strong>
+                    </div>
+                    {m.totalInteressados > 1 && (
+                      <div class="bf-int__sub bf-int__sub--alerta">
+                        Disputado por {m.totalInteressados} times
+                      </div>
+                    )}
+                  </div>
+                  <div class="bf-int__acoes">
+                    <button
+                      type="button"
+                      class="bf-int__btn"
+                      onClick={() => onMover(m.atleta_id, -1)}
+                      disabled={i === 0}
+                      aria-label="Subir"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      class="bf-int__btn"
+                      onClick={() => onMover(m.atleta_id, 1)}
+                      disabled={i === itens.length - 1}
+                      aria-label="Descer"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      class="bf-int__btn bf-int__btn--del"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Remover interesse em ${m.nome} e liberar ${m.oferecidoNome}?`,
+                          )
+                        ) {
+                          onRemover(m.atleta_id);
+                        }
+                      }}
+                      aria-label="Remover"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        <div class="bf-draft__regras" style="margin-top:14px">
+          <p>
+            Conflitos com outros times resolvem por{" "}
+            <strong>posição do draft</strong>: quem está mais alto leva
+            primeiro.
+          </p>
+          <p>
+            Seus empates internos resolvem por <strong>essa ordem</strong>{" "}
+            (do topo pra baixo).
           </p>
         </div>
       </div>

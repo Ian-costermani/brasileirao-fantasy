@@ -1,7 +1,9 @@
 import { Handlers } from "$fresh/server.ts";
 import {
+  appendPrioridade,
   getAllElencos,
   removeInteresse,
+  removePrioridade,
   setInteresse,
 } from "../../../../lib/kv.ts";
 import type { State } from "../../../_middleware.ts";
@@ -51,6 +53,7 @@ export const handler: Handlers<unknown, State> = {
 
     if (body.remover) {
       const r = await removeInteresse(kv, atletaId, session.chave);
+      await removePrioridade(kv, session.chave, atletaId);
       return new Response(
         JSON.stringify({ ok: true, interessado: false, total: r.total }),
         { headers: H },
@@ -94,6 +97,9 @@ export const handler: Handlers<unknown, State> = {
       session.chave,
       oferecido,
     );
+    // Adiciona no fim da minha lista de prioridade (idempotente: se já
+    // tava na lista, fica na posição que estava)
+    await appendPrioridade(kv, session.chave, atletaId);
     return new Response(
       JSON.stringify({ ok: true, interessado: true, total: r.total }),
       { headers: H },

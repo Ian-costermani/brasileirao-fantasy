@@ -8,6 +8,7 @@ import {
   getDraftOrdem,
   getFotos,
   getInteressadosBatch,
+  getMinhaPrioridade,
   getRodadaStatus,
 } from "../lib/kv.ts";
 import { type DraftMeta, inicializarDraftSeNecessario } from "../lib/draft.ts";
@@ -19,6 +20,7 @@ import SectionHeader from "../components/SectionHeader.tsx";
 import MercadoBrowser, {
   type AtletaMercado,
   type AtletaMeuTime,
+  type MeuInteresse,
 } from "../islands/MercadoBrowser.tsx";
 import type { State } from "./_middleware.ts";
 
@@ -45,6 +47,8 @@ interface Data {
   draftOrdem: { chave: string; nome: string }[];
   /** Estado do ciclo: ciclo + rodadaCiclo (1..5) + rodadaBase */
   draftMeta: DraftMeta;
+  /** Meus interesses em ordem de prioridade (top = primeiro). */
+  meusInteresses: MeuInteresse[];
   userEmail: string | null;
   userRole: "admin" | "user" | null;
   userNome: string | null;
@@ -174,6 +178,45 @@ export const handler: Handlers<Data, State> = {
       nome: CHAVES_TIMES[c]?.nome_time ?? c,
     }));
 
+    // Meus interesses em ordem de prioridade. Cada entrada inclui o
+    // jogador empenhado pra exibir nome no card.
+    const meusInteresses: MeuInteresse[] = [];
+    if (chaveLogada) {
+      const prioridade = await getMinhaPrioridade(kv, chaveLogada);
+      const mercadoIdx = new Map(
+        (mercadoResp?.atletas ?? []).map((a) => [a.atleta_id, a]),
+      );
+      const meuElencoIdx = new Map(
+        (elencos[chaveLogada]?.jogadores
+          ? Object.values(elencos[chaveLogada].jogadores)
+          : []).map((j) => [j.atleta_id, j]),
+      );
+      for (const atletaId of prioridade) {
+        const a = mercadoIdx.get(atletaId);
+        if (!a) continue; // atleta sumiu do mercado
+        const pos = POSICAO[a.posicao_id];
+        if (!pos) continue;
+        // Verifica que ainda tenho interesse ativo (caso o cron tenha
+        // limpado por algum motivo)
+        const regs = interessadosMap[atletaId] ?? [];
+        const meuReg = regs.find((r) => r.chave === chaveLogada);
+        if (!meuReg) continue;
+        const oferecidoJog = meuElencoIdx.get(meuReg.oferecido);
+        meusInteresses.push({
+          atleta_id: atletaId,
+          nome: a.apelido,
+          posicao: pos,
+          clubeNome: clubes[String(a.clube_id)] ?? "",
+          foto: fotos[String(atletaId)] ?? fotoUrl(a.apelido) ??
+            fixCartolaFoto(a.foto) ?? null,
+          statusId: a.status_id,
+          oferecidoId: meuReg.oferecido,
+          oferecidoNome: oferecidoJog?.apelido_api ?? "—",
+          totalInteressados: regs.length,
+        });
+      }
+    }
+
     return ctx.render({
       jogadores,
       clubes,
@@ -183,6 +226,7 @@ export const handler: Handlers<Data, State> = {
       posicaoDraft,
       draftOrdem,
       draftMeta,
+      meusInteresses,
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,
       userNome: ctx.state.session?.name ?? null,
@@ -196,7 +240,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Mercado · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=55" />
+        <link rel="stylesheet" href="/bf-styles.css?v=56" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -214,6 +258,7 @@ export default function MercadoPage({ data }: PageProps<Data>) {
           posicaoDraft={data.posicaoDraft}
           draftOrdem={data.draftOrdem}
           draftMeta={data.draftMeta}
+          meusInteresses={data.meusInteresses}
         />
         <BottomNav active="mercado" />
       </div>

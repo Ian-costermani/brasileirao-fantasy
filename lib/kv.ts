@@ -173,6 +173,52 @@ export async function getInteressadosBatch(
   return out;
 }
 
+/* --- Prioridade pessoal de interesses (ordena dentro do meu próprio set) --- */
+
+/** Lê a ordem de prioridade dos meus interesses (atleta_ids). Index 0 = top. */
+export async function getMinhaPrioridade(
+  kv: Deno.Kv,
+  chave: string,
+): Promise<number[]> {
+  const r = await kv.get<number[]>(["minha_prioridade", chave]);
+  return r.value ?? [];
+}
+
+export async function setMinhaPrioridade(
+  kv: Deno.Kv,
+  chave: string,
+  ordem: number[],
+): Promise<void> {
+  await kv.set(["minha_prioridade", chave], ordem);
+}
+
+/** Adiciona um atleta ao fim da minha lista de prioridade. Idempotente. */
+export async function appendPrioridade(
+  kv: Deno.Kv,
+  chave: string,
+  atletaId: number,
+): Promise<number[]> {
+  const atual = await getMinhaPrioridade(kv, chave);
+  if (atual.includes(atletaId)) return atual;
+  const nova = [...atual, atletaId];
+  await setMinhaPrioridade(kv, chave, nova);
+  return nova;
+}
+
+/** Remove um atleta da minha lista de prioridade. Idempotente. */
+export async function removePrioridade(
+  kv: Deno.Kv,
+  chave: string,
+  atletaId: number,
+): Promise<number[]> {
+  const atual = await getMinhaPrioridade(kv, chave);
+  const nova = atual.filter((id) => id !== atletaId);
+  if (nova.length !== atual.length) {
+    await setMinhaPrioridade(kv, chave, nova);
+  }
+  return nova;
+}
+
 /* --- Ordem do draft (resolução de interesses sobre free agents) ------- */
 
 /** Lê a ordem do draft. Index 0 = primeira escolha. Default = ordem dos
