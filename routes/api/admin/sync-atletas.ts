@@ -7,10 +7,12 @@ import {
 } from "../../../lib/cartola.ts";
 import {
   getAllElencos,
+  getAtletasCache,
   POSICAO_CHAVES_CACHE,
   setElenco,
   setPartidasCache,
 } from "../../../lib/kv.ts";
+import { CUTOUTS_DISPONIVEIS } from "../../../lib/cutouts-manifest.ts";
 import type { AtletaCacheEntry, AtletaCacheKV } from "../../../lib/types.ts";
 
 const H = { "Content-Type": "application/json" };
@@ -25,6 +27,15 @@ export const handler: Handlers = {
       ]);
       const now = new Date().toISOString();
 
+      // Preserva fotos REAIS já encontradas (TheSportsDB) pra não sobrescrever
+      // com silhueta da Cartola.
+      const cacheAtual = new Map<string, AtletaCacheEntry>();
+      for (const pos of POSICAO_CHAVES_CACHE) {
+        const c = await getAtletasCache(kv, pos);
+        if (!c) continue;
+        for (const [id, e] of Object.entries(c.atletas)) cacheAtual.set(id, e);
+      }
+
       // Cache de atletas por posição (para busca/troca)
       const grupos: Record<string, Record<string, AtletaCacheEntry>> = {};
       for (const c of POSICAO_CHAVES_CACHE) grupos[c] = {};
@@ -32,6 +43,7 @@ export const handler: Handlers = {
       const statusMap = new Map<number, number | null>();
       const clubeNomeMap = new Map<number, string>();
       let fotosCount = 0;
+      let cutoutsCount = 0;
 
       for (const a of data.atletas) {
         const posNome = POSICAO_ID_NOME[a.posicao_id];
@@ -40,9 +52,17 @@ export const handler: Handlers = {
         if (!posChave) continue;
         const clube = data.clubes[String(a.clube_id)];
         const clubeNome = clube?.nome_fantasia ?? clube?.nome ?? "";
-        // Cartola às vezes usa "FORMATO" placeholder; substitui por tamanho real
-        const foto = a.foto ? a.foto.replace("FORMATO", "220x220") : null;
+        const idStr = String(a.atleta_id);
+        const fotoExistente = cacheAtual.get(idStr)?.foto;
+        const cartolaFoto = a.foto ? a.foto.replace("FORMATO", "220x220") : null;
+        // Prioridade: cutout local → foto real preservada → Cartola (silhueta)
+        const foto = CUTOUTS_DISPONIVEIS.has(idStr)
+          ? `/atletas/${idStr}.png`
+          : fotoExistente && !fotoExistente.includes("silh")
+          ? fotoExistente
+          : cartolaFoto;
         if (foto) fotosCount++;
+        if (CUTOUTS_DISPONIVEIS.has(idStr)) cutoutsCount++;
         grupos[posChave][String(a.atleta_id)] = {
           apelido: a.apelido,
           clube: clubeNome,
@@ -133,6 +153,7 @@ export const handler: Handlers = {
           elencosTocados,
           partidas: matchMap.size / 2,
           fotos: fotosCount,
+          cutouts: cutoutsCount,
           atualizadoEm: now,
         }),
         { headers: H },

@@ -18,6 +18,7 @@ import {
 import { fetchPlayerPhoto, sleep } from "./sportsdb.ts";
 import { setHistoricoRodada } from "./historico.ts";
 import { calcularMelhorTime } from "./substituicao.ts";
+import { CUTOUTS_DISPONIVEIS } from "./cutouts-manifest.ts";
 import type { AtletaCacheEntry, AtletaCacheKV } from "./types.ts";
 
 async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
@@ -36,18 +37,10 @@ async function sincronizarAtletas(kv: Deno.Kv): Promise<void> {
     for (const [id, e] of Object.entries(c.atletas)) cacheAtual.set(id, e);
   }
 
-  // Indexa cutouts locais bundled (static/atletas/{id}.png) — geração é
-  // local + commit (rembg não roda em Deno Deploy). Estes têm prioridade.
-  const cutoutsLocais = new Set<string>();
-  try {
-    for await (const entry of Deno.readDir("./static/atletas")) {
-      if (entry.isFile && entry.name.endsWith(".png")) {
-        cutoutsLocais.add(entry.name.replace(".png", ""));
-      }
-    }
-  } catch {
-    // pasta pode não existir em alguns ambientes
-  }
+  // Cutouts locais bundled (static/atletas/{id}.png) — geração é local +
+  // commit (rembg não roda em Deno Deploy). Manifesto estático em
+  // lib/cutouts-manifest.ts (Deno Deploy não suporta Deno.readDir em static/).
+  const cutoutsLocais = CUTOUTS_DISPONIVEIS;
 
   // Cache de atletas por posição (para busca/troca)
   const grupos: Record<string, Record<string, AtletaCacheEntry>> = {};
