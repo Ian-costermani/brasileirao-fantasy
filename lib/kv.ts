@@ -158,18 +158,27 @@ export async function removeInteresse(
 }
 
 /** Map de todos os interesses (atleta_id → registros[]) — pra renderizar
-    a lista inteira de uma vez. Itera só sobre os atletas passados. */
+    a lista inteira de uma vez. Usa kv.list (1 round-trip) em vez de N
+    gets individuais. */
 export async function getInteressadosBatch(
   kv: Deno.Kv,
   atletaIds: number[],
 ): Promise<Record<number, InteresseRegistro[]>> {
+  if (atletaIds.length === 0) return {};
   const out: Record<number, InteresseRegistro[]> = {};
-  await Promise.all(
-    atletaIds.map(async (id) => {
-      const lista = await getInteressados(kv, id);
-      if (lista.length) out[id] = lista;
-    }),
-  );
+  const wanted = new Set(atletaIds);
+  const iter = kv.list<InteresseRegistro[] | string[]>({
+    prefix: ["interessados"],
+  });
+  for await (const entry of iter) {
+    const id = entry.key[1] as number;
+    if (!wanted.has(id)) continue;
+    const raw = entry.value;
+    if (!raw || raw.length === 0) continue;
+    out[id] = raw.map((x) =>
+      typeof x === "string" ? { chave: x, oferecido: 0 } : x
+    );
+  }
   return out;
 }
 

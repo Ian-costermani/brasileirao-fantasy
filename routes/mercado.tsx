@@ -70,21 +70,43 @@ interface Data {
 export const handler: Handlers<Data, State> = {
   async GET(_req, ctx) {
     const kv = await Deno.openKv();
-    const rodadaStatus = await getRodadaStatus(kv);
-    const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
-    // Bootstrap do draft no primeiro acesso (ciclo 1, ordem = inverso
-    // da classificação). Idempotente: nada acontece se já inicializado.
-    const draftInit = await inicializarDraftSeNecessario(kv, rodadaAtualBR);
+    const chaveLogadaAux = ctx.state.session?.chave;
 
-    const [elencos, fotos, mercadoResp, aVenda, draftOrdemKeys] = await Promise
-      .all([
-        getAllElencos(kv),
-        getFotos(kv),
-        fetchAtletasMercado().catch(() => null),
-        getAVendaGlobal(kv),
-        getDraftOrdem(kv),
-      ]);
-    const draftMeta = draftInit.meta;
+    // ROUND 1: tudo que não tem dependência roda em paralelo.
+    // O await mais demorado (~200-500ms) é o fetchAtletasMercado.
+    // KV reads ficam de graça embaixo dele.
+    const [
+      rodadaStatus,
+      elencos,
+      fotos,
+      mercadoResp,
+      aVenda,
+      draftOrdemKeys,
+      diasResolucao,
+      minhaPrioridade,
+      minhaAVendaArr,
+    ] = await Promise.all([
+      getRodadaStatus(kv),
+      getAllElencos(kv),
+      getFotos(kv),
+      fetchAtletasMercado().catch(() => null),
+      getAVendaGlobal(kv),
+      getDraftOrdem(kv),
+      getDiasResolucao(kv),
+      chaveLogadaAux
+        ? getMinhaPrioridade(kv, chaveLogadaAux)
+        : Promise.resolve([] as number[]),
+      chaveLogadaAux
+        ? getAVenda(kv, chaveLogadaAux)
+        : Promise.resolve([] as number[]),
+    ]);
+    const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
+    const minhaAVenda = new Set(minhaAVendaArr);
+
+    // Bootstrap do draft no primeiro acesso (idempotente). Roda separado
+    // porque depende de rodadaStatus, mas pode rolar em paralelo com a
+    // próxima rodada de KV reads.
+    const draftInitPromise = inicializarDraftSeNecessario(kv, rodadaAtualBR);
 
     // Dono de cada atleta (chave). Atletas sem dono → "free agent".
     const dono: Record<number, string> = {};
@@ -105,9 +127,13 @@ export const handler: Handlers<Data, State> = {
       const naVenda = owner && aVenda[a.atleta_id] === owner;
       if (!owner || naVenda) idsDisponiveis.push(a.atleta_id);
     }
-    const interessadosMap = await getInteressadosBatch(kv, idsDisponiveis);
-
-    const chaveLogadaAux = ctx.state.session?.chave;
+    // ROUND 2: interesses (depende de idsDisponiveis) + draft init.
+    // Roda em paralelo.
+    const [interessadosMap, draftInit] = await Promise.all([
+      getInteressadosBatch(kv, idsDisponiveis),
+      draftInitPromise,
+    ]);
+    const draftMeta = draftInit.meta;
 
     const jogadores: AtletaMercado[] = [];
     for (const a of mercadoResp?.atletas ?? []) {
@@ -153,7 +179,6 @@ export const handler: Handlers<Data, State> = {
     const meuElenco: AtletaMeuTime[] = [];
     let qtdAVenda = 0;
     if (chaveLogada && elencos[chaveLogada]) {
-      const minhaAVenda = new Set(await getAVenda(kv, chaveLogada));
       qtdAVenda = minhaAVenda.size;
       const mercadoIdx = new Map(
         (mercadoResp?.atletas ?? []).map((a) => [a.atleta_id, a]),
@@ -199,7 +224,7 @@ export const handler: Handlers<Data, State> = {
     // jogador oferecido pra exibir nome no card.
     const meusInteresses: MeuInteresse[] = [];
     if (chaveLogada) {
-      const prioridade = await getMinhaPrioridade(kv, chaveLogada);
+      const prioridade = minhaPrioridade;
       const mercadoIdx = new Map(
         (mercadoResp?.atletas ?? []).map((a) => [a.atleta_id, a]),
       );
@@ -260,8 +285,8 @@ export const handler: Handlers<Data, State> = {
       msAteFechamento = Math.max(0, fechTimestamp * 1000 - Date.now());
     }
 
-    // Tempo até a próxima resolução de conflitos do draft
-    const diasResolucao = await getDiasResolucao(kv);
+    // Tempo até a próxima resolução de conflitos do draft (já temos
+    // diasResolucao do round 1)
     const prox = proximaResolucao(diasResolucao);
     const msAteResolucao = prox ? prox.getTime() - Date.now() : null;
 
