@@ -79,8 +79,11 @@ export const handler: Handlers<Data, State> = {
     const chaveLogadaAux = ctx.state.session?.chave;
 
     // ROUND 1: tudo que não tem dependência roda em paralelo.
-    // O await mais demorado (~200-500ms) é o fetchAtletasMercado.
-    // KV reads ficam de graça embaixo dele.
+    // Mede cada um individualmente pra ver quem é o gargalo real.
+    const timed = <T,>(label: string, p: Promise<T>): Promise<T> => {
+      const t = performance.now();
+      return p.finally(() => mark(label, t));
+    };
     const [
       rodadaStatus,
       elencos,
@@ -92,19 +95,25 @@ export const handler: Handlers<Data, State> = {
       minhaPrioridade,
       minhaAVendaArr,
     ] = await Promise.all([
-      getRodadaStatus(kv),
-      getAllElencos(kv),
-      getFotos(kv),
-      fetchAtletasMercado().catch(() => null),
-      getAVendaGlobal(kv),
-      getDraftOrdem(kv),
-      getDiasResolucao(kv),
-      chaveLogadaAux
-        ? getMinhaPrioridade(kv, chaveLogadaAux)
-        : Promise.resolve([] as number[]),
-      chaveLogadaAux
-        ? getAVenda(kv, chaveLogadaAux)
-        : Promise.resolve([] as number[]),
+      timed("rodada", getRodadaStatus(kv)),
+      timed("elencos", getAllElencos(kv)),
+      timed("fotos", getFotos(kv)),
+      timed("cartola", fetchAtletasMercado().catch(() => null)),
+      timed("aVenda", getAVendaGlobal(kv)),
+      timed("draftOrd", getDraftOrdem(kv)),
+      timed("dias", getDiasResolucao(kv)),
+      timed(
+        "prio",
+        chaveLogadaAux
+          ? getMinhaPrioridade(kv, chaveLogadaAux)
+          : Promise.resolve([] as number[]),
+      ),
+      timed(
+        "minAv",
+        chaveLogadaAux
+          ? getAVenda(kv, chaveLogadaAux)
+          : Promise.resolve([] as number[]),
+      ),
     ]);
     mark("r1", T0);
     const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
