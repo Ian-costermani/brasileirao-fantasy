@@ -11,3 +11,10 @@ _fresh/
 # Logs/runtime
 nohup.out
 *.log
+
+# Assets servidos via CDN (repo separado Iuri07/brasileirao-fantasy-assets).
+# Em dev é um symlink pro repo de assets; em prod chega via jsDelivr.
+static/atletas
+static/escudos
+static/players
+static/times_escudos

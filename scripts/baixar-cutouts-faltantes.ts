@@ -5,8 +5,10 @@
 //   deno run --allow-net --allow-read --allow-write --allow-run --allow-env \
 //     scripts/baixar-cutouts-faltantes.ts
 //
-// Após terminar, rode ./scripts/gerar-cutouts-manifest.sh pra regerar o
-// manifesto, e depois commit + push.
+// Após terminar:
+//   1. ./scripts/gerar-manifests.sh  (atualiza manifest TS no repo de código)
+//   2. ./scripts/sync-assets.sh      (sobe imagens novas pro CDN)
+//   3. commit + push do repo de código (manifest novo)
 
 import { fetchAtletasMercado } from "../lib/cartola.ts";
 import {

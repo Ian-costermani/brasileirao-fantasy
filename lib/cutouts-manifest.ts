@@ -1,6 +1,5 @@
-// AUTO-GERADO por scripts/gerar-cutouts-manifest.sh
-// IDs de atletas com cutout em static/atletas/{id}.png — Deno Deploy não
-// consegue ler static/ via Deno.readDir, então mantemos manifesto estático.
+// AUTO-GERADO por scripts/gerar-manifests.sh
+// IDs de atletas com cutout PNG em /atletas/{id}.png
 
 export const CUTOUTS_DISPONIVEIS = new Set<string>([
   "37656",

@@ -1,26 +1,12 @@
-// Manifesto de fotos de jogadores em /static/players/.
+// Manifesto de fotos de jogadores em /players/.
 // Slug do arquivo (sem extensão) bate com slugify(apelido) na maioria dos casos.
-// Casos ambíguos (Gabriel, Pedro etc) ficam sem foto até termos atleta_id no
-// match — pode ser melhorado depois com mapping atleta_id → file.
+// Os arquivos moram no repo de assets (servido via CDN). Manifest gerado
+// por scripts/gerar-manifests.sh, committed aqui pra o servidor saber
+// quais arquivos existem sem precisar ler do disco em runtime.
 
-const PLAYERS_DIR = "static/players";
+import { PLAYERS_MANIFEST } from "./players-manifest.ts";
 
-function loadManifest(): Map<string, string> {
-  const m = new Map<string, string>();
-  try {
-    for (const entry of Deno.readDirSync(PLAYERS_DIR)) {
-      if (!entry.isFile) continue;
-      const dot = entry.name.lastIndexOf(".");
-      if (dot < 0) continue;
-      m.set(entry.name.slice(0, dot), entry.name);
-    }
-  } catch {
-    // Diretório não existe — segue sem fotos.
-  }
-  return m;
-}
-
-const MANIFEST = loadManifest();
+const MANIFEST = new Map<string, string>(Object.entries(PLAYERS_MANIFEST));
 
 export function slugifyApelido(apelido: string): string {
   return apelido
