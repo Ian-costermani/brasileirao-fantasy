@@ -20,6 +20,42 @@ export default function App({ Component }: AppProps) {
           crossorigin="anonymous"
         />
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
+        {
+          /* Speculation Rules — Chrome/Edge pré-renderizam a página
+             (HTML + JS executado) em background quando user passa o
+             mouse num link. No clique, a página já tá pronta no GPU
+             memory e é exibida instantaneamente.
+             Browsers sem suporte caem no prefetch normal (já adicionado
+             via JS no body). */
+        }
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  source: "document",
+                  where: {
+                    and: [
+                      { href_matches: "/*" },
+                      {
+                        not: {
+                          or: [
+                            { href_matches: "/api/*" },
+                            { href_matches: "/login*" },
+                            { href_matches: "/logout*" },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                  eagerness: "moderate",
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body>
         {/* Barra de progresso no topo durante navegação */}
@@ -95,7 +131,7 @@ export default function App({ Component }: AppProps) {
               // página demorar mais que THRESH ms. Pra navegações rápidas
               // (skeleton + cache) fica invisível, sem flicker.
               var navBar = document.getElementById('bf-nav-progress');
-              var THRESH = 180;
+              var THRESH = 350;
               var navTimer = null;
               function startProgress() {
                 document.body.classList.add('bf-leaving');
