@@ -76,7 +76,7 @@ html, body {
 }
 
 body {
-  background:
+  background: /* Glows sutis nos cantos (mantém identidade neon) */
     radial-gradient(
       800px 400px at 80% -200px,
       rgba(255, 27, 141, 0.06),
@@ -87,7 +87,31 @@ body {
     rgba(31, 168, 255, 0.05),
     transparent 70%
   ),
+     /* Mesma imagem do login, bem mais escura (~95% overlay) pra
+    não competir com o conteúdo. Fixed pra não rolar junto. */linear-gradient(
+    rgba(11, 11, 13, 0.95),
+    rgba(11, 11, 13, 0.95)
+  ),
+    url("/assets/login-bg.avif") center top / 100% auto repeat-y fixed,
     var(--bf-ink);
+}
+@media (min-aspect-ratio: 1/1) {
+  body {
+    background:
+      radial-gradient(
+        800px 400px at 80% -200px,
+        rgba(255, 27, 141, 0.06),
+        transparent 70%
+      ),
+      radial-gradient(
+      600px 400px at -100px 700px,
+      rgba(31, 168, 255, 0.05),
+      transparent 70%
+    ),
+      linear-gradient(rgba(11, 11, 13, 0.95), rgba(11, 11, 13, 0.95)),
+      url("/assets/login-bg.avif") center / cover no-repeat fixed,
+      var(--bf-ink);
+  }
 }
 
 /* Mobile-first viewport — center on desktop, baseline 390px */
