@@ -10,6 +10,16 @@ export default function App({ Component }: AppProps) {
         <meta name="theme-color" content="#0a3d20" />
         <title>Fantasy Cartola - Ranking</title>
         <link rel="stylesheet" href="/styles.css?v=54" />
+        {
+          /* Preconnect pro CDN de imagens — economiza ~100ms no primeiro
+             load por estabelecer TLS antes do primeiro img request. */
+        }
+        <link
+          rel="preconnect"
+          href="https://cdn.jsdelivr.net"
+          crossorigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       </head>
       <body>
         {
@@ -55,15 +65,37 @@ export default function App({ Component }: AppProps) {
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Prefetch ao hover/touch: dá vantagem de TTFB pra navegação
+              // que provavelmente vai acontecer. Browser pega a página em
+              // background, então o clique fica instantâneo.
+              var prefetched = new Set();
+              function maybePrefetch(href) {
+                if (!href || prefetched.has(href)) return;
+                if (!href.startsWith(location.origin)) return;
+                if (href === location.href) return;
+                prefetched.add(href);
+                var link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                document.head.appendChild(link);
+              }
+              document.addEventListener('mouseover', function(e) {
+                var a = e.target.closest && e.target.closest('a[href]');
+                if (a) maybePrefetch(a.href);
+              }, { passive: true });
+              document.addEventListener('touchstart', function(e) {
+                var a = e.target.closest && e.target.closest('a[href]');
+                if (a) maybePrefetch(a.href);
+              }, { passive: true });
+
+              // Fade out sutil no clique — sem bloquear a navegação.
               document.addEventListener('click', function(e) {
                 var a = e.target.closest && e.target.closest('a[href]');
                 if (!a) return;
                 if (a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 if (a.origin !== location.origin) return;
                 if (a.href === location.href) return;
-                e.preventDefault();
                 document.body.classList.add('bf-leaving');
-                setTimeout(function() { location.href = a.href; }, 90);
               });
               window.addEventListener('pageshow', function() {
                 document.body.classList.remove('bf-leaving');

@@ -86,21 +86,36 @@ export async function handler(req: Request, ctx: FreshContext<State>) {
   const resp = await ctx.next();
 
   // 5. Cache pra assets estáticos curados
-  if (
-    resp.status === 200 &&
-    (p.startsWith("/atletas/") || p.startsWith("/escudos/") ||
-      p.startsWith("/times_escudos/"))
-  ) {
-    const headers = new Headers(resp.headers);
-    headers.set(
-      "Cache-Control",
-      "public, max-age=86400, stale-while-revalidate=604800",
-    );
-    return new Response(resp.body, {
-      status: resp.status,
-      statusText: resp.statusText,
-      headers,
-    });
+  if (resp.status === 200) {
+    // CSS / JS / fontes / SVGs / imagens curadas — versionados via ?v=N,
+    // safe pra cachear por 1 ano e revalidar com stale-while-revalidate.
+    const isAsset = p === "/bf-styles.css" ||
+      p === "/styles.css" ||
+      p.startsWith("/_frsh/") ||
+      p.endsWith(".css") ||
+      p.endsWith(".js") ||
+      p.endsWith(".svg") ||
+      p === "/logo_site.png" ||
+      p === "/campo.svg" ||
+      p === "/bola.png" ||
+      p === "/favicon.ico" ||
+      p.startsWith("/favicon-") ||
+      p.startsWith("/atletas/") ||
+      p.startsWith("/escudos/") ||
+      p.startsWith("/players/") ||
+      p.startsWith("/times_escudos/");
+    if (isAsset) {
+      const headers = new Headers(resp.headers);
+      headers.set(
+        "Cache-Control",
+        "public, max-age=31536000, stale-while-revalidate=604800, immutable",
+      );
+      return new Response(resp.body, {
+        status: resp.status,
+        statusText: resp.statusText,
+        headers,
+      });
+    }
   }
 
   return resp;
