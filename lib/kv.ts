@@ -90,15 +90,18 @@ export async function toggleAVenda(
   return { aVenda: true };
 }
 
-/** Map global: atleta_id → chave do dono que está oferecendo à venda. */
+/** Map global: atleta_id → chave do dono que está oferecendo à venda.
+ *  Reads paralelos (era sequencial, custava 9×latência KV ~ 800ms). */
 export async function getAVendaGlobal(
   kv: Deno.Kv,
 ): Promise<Record<number, string>> {
   const out: Record<number, string> = {};
-  for (const chave of TODAS_CHAVES) {
-    const ids = await getAVenda(kv, chave);
-    for (const id of ids) out[id] = chave;
-  }
+  const arrays = await Promise.all(
+    TODAS_CHAVES.map((c) => getAVenda(kv, c)),
+  );
+  TODAS_CHAVES.forEach((chave, i) => {
+    for (const id of arrays[i]) out[id] = chave;
+  });
   return out;
 }
 

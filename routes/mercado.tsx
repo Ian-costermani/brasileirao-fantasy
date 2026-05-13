@@ -17,7 +17,10 @@ import {
   inicializarDraftSeNecessario,
   proximaResolucao,
 } from "../lib/draft.ts";
-import { fetchAtletasMercado, fetchMercadoStatus } from "../lib/cartola.ts";
+import {
+  fetchAtletasMercadoCacheado,
+  fetchMercadoStatus,
+} from "../lib/cartola.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import { coresClube } from "../lib/cores.ts";
 import TopBar from "../components/TopBar.tsx";
@@ -98,7 +101,7 @@ export const handler: Handlers<Data, State> = {
       timed("rodada", getRodadaStatus(kv)),
       timed("elencos", getAllElencos(kv)),
       timed("fotos", getFotos(kv)),
-      timed("cartola", fetchAtletasMercado().catch(() => null)),
+      timed("cartola", fetchAtletasMercadoCacheado(kv).catch(() => null)),
       timed("aVenda", getAVendaGlobal(kv)),
       timed("draftOrd", getDraftOrdem(kv)),
       timed("dias", getDiasResolucao(kv)),
