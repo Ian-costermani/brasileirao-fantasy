@@ -276,7 +276,12 @@ export async function setElenco(
   chave: string,
   elenco: ElencoKV,
 ): Promise<void> {
-  await kv.set(["elenco", chave], elenco);
+  // Atomic: escreve elenco + invalida cache do melhor_time juntos pra
+  // evitar leitura stale entre escritas.
+  await kv.atomic()
+    .set(["elenco", chave], elenco)
+    .delete(["melhor_time", chave])
+    .commit();
 }
 
 export async function getAllElencos(

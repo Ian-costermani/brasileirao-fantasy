@@ -1,8 +1,11 @@
 import {
   fetchAtletasMercado,
+  fetchAtletasMercadoCacheado,
   fetchAtletasPontuados,
   fetchMercadoStatus,
+  fetchMercadoStatusCacheado,
   fetchPartidas,
+  fetchPartidasCacheado,
   POSICAO_ID_NOME,
   POSICAO_NOME_CHAVE,
 } from "./cartola.ts";
@@ -232,6 +235,24 @@ export async function atualizarTudo(kv: Deno.Kv): Promise<void> {
     fechamento: mercado.bola_rolando ? undefined : mercado.fechamento,
     atualizadoEm: now,
   });
+
+  // Pre-warm dos caches Cartola em KV pra que page loads não paguem
+  // cold start. Roda em paralelo, todos com TTL >5min de margem.
+  await Promise.all([
+    fetchAtletasMercadoCacheado(kv).catch(() => {}),
+    fetchPartidasCacheado(kv).catch(() => {}),
+    fetchMercadoStatusCacheado(kv).catch(() => {}),
+  ]);
+
+  // Pre-computa melhor_time pra cada elenco (cache em KV). Como o
+  // setElenco que rolou acima invalidou todos os caches, aqui repopula.
+  const elencosAtualizados = await getAllElencos(kv);
+  await Promise.all(
+    Object.entries(elencosAtualizados).map(([chave, elenco]) => {
+      const computed = calcularMelhorTime(Object.values(elenco.jogadores));
+      return kv.set(["melhor_time", chave], computed);
+    }),
+  );
 
   console.log(`[cron] pontuação atualizada: rodada ${pontuados.rodada_id}`);
 }

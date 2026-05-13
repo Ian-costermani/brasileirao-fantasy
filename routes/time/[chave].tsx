@@ -7,7 +7,7 @@ import {
   getRodadaStatus,
   MAX_SUBS_AO_VIVO,
 } from "../../lib/kv.ts";
-import { calcularMelhorTime } from "../../lib/substituicao.ts";
+import { getMelhorTimeCached } from "../../lib/substituicao.ts";
 import { getHistorico, totalPontos } from "../../lib/historico.ts";
 import TopBar from "../../components/TopBar.tsx";
 import BottomNav from "../../components/BottomNav.tsx";
@@ -67,10 +67,21 @@ export const handler: Handlers<Data, State> = {
     const elenco = elencos[chave];
     if (!elenco) return new Response("Elenco não seedado", { status: 404 });
 
-    // Ranking pra calcular posição
-    const ranking = Object.entries(elencos)
-      .map(([k, e]) => {
-        const escalados = calcularMelhorTime(Object.values(e.jogadores))
+    // Melhor time pra ranking + escalação (cache hit = quase gratuito)
+    const melhoresPorChave = new Map<
+      string,
+      Awaited<ReturnType<typeof getMelhorTimeCached>>
+    >();
+    await Promise.all(
+      Object.entries(elencos).map(async ([k, e]) => {
+        const r = await getMelhorTimeCached(kv, k, e);
+        melhoresPorChave.set(k, r);
+      }),
+    );
+
+    const ranking = Object.keys(elencos)
+      .map((k) => {
+        const escalados = (melhoresPorChave.get(k) ?? [])
           .filter((j) => j.escalacao === "Sim");
         const pts = Math.round(
           escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
@@ -81,7 +92,7 @@ export const handler: Handlers<Data, State> = {
     const posicao = ranking.findIndex((t) => t.chave === chave) + 1;
 
     // Escalação do time (com auto-subs aplicadas pelo algoritmo, máx 3)
-    const calculados = calcularMelhorTime(Object.values(elenco.jogadores));
+    const calculados = melhoresPorChave.get(chave) ?? [];
     const escalados = calculados.filter((j) => j.escalacao === "Sim");
     const subsAplicadas = escalados.filter((j) => j.substituido).length;
     const ptsRodada = Math.round(
@@ -142,7 +153,7 @@ export default function TimeDetalhe({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>{displayName} · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=73" />
+        <link rel="stylesheet" href="/bf-styles.css?v=74" />
       </Head>
       <div class="bf-viewport">
         <TopBar

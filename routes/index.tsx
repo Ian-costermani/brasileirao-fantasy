@@ -10,7 +10,10 @@ import {
   MAX_SUBS_AO_VIVO,
   TODAS_CHAVES,
 } from "../lib/kv.ts";
-import { calcularMelhorTime } from "../lib/substituicao.ts";
+import {
+  calcularMelhorTime,
+  getMelhorTimeCached,
+} from "../lib/substituicao.ts";
 import {
   type CartolaClube,
   type CartolaPartida,
@@ -223,10 +226,23 @@ export const handler: Handlers<HomeData, State> = {
       }),
     );
 
+    // Melhor time de cada chave em paralelo (cache hit é instantâneo)
+    const Tmelhor = performance.now();
+    const melhoresPorChave = new Map<
+      string,
+      Awaited<ReturnType<typeof getMelhorTimeCached>>
+    >();
+    await Promise.all(
+      Object.entries(elencos).map(async ([chave, elenco]) => {
+        const r = await getMelhorTimeCached(kv, chave, elenco);
+        melhoresPorChave.set(chave, r);
+      }),
+    );
+    mark("melhor", Tmelhor);
+
     const ranking: TimeRanking[] = Object.entries(elencos)
       .map(([chave, elenco]) => {
-        const todos = Object.values(elenco.jogadores);
-        const escalados = calcularMelhorTime(todos)
+        const escalados = (melhoresPorChave.get(chave) ?? [])
           .filter((j) => j.escalacao === "Sim")
           .map((j) => ({ ...j, pontos: liveP(j.atleta_id, j.pontos) }));
         escaladosPorChave[chave] = escalados;
@@ -273,8 +289,9 @@ export const handler: Handlers<HomeData, State> = {
           statusId: j.status_id,
         }))
       : [];
+    const meuMelhor = melhoresPorChave.get(CHAVE_USUARIO) ?? [];
     const banco: BancoPino[] = meuElenco
-      ? calcularMelhorTime(Object.values(meuElenco.jogadores))
+      ? meuMelhor
         .filter((j) => j.escalacao === "Banco")
         .map((j) => ({
           nome: j.apelido_api,
@@ -319,11 +336,8 @@ export const handler: Handlers<HomeData, State> = {
       : 0;
     // Contagem de auto-subs aplicadas pelo algoritmo (bench que rendeu
     // mais que titular). Usado pra exibir "X/3 subs" durante o ao vivo.
-    const subsAuto = meuElenco
-      ? calcularMelhorTime(Object.values(meuElenco.jogadores))
-        .filter((j) => j.escalacao === "Sim" && j.substituido)
-        .length
-      : 0;
+    const subsAuto = meuMelhor
+      .filter((j) => j.escalacao === "Sim" && j.substituido).length;
     const aVendaIds = await getAVenda(kv, CHAVE_USUARIO);
     const parcialLive = meuIdx >= 0 ? ranking[meuIdx].pontuacao : 0;
     const historicoAtual = historico[String(rodadaAtual)];
@@ -413,7 +427,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=73" />
+        <link rel="stylesheet" href="/bf-styles.css?v=74" />
       </Head>
       <div class="bf-viewport">
         <TopBar

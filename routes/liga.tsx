@@ -6,7 +6,7 @@ import {
   getRodadaStatus,
   MAX_SUBS_AO_VIVO,
 } from "../lib/kv.ts";
-import { calcularMelhorTime } from "../lib/substituicao.ts";
+import { getMelhorTimeCached } from "../lib/substituicao.ts";
 import { getHistorico, totalPontos } from "../lib/historico.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
@@ -89,9 +89,23 @@ export const handler: Handlers<Data, State> = {
     chavesArr.forEach((c, i) => historicoPorChave.set(c, historicos[i]));
     mark("hist", Thist);
 
+    // Melhor time de cada chave em paralelo (cache hit = quase gratuito)
+    const Tmelhor = performance.now();
+    const melhoresPorChave = new Map<
+      string,
+      Awaited<ReturnType<typeof getMelhorTimeCached>>
+    >();
+    await Promise.all(
+      Object.entries(elencos).map(async ([chave, elenco]) => {
+        const r = await getMelhorTimeCached(kv, chave, elenco);
+        melhoresPorChave.set(chave, r);
+      }),
+    );
+    mark("melhor", Tmelhor);
+
     const times: TimeLinha[] = [];
     for (const [chave, elenco] of Object.entries(elencos)) {
-      const calculados = calcularMelhorTime(Object.values(elenco.jogadores));
+      const calculados = melhoresPorChave.get(chave) ?? [];
       const escalados = calculados.filter((j) => j.escalacao === "Sim");
       const reservas = calculados.filter((j) => j.escalacao === "Banco");
       const subsAplicadas = escalados.filter((j) => j.substituido).length;
@@ -179,7 +193,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=73" />
+        <link rel="stylesheet" href="/bf-styles.css?v=74" />
       </Head>
       <div class="bf-viewport">
         <TopBar

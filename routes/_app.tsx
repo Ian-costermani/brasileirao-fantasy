@@ -22,6 +22,9 @@ export default function App({ Component }: AppProps) {
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       </head>
       <body>
+        {/* Barra de progresso no topo durante navegação */}
+        <div id="bf-nav-progress" aria-hidden="true"></div>
+
         {
           /* Filtro global pra remover fundo branco das fotos.
             α = 56 - 20*(R+G+B). Sharp threshold em R+G+B ≈ 2.8 (cada
@@ -88,18 +91,36 @@ export default function App({ Component }: AppProps) {
                 if (a) maybePrefetch(a.href);
               }, { passive: true });
 
-              // Fade out sutil no clique — sem bloquear a navegação.
+              // Barra de progresso + fade no clique — feedback imediato
+              var navBar = document.getElementById('bf-nav-progress');
+              function startProgress() {
+                document.body.classList.add('bf-leaving');
+                if (navBar) navBar.classList.add('bf-nav-progress--on');
+              }
+              function endProgress() {
+                document.body.classList.remove('bf-leaving');
+                if (navBar) {
+                  navBar.classList.add('bf-nav-progress--done');
+                  setTimeout(function() {
+                    navBar.classList.remove('bf-nav-progress--on', 'bf-nav-progress--done');
+                  }, 220);
+                }
+              }
               document.addEventListener('click', function(e) {
                 var a = e.target.closest && e.target.closest('a[href]');
                 if (!a) return;
                 if (a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 if (a.origin !== location.origin) return;
                 if (a.href === location.href) return;
-                document.body.classList.add('bf-leaving');
+                startProgress();
               });
-              window.addEventListener('pageshow', function() {
-                document.body.classList.remove('bf-leaving');
+              // Forms POST que navegam também
+              document.addEventListener('submit', function(e) {
+                var f = e.target;
+                if (f && f.method && f.method.toLowerCase() === 'post') startProgress();
               });
+              window.addEventListener('pageshow', endProgress);
+              window.addEventListener('beforeunload', startProgress);
             `,
           }}
         />

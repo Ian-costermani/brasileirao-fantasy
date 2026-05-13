@@ -1,4 +1,4 @@
-import type { JogadorKV } from "./types.ts";
+import type { ElencoKV, JogadorKV } from "./types.ts";
 
 export interface JogadorComSub extends JogadorKV {
   /** true se entrou em campo no lugar de um titular (bench → escala) */
@@ -114,4 +114,21 @@ export function calcularMelhorTime(todos: JogadorKV[]): JogadorComSub[] {
   }
 
   return resultado;
+}
+
+/** Cache do calcularMelhorTime em KV por chave. Invalidado automaticamente
+ *  via setElencoComCacheInvalidado (que faz atomic delete). Custo de
+ *  cache hit: 1 KV read; custo de miss: 1 KV read + recompute + 1 KV write
+ *  (write em background, não bloqueia retorno). */
+export async function getMelhorTimeCached(
+  kv: Deno.Kv,
+  chave: string,
+  elenco: ElencoKV,
+): Promise<JogadorComSub[]> {
+  const r = await kv.get<JogadorComSub[]>(["melhor_time", chave]);
+  if (r.value) return r.value;
+  const computed = calcularMelhorTime(Object.values(elenco.jogadores));
+  // Write em background (não bloqueia)
+  void kv.set(["melhor_time", chave], computed);
+  return computed;
 }
