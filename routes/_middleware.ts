@@ -85,10 +85,9 @@ export async function handler(req: Request, ctx: FreshContext<State>) {
   // 4. Chama o handler real
   const resp = await ctx.next();
 
-  // 5. Cache pra assets estáticos curados
+  // 5. Cache headers
   if (resp.status === 200) {
-    // CSS / JS / fontes / SVGs / imagens curadas — versionados via ?v=N,
-    // safe pra cachear por 1 ano e revalidar com stale-while-revalidate.
+    // 5a. Assets imutáveis (versionados via ?v=N) — cache de 1 ano
     const isAsset = p === "/bf-styles.css" ||
       p === "/styles.css" ||
       p.startsWith("/_frsh/") ||
@@ -109,6 +108,29 @@ export async function handler(req: Request, ctx: FreshContext<State>) {
       headers.set(
         "Cache-Control",
         "public, max-age=31536000, stale-while-revalidate=604800, immutable",
+      );
+      return new Response(resp.body, {
+        status: resp.status,
+        statusText: resp.statusText,
+        headers,
+      });
+    }
+
+    // 5b. Páginas SSR autenticadas — browser pode cachear por 30s,
+    // entrega instantânea em repeat navs. `private` = só cache do
+    // usuário (não compartilhar entre users via proxy/CDN).
+    // `stale-while-revalidate` = serve stale enquanto refetcha em
+    // background — UX perfeita pra back/forward.
+    const isPagina = !p.startsWith("/api/") &&
+      !p.startsWith("/_frsh/") &&
+      session !== null && // só pra usuários logados
+      req.method === "GET" &&
+      resp.headers.get("Content-Type")?.includes("text/html");
+    if (isPagina) {
+      const headers = new Headers(resp.headers);
+      headers.set(
+        "Cache-Control",
+        "private, max-age=30, stale-while-revalidate=60",
       );
       return new Response(resp.body, {
         status: resp.status,
