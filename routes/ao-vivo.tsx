@@ -7,7 +7,6 @@ import {
   getRodadaStatus,
 } from "../lib/kv.ts";
 import { calcularMelhorTime } from "../lib/substituicao.ts";
-import { fetchMercadoStatus } from "../lib/cartola.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
@@ -61,17 +60,19 @@ export const handler: Handlers<Data, State> = {
     mark("kv1", T0);
 
     const aoVivoPorKv = rodadaStatus?.status === "ao_vivo";
-    // Cartola só é necessária se KV diz "não ao vivo" e queremos mostrar
-    // o próximo timestamp de abertura
-    const Tcart = performance.now();
-    const mercado = aoVivoPorKv
-      ? null
-      : await fetchMercadoStatus().catch(() => null);
-    if (!aoVivoPorKv) mark("cartola", Tcart);
-
-    const aoVivoOk = aoVivoPorKv ||
-      !!mercado?.bola_rolando ||
-      mercado?.status_mercado === 2;
+    // Confia no rodadaStatus do KV (cron atualiza cada 5min). Cartola
+    // bola_rolando seria mais fresh, mas custa ~800ms — não compensa
+    // pra um delay de até 5min na detecção de início/fim de rodada.
+    const aoVivoOk = aoVivoPorKv;
+    // Reutiliza o fechamento do KV pra mostrar o "próximo" quando não
+    // ao vivo (substitui o mercado.fechamento.timestamp)
+    const mercado = rodadaStatus
+      ? {
+        bola_rolando: aoVivoPorKv,
+        status_mercado: rodadaStatus.status === "aguardando" ? 1 : 2,
+        fechamento: rodadaStatus.fechamento,
+      } as const
+      : null;
     const userInfo: UserInfo = {
       userEmail: ctx.state.session?.email ?? null,
       userRole: ctx.state.session?.role ?? null,

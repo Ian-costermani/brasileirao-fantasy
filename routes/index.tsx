@@ -15,8 +15,8 @@ import {
   type CartolaClube,
   type CartolaPartida,
   fetchAtletasPontuados,
-  fetchMercadoStatus,
-  fetchPartidas,
+  fetchMercadoStatusCacheado,
+  fetchPartidasCacheado,
 } from "../lib/cartola.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
@@ -185,8 +185,8 @@ export const handler: Handlers<HomeData, State> = {
     const [mercado, partidasResp, pontuadosResp] = await Promise.all([
       temFechamentoKv
         ? Promise.resolve(null)
-        : fetchMercadoStatus().catch(() => null),
-      fetchPartidas().catch(() => null),
+        : fetchMercadoStatusCacheado(kv).catch(() => null),
+      fetchPartidasCacheado(kv).catch(() => null),
       aoVivoKv
         ? fetchAtletasPontuados().catch(() => null)
         : Promise.resolve(null),

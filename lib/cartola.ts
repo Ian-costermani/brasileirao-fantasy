@@ -87,6 +87,55 @@ interface ChunkMeta {
   chunkCount: number;
 }
 
+/** Cache em KV das partidas (placar + horário + status). Pequeno
+ *  (10 partidas + ~22 clubes ≈ 5KB), cabe num único value. TTL 2min
+ *  pra refletir placares durante a rodada. */
+const PARTIDAS_CACHE_TTL_MS = 2 * 60 * 1000;
+const PARTIDAS_KEY = ["partidas_full_cache"];
+
+interface PartidasCache {
+  data: Awaited<ReturnType<typeof fetchPartidas>>;
+  cachedAt: number;
+}
+
+export async function fetchPartidasCacheado(
+  kv: Deno.Kv,
+): Promise<Awaited<ReturnType<typeof fetchPartidas>>> {
+  const r = await kv.get<PartidasCache>(PARTIDAS_KEY);
+  const now = Date.now();
+  if (r.value && now - r.value.cachedAt < PARTIDAS_CACHE_TTL_MS) {
+    return r.value.data;
+  }
+  const fresh = await fetchPartidas();
+  void kv.set(
+    PARTIDAS_KEY,
+    { data: fresh, cachedAt: now } satisfies PartidasCache,
+  );
+  return fresh;
+}
+
+/** Cache em KV do mercado/status. Pequeno (~200 bytes). TTL 60s. */
+const STATUS_CACHE_TTL_MS = 60 * 1000;
+const STATUS_KEY = ["mercado_status_cache"];
+
+interface StatusCache {
+  data: CartolaMercadoStatus;
+  cachedAt: number;
+}
+
+export async function fetchMercadoStatusCacheado(
+  kv: Deno.Kv,
+): Promise<CartolaMercadoStatus> {
+  const r = await kv.get<StatusCache>(STATUS_KEY);
+  const now = Date.now();
+  if (r.value && now - r.value.cachedAt < STATUS_CACHE_TTL_MS) {
+    return r.value.data;
+  }
+  const fresh = await fetchMercadoStatus();
+  void kv.set(STATUS_KEY, { data: fresh, cachedAt: now } satisfies StatusCache);
+  return fresh;
+}
+
 export async function fetchAtletasMercadoCacheado(kv: Deno.Kv): Promise<{
   atletas: CartolaAtleta[];
   clubes: Record<string, ClubeMin>;
@@ -119,12 +168,15 @@ export async function fetchAtletasMercadoCacheado(kv: Deno.Kv): Promise<{
         const chunk = fresh.atletas.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
         tx = tx.set(["mercado_cache", "c", i], chunk);
       }
-      tx = tx.set(META_KEY, {
-        rodada: fresh.rodada_atual,
-        cachedAt: now,
-        clubes: fresh.clubes,
-        chunkCount: count,
-      } satisfies ChunkMeta);
+      tx = tx.set(
+        META_KEY,
+        {
+          rodada: fresh.rodada_atual,
+          cachedAt: now,
+          clubes: fresh.clubes,
+          chunkCount: count,
+        } satisfies ChunkMeta,
+      );
       await tx.commit();
     } catch (e) {
       console.warn("[mercado_cache] persist failed:", e);
