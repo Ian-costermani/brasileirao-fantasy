@@ -33,8 +33,10 @@ export function slugifyApelido(apelido: string): string {
     .replace(/\s+/g, "-");
 }
 
+import { cdn } from "./cdn.ts";
+
 export function fotoUrl(apelido: string | null | undefined): string | null {
   if (!apelido) return null;
   const file = MANIFEST.get(slugifyApelido(apelido));
-  return file ? `/players/${file}` : null;
+  return file ? cdn(`/players/${file}`) : null;
 }

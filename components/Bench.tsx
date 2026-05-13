@@ -31,7 +31,7 @@ const POS_ABREV: Record<string, string> = {
 // Mesma lógica do Field: foto só vale quando é cutout transparente
 // (TheSportsDB ou ogol salvo em /atletas/).
 function isCutout(url: string | null | undefined): boolean {
-  return !!url && (url.includes("thesportsdb") || url.startsWith("/atletas/"));
+  return !!url && (url.includes("thesportsdb") || url.includes("/atletas/"));
 }
 
 export default function Bench({ jogadores, empty = "Sem reservas" }: Props) {
@@ -74,9 +74,7 @@ export default function Bench({ jogadores, empty = "Sem reservas" }: Props) {
             {entrou
               ? (
                 <span
-                  class={`bf-bench__pts ${
-                    pts < 0 ? "bf-bench__pts--neg" : ""
-                  }`}
+                  class={`bf-bench__pts ${pts < 0 ? "bf-bench__pts--neg" : ""}`}
                 >
                   {pts > 0 ? "+" : ""}
                   {pts.toFixed(1).replace(".", ",")}

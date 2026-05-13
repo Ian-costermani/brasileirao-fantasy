@@ -333,13 +333,17 @@ export function donoToChave(dono: string): string | undefined {
  * Os fotos são salvos por atleta dentro de AtletaCacheEntry (sync-atletas).
  */
 export async function getFotos(kv: Deno.Kv): Promise<Record<string, string>> {
+  const { cdn } = await import("./cdn.ts");
   const out: Record<string, string> = {};
   await Promise.all(
     POSICAO_CHAVES_CACHE.map(async (pos) => {
       const cache = await getAtletasCache(kv, pos);
       if (!cache) return;
       for (const [id, a] of Object.entries(cache.atletas)) {
-        if (a.foto) out[id] = a.foto;
+        if (a.foto) {
+          const wrapped = cdn(a.foto);
+          if (wrapped) out[id] = wrapped;
+        }
       }
     }),
   );

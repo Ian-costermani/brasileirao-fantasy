@@ -4,6 +4,7 @@
 // então fica como último fallback caso apareça clube novo sem JPG.
 
 import { escudoCdnUrl } from "./clubes-cdn.ts";
+import { cdn } from "./cdn.ts";
 
 const LOCAL: Record<string, string> = {
   "Athletico-PR": "athletico-pr.jpg",
@@ -33,6 +34,6 @@ const LOCAL: Record<string, string> = {
 export function escudoUrl(clube: string | null | undefined): string | null {
   if (!clube) return null;
   const local = LOCAL[clube];
-  if (local) return `/escudos/${local}`;
+  if (local) return cdn(`/escudos/${local}`);
   return escudoCdnUrl(clube);
 }

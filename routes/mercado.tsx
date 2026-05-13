@@ -126,7 +126,7 @@ export const handler: Handlers<Data, State> = {
       // silhueta vira null aqui — o island renderiza a camisa SVG.
       const fotoKV = fotos[String(a.atleta_id)];
       const fotoCutout = fotoKV &&
-          (fotoKV.startsWith("/atletas/") || fotoKV.includes("thesportsdb"))
+          (fotoKV.includes("/atletas/") || fotoKV.includes("thesportsdb"))
         ? fotoKV
         : fotoUrl(a.apelido);
       jogadores.push({
@@ -164,7 +164,7 @@ export const handler: Handlers<Data, State> = {
         if (!pos) continue;
         const fotoKV = fotos[String(j.atleta_id)];
         const fotoCutout = fotoKV &&
-            (fotoKV.startsWith("/atletas/") || fotoKV.includes("thesportsdb"))
+            (fotoKV.includes("/atletas/") || fotoKV.includes("thesportsdb"))
           ? fotoKV
           : fotoUrl(j.apelido_api);
         meuElenco.push({
@@ -222,7 +222,7 @@ export const handler: Handlers<Data, State> = {
         const clubeNomeAt = clubes[String(a.clube_id)] ?? "";
         const fotoKV = fotos[String(atletaId)];
         const fotoCutout = fotoKV &&
-            (fotoKV.startsWith("/atletas/") || fotoKV.includes("thesportsdb"))
+            (fotoKV.includes("/atletas/") || fotoKV.includes("thesportsdb"))
           ? fotoKV
           : fotoUrl(a.apelido);
         meusInteresses.push({

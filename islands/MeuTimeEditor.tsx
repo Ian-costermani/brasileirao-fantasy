@@ -505,7 +505,7 @@ function NaoSection(
           const desbotado = posicaoFiltro != null &&
             p.posicao !== posicaoFiltro;
           const hasCutout = !!p.foto &&
-            (p.foto.includes("thesportsdb") || p.foto.startsWith("/atletas/"));
+            (p.foto.includes("thesportsdb") || p.foto.includes("/atletas/"));
           const escudo = escudoUrl(p.clube);
           const status = statusInfo(p.statusId);
           return (

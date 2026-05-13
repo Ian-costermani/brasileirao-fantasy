@@ -164,7 +164,7 @@ function PlayerPin(
   // (salvo localmente em /static/atletas/{id}.png). Fotos com fundo
   // inconsistente (Cartola silhuetas, API-Football, JPG local) → camisa.
   const hasFotoReal = !!(p.foto &&
-    (p.foto.includes("thesportsdb") || p.foto.startsWith("/atletas/")));
+    (p.foto.includes("thesportsdb") || p.foto.includes("/atletas/")));
   const cls = ["bf-pin"];
   if (isEmpty) cls.push("bf-pin--empty");
   if (selecionado) cls.push("bf-pin--selecionado");

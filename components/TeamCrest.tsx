@@ -1,4 +1,5 @@
 import { timeLigaInfo } from "../lib/times-liga.ts";
+import { cdn } from "../lib/cdn.ts";
 import Crest from "./Crest.tsx";
 
 interface Props {
@@ -17,7 +18,7 @@ export default function TeamCrest({ chave, size = 48, alt }: Props) {
   if (info?.logo) {
     return (
       <img
-        src={info.logo}
+        src={cdn(info.logo) ?? info.logo}
         alt={alt ?? info.displayName ?? chave}
         width={size}
         height={size}
