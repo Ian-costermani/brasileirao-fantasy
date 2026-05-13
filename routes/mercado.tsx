@@ -56,11 +56,14 @@ export const handler: Handlers<Data, State> = {
     // SSR enxuto: lê SÓ dados leves (KV pequenos). A grade de
     // atletas e meu elenco vêm via fetch client em /api/mercado/data
     // após hidratação — UI vira usável em ~150ms.
+    // inicializarDraftSeNecessario rola em paralelo — passa rodada=1 como
+    // default; em prod já está inicializado e o param é ignorado.
     const [
       rodadaStatus,
       draftOrdemKeys,
       diasResolucao,
       minhaAVendaArr,
+      draftInit,
     ] = await Promise.all([
       getRodadaStatus(kv),
       getDraftOrdem(kv),
@@ -68,13 +71,10 @@ export const handler: Handlers<Data, State> = {
       chaveLogadaAux
         ? getAVenda(kv, chaveLogadaAux)
         : Promise.resolve([] as number[]),
+      inicializarDraftSeNecessario(kv, 1),
     ]);
     mark("kv", T0);
-    const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
     const qtdAVenda = minhaAVendaArr.length;
-
-    // Bootstrap do draft no primeiro acesso (idempotente).
-    const draftInit = await inicializarDraftSeNecessario(kv, rodadaAtualBR);
     const draftMeta = draftInit.meta;
     const chaveLogada = chaveLogadaAux;
 
