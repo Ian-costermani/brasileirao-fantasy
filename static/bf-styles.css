@@ -87,10 +87,11 @@ body {
     rgba(31, 168, 255, 0.05),
     transparent 70%
   ),
-     /* Mesma imagem do login, bem mais escura (~95% overlay) pra
-    não competir com o conteúdo. Fixed pra não rolar junto. */linear-gradient(
-    rgba(11, 11, 13, 0.95),
-    rgba(11, 11, 13, 0.95)
+     /* Mesma imagem do login com overlay de ~85% — visível mas sutil
+    o suficiente pra não competir com o conteúdo. Fixed = parallax
+    sem rolar junto do scroll. */linear-gradient(
+    rgba(11, 11, 13, 0.85),
+    rgba(11, 11, 13, 0.85)
   ),
     url("/assets/login-bg.avif") center top / 100% auto repeat-y fixed,
     var(--bf-ink);
@@ -108,7 +109,7 @@ body {
       rgba(31, 168, 255, 0.05),
       transparent 70%
     ),
-      linear-gradient(rgba(11, 11, 13, 0.95), rgba(11, 11, 13, 0.95)),
+      linear-gradient(rgba(11, 11, 13, 0.85), rgba(11, 11, 13, 0.85)),
       url("/assets/login-bg.avif") center / cover no-repeat fixed,
       var(--bf-ink);
   }
