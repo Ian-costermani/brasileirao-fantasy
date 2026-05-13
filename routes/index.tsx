@@ -156,28 +156,42 @@ function montarEscalacao(
 
 export const handler: Handlers<HomeData, State> = {
   async GET(_req, ctx) {
+    const T0 = performance.now();
+    const timings: string[] = [];
+    const mark = (label: string, since: number) => {
+      timings.push(`${label};dur=${(performance.now() - since).toFixed(1)}`);
+    };
+
     const CHAVE_USUARIO = ctx.state.session?.chave ?? CHAVE_FALLBACK_DEV;
     const kv = await Deno.openKv();
-    const [
-      elencos,
-      rodada,
-      mercado,
-      partidasResp,
-      pontuadosResp,
-      fotos,
-      historico,
-    ] = await Promise.all([
+    // Lê só do KV primeiro pra decidir se precisamos da Cartola.
+    // Cartola só é necessária quando ao vivo (pontuados parciais) e/ou
+    // quando o mercado tá aberto (fechamento countdown).
+    const [elencos, rodada, fotos, historico] = await Promise.all([
       getAllElencos(kv),
       getRodadaStatus(kv),
-      // Cartola direto — caso de timeout/erro, fica null e oculta countdown
-      fetchMercadoStatus().catch(() => null),
-      fetchPartidas().catch(() => null),
-      // Pontos parciais ao vivo — sobrescreve os pontos do KV (mais frescos
-      // que esperar o cron rodar)
-      fetchAtletasPontuados().catch(() => null),
       getFotos(kv),
       getHistorico(kv, CHAVE_USUARIO),
     ]);
+    mark("kv", T0);
+
+    // Cartola: só fetcha o que NÃO temos no KV.
+    // - mercado/status só se rodada do KV não tem fechamento (raro)
+    // - pontuados só durante ao vivo
+    // - partidas sempre (não tem placar/horário em KV)
+    const aoVivoKv = rodada?.status === "ao_vivo";
+    const temFechamentoKv = !!rodada?.fechamento?.timestamp;
+    const Tcart = performance.now();
+    const [mercado, partidasResp, pontuadosResp] = await Promise.all([
+      temFechamentoKv
+        ? Promise.resolve(null)
+        : fetchMercadoStatus().catch(() => null),
+      fetchPartidas().catch(() => null),
+      aoVivoKv
+        ? fetchAtletasPontuados().catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    mark("cartola", Tcart);
     const livePts = pontuadosResp?.atletas ?? {};
     const liveP = (id: number, kvPts: number | null): number | null => {
       const live = livePts[String(id)]?.pontuacao;
@@ -287,16 +301,18 @@ export const handler: Handlers<HomeData, State> = {
     }
 
     const rodadaAtual = rodada?.rodada ?? mercado?.rodada_atual ?? 0;
+    // Combina KV + Cartola: confia em qualquer fonte que diga ao vivo.
     const aoVivoReal = !!mercado?.bola_rolando ||
       (rodada?.status === "ao_vivo");
 
-    // Countdown só faz sentido com mercado aberto E rodada não rolando.
-    // Durante o ao vivo escondemos o "mercado fecha em X" porque ele
-    // não tem mais ação útil — substituições passam a ser automáticas.
-    const fechamentoTexto = !aoVivoReal &&
-        mercado && mercado.status_mercado === 1 &&
-        mercado.fechamento?.timestamp
-      ? formatCountdown(mercado.fechamento.timestamp)
+    // Countdown: usa fechamento do KV se tiver, senão da Cartola.
+    // Durante o ao vivo esconde porque ações de mercado bloqueiam.
+    const fechamentoTs = rodada?.fechamento?.timestamp ??
+      mercado?.fechamento?.timestamp;
+    const mercadoAberto = rodada?.status === "aguardando" ||
+      mercado?.status_mercado === 1;
+    const fechamentoTexto = !aoVivoReal && mercadoAberto && fechamentoTs
+      ? formatCountdown(fechamentoTs)
       : null;
     const subsUsadas = aoVivoReal
       ? await getSubsUsadas(kv, rodadaAtual, CHAVE_USUARIO)
@@ -358,9 +374,9 @@ export const handler: Handlers<HomeData, State> = {
       subsUsadas,
       subsAuto,
       subsMax: MAX_SUBS_AO_VIVO,
-      // Edição: bloqueada durante a rodada ao vivo (subs são automáticas)
-      // ou quando o mercado da Cartola estiver fechado.
-      edicaoBloqueada: aoVivoReal || mercado?.status_mercado !== 1,
+      // Edição: bloqueada durante a rodada ao vivo OU quando mercado
+      // fechado (sem fonte dizendo "aguardando").
+      edicaoBloqueada: aoVivoReal || !mercadoAberto,
       aVendaIds,
       total: totalPontos(historico),
       rodadasJogadas: rodadasJogadas(historico),
@@ -369,7 +385,13 @@ export const handler: Handlers<HomeData, State> = {
       clubesPartidas,
     };
 
-    return ctx.render(data);
+    mark("data", T0);
+    const Trender = performance.now();
+    const resp = await ctx.render(data);
+    mark("render", Trender);
+    mark("total", T0);
+    resp.headers.set("Server-Timing", timings.join(","));
+    return resp;
   },
 };
 

@@ -69,6 +69,12 @@ interface Data {
 
 export const handler: Handlers<Data, State> = {
   async GET(_req, ctx) {
+    const T0 = performance.now();
+    const timings: string[] = [];
+    const mark = (label: string, since: number) => {
+      timings.push(`${label};dur=${(performance.now() - since).toFixed(1)}`);
+    };
+
     const kv = await Deno.openKv();
     const chaveLogadaAux = ctx.state.session?.chave;
 
@@ -100,6 +106,7 @@ export const handler: Handlers<Data, State> = {
         ? getAVenda(kv, chaveLogadaAux)
         : Promise.resolve([] as number[]),
     ]);
+    mark("r1", T0);
     const rodadaAtualBR = rodadaStatus?.rodada ?? 1;
     const minhaAVenda = new Set(minhaAVendaArr);
 
@@ -129,10 +136,12 @@ export const handler: Handlers<Data, State> = {
     }
     // ROUND 2: interesses (depende de idsDisponiveis) + draft init.
     // Roda em paralelo.
+    const T2 = performance.now();
     const [interessadosMap, draftInit] = await Promise.all([
       getInteressadosBatch(kv, idsDisponiveis),
       draftInitPromise,
     ]);
+    mark("r2", T2);
     const draftMeta = draftInit.meta;
 
     const jogadores: AtletaMercado[] = [];
@@ -290,7 +299,9 @@ export const handler: Handlers<Data, State> = {
     const prox = proximaResolucao(diasResolucao);
     const msAteResolucao = prox ? prox.getTime() - Date.now() : null;
 
-    return ctx.render({
+    mark("data", T0);
+    const Trender = performance.now();
+    const resp = await ctx.render({
       aoVivo: rodadaStatus?.status === "ao_vivo",
       jogadores,
       clubes,
@@ -308,6 +319,10 @@ export const handler: Handlers<Data, State> = {
       userNome: ctx.state.session?.name ?? null,
       userPicture: ctx.state.session?.picture ?? null,
     });
+    mark("render", Trender);
+    mark("total", T0);
+    resp.headers.set("Server-Timing", timings.join(","));
+    return resp;
   },
 };
 
