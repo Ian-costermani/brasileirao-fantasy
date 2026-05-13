@@ -135,7 +135,12 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px var(--bf-gutter);
-  background: linear-gradient(to bottom, var(--bf-ink) 78%, transparent);
+  /* Frosted glass: deixa a imagem do body aparecer borrada por baixo,
+     conectando o topbar com o conteúdo em vez de cortar abrupto. */
+  background: color-mix(in srgb, var(--bf-ink) 65%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid color-mix(in srgb, var(--bf-line) 60%, transparent);
 }
 
 .bf-iconbtn {
