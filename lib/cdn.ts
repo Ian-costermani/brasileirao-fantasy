@@ -14,7 +14,12 @@
 const CDN_BASE =
   "https://cdn.jsdelivr.net/gh/Iuri07/brasileirao-fantasy-assets@master";
 
-const IN_DEPLOY = !!Deno.env.get("DENO_DEPLOYMENT_ID");
+// Checagem segura: este módulo pode ser importado por uma island via
+// cadeia de imports (TeamCrest, escudoUrl, fotoUrl...). No browser
+// `Deno` não existe — sem o guard, `Deno.env.get(...)` joga
+// ReferenceError, quebra a chunk inteira e nenhuma island hidrata.
+const IN_DEPLOY = typeof Deno !== "undefined" &&
+  !!Deno.env?.get?.("DENO_DEPLOYMENT_ID");
 
 /** Retorna a URL final do asset. URLs absolutas (http(s)://) passam direto.
  *  Em prod, paths começando com '/' viram URL absoluta do jsDelivr. */
