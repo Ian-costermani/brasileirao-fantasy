@@ -14,12 +14,26 @@
 const CDN_BASE =
   "https://cdn.jsdelivr.net/gh/Iuri07/brasileirao-fantasy-assets@master";
 
-// Checagem segura: este módulo pode ser importado por uma island via
-// cadeia de imports (TeamCrest, escudoUrl, fotoUrl...). No browser
-// `Deno` não existe — sem o guard, `Deno.env.get(...)` joga
-// ReferenceError, quebra a chunk inteira e nenhuma island hidrata.
-const IN_DEPLOY = typeof Deno !== "undefined" &&
-  !!Deno.env?.get?.("DENO_DEPLOYMENT_ID");
+// Detecção de "estou rodando em Deno Deploy":
+// - browser: `Deno` não existe → false (e o guard evita ReferenceError
+//   na chunk client; sem ele, todos os islands quebram em hidratação).
+// - Deno Deploy clássico (.deno.dev): DENO_DEPLOYMENT_ID setado.
+// - Deno Deploy EA (.deno.net): DENO_DEPLOYMENT_ID pode não vir;
+//   DENO_REGION / DENO_REVISION_ID costumam estar populados.
+// - dev local: nenhum dos três → IN_DEPLOY=false, serve do symlink local.
+function detectDenoDeploy(): boolean {
+  if (typeof Deno === "undefined") return false;
+  try {
+    return !!(
+      Deno.env.get("DENO_DEPLOYMENT_ID") ||
+      Deno.env.get("DENO_REGION") ||
+      Deno.env.get("DENO_REVISION_ID")
+    );
+  } catch {
+    return false;
+  }
+}
+const IN_DEPLOY = detectDenoDeploy();
 
 /** Retorna a URL final do asset. URLs absolutas (http(s)://) passam direto.
  *  Em prod, paths começando com '/' viram URL absoluta do jsDelivr. */
