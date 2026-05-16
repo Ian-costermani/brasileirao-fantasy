@@ -194,7 +194,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=80" />
+        <link rel="stylesheet" href="/bf-styles.css?v=81" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -243,7 +243,8 @@ export default function Liga({ data }: PageProps<Data>) {
                     ? (
                       <Field
                         jogadores={t.escalacao}
-                        showPoints={!data.aoVivo}
+                        showPoints={false}
+                        showStatus={false}
                         accent={accent}
                         banco={t.banco}
                       />

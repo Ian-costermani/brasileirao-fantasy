@@ -21,6 +21,8 @@ export interface Pino {
   subEntrou?: boolean;
   /** Era titular, foi rebaixado pelo auto-sub (escala → bench) */
   subSaiu?: boolean;
+  /** Live: jogador está atualmente em campo (Cartola entrou_em_campo). */
+  emCampo?: boolean;
 }
 
 export interface StatusBadge {
@@ -132,6 +134,14 @@ interface Props {
   selecionado?: number;
   /** Predicado pra marcar pinos como alvos válidos da troca */
   compativelCom?: (p: Pino) => boolean;
+  /** Modo "ao vivo": esconde badges de status (provável/dúvida/etc) e
+      mostra apenas indicadores relevantes durante a partida (subs +
+      bolinha verde de "em campo"). */
+  liveMode?: boolean;
+  /** Controle explícito do badge de status (provável/dúvida/etc).
+      Default true. Em liveMode é forçado false. /liga histórica usa
+      false pra ficar "limpa" — só escalação + posições, sem dados. */
+  showStatus?: boolean;
 }
 
 export interface BancoPino extends Pino {
@@ -149,7 +159,17 @@ const COLOR_VAR: Record<"yellow" | "blue" | "magenta" | "orange", string> = {
 };
 
 function PlayerPin(
-  { p, accent, showPoints, empty, onSelect, selecionado, compativel }: {
+  {
+    p,
+    accent,
+    showPoints,
+    empty,
+    onSelect,
+    selecionado,
+    compativel,
+    liveMode = false,
+    showStatus = true,
+  }: {
     p: Pino;
     accent: keyof typeof COLOR_VAR;
     showPoints: boolean;
@@ -157,6 +177,8 @@ function PlayerPin(
     onSelect?: (atletaId: number) => void;
     selecionado?: boolean;
     compativel?: boolean;
+    liveMode?: boolean;
+    showStatus?: boolean;
   },
 ) {
   const isEmpty = empty && !p.num && !p.cores && !p.foto;
@@ -241,7 +263,13 @@ function PlayerPin(
           alt=""
         />
       )}
-      {status && (
+      {
+        /* Status (provável/dúvida/etc) — só fora do live e quando
+          showStatus permite. Durante a rodada essa info perde sentido;
+          o que importa é se entrou em campo ou foi substituído. /liga
+          desabilita explicitamente (escalação "limpa"). */
+      }
+      {!liveMode && showStatus && status && (
         <span
           class="bf-pin__badge bf-pin__badge--status"
           style={{ "--st-color": status.cor } as Record<string, string>}
@@ -250,6 +278,18 @@ function PlayerPin(
         >
           {status.sym}
         </span>
+      )}
+      {
+        /* Bolinha verde discreta — confirma que o jogador está em campo
+          AGORA. Só faz sentido no live e quando não foi substituído
+          (subEntrou/subSaiu já transmitem essa info). */
+      }
+      {liveMode && p.emCampo && !p.subEntrou && !p.subSaiu && (
+        <span
+          class="bf-pin__badge bf-pin__badge--em-campo"
+          title="Em campo"
+          aria-label="Em campo"
+        />
       )}
       {p.subEntrou && (
         <span
@@ -308,6 +348,8 @@ export default function Field(
     onSelect,
     selecionado,
     compativelCom,
+    liveMode = false,
+    showStatus = true,
   }: Props,
 ) {
   const gk = jogadores?.gk ?? {};
@@ -356,6 +398,8 @@ export default function Field(
             accent="yellow"
             showPoints={showPoints}
             empty={empty}
+            liveMode={liveMode}
+            showStatus={showStatus}
             {...pinProps(gk)}
           />
         </div>
@@ -367,6 +411,8 @@ export default function Field(
               accent="blue"
               showPoints={showPoints}
               empty={empty}
+              liveMode={liveMode}
+              showStatus={showStatus}
               {...pinProps(p)}
             />
           ))}
@@ -379,6 +425,8 @@ export default function Field(
               accent="magenta"
               showPoints={showPoints}
               empty={empty}
+              liveMode={liveMode}
+              showStatus={showStatus}
               {...pinProps(p)}
             />
           ))}
@@ -391,6 +439,8 @@ export default function Field(
               accent="orange"
               showPoints={showPoints}
               empty={empty}
+              liveMode={liveMode}
+              showStatus={showStatus}
               {...pinProps(p)}
             />
           ))}
@@ -404,7 +454,11 @@ export default function Field(
               const posAccent = POS_TO_ACCENT[p.posicao ?? ""] ?? "magenta";
               const hideP = !p.entrouEmCampo &&
                 !(p.pts !== null && p.pts !== undefined && p.pts !== 0);
-              const pAjustado = hideP ? { ...p, pts: null } : p;
+              // Banco: propaga entrouEmCampo → emCampo pro PlayerPin
+              // renderizar a bolinha verde no live mode.
+              const pAjustado: Pino = hideP
+                ? { ...p, pts: null, emCampo: p.entrouEmCampo }
+                : { ...p, emCampo: p.entrouEmCampo };
               return (
                 <PlayerPin
                   key={p.atletaId ?? i}
@@ -412,6 +466,8 @@ export default function Field(
                   accent={posAccent}
                   showPoints={showPoints}
                   empty={empty}
+                  liveMode={liveMode}
+                  showStatus={showStatus}
                   {...pinProps(pAjustado)}
                 />
               );
