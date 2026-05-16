@@ -14,18 +14,29 @@
 const CDN_BASE =
   "https://cdn.jsdelivr.net/gh/Iuri07/brasileirao-fantasy-assets@master";
 
-// Decisão de usar CDN: invertida pra evitar bug onde env var não vem
-// (Deno Deploy EA não popula DENO_DEPLOYMENT_ID consistentemente).
-// Default: se está rodando em algum runtime Deno, usa CDN.
-// Override pra dev local com symlinks: USE_LOCAL_ASSETS=1.
-// No browser, `Deno` não existe → IN_DEPLOY=false (mas URLs já vêm
-// resolvidas do SSR, então não importa).
+// Decisão de usar CDN — precisa funcionar em DOIS contextos:
+//
+// 1. Server (SSR): Deno definido. Em deploy → CDN; em dev local
+//    com symlinks (USE_LOCAL_ASSETS=1) → path relativo.
+//
+// 2. Browser (islands hidratadas): Deno NÃO definido. Antes
+//    bailava pra path relativo, mas islands como MeuTimeEditor
+//    recomputam URLs em useMemo no client → escudos 404'avam em
+//    prod porque hostname não é o repo de assets. Solução:
+//    detectar prod via hostname (qualquer coisa ≠ localhost).
 function detectUseDeploy(): boolean {
-  if (typeof Deno === "undefined") return false;
-  try {
-    if (Deno.env.get("USE_LOCAL_ASSETS") === "1") return false;
-  } catch {
-    // env access negado → assume prod
+  // Server side
+  if (typeof Deno !== "undefined") {
+    try {
+      return Deno.env.get("USE_LOCAL_ASSETS") !== "1";
+    } catch {
+      return true;
+    }
+  }
+  // Browser side
+  if (typeof location !== "undefined") {
+    const h = location.hostname;
+    return h !== "localhost" && h !== "127.0.0.1" && h !== "0.0.0.0";
   }
   return true;
 }
