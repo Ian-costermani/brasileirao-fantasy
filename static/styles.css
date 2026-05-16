@@ -300,6 +300,7 @@ body {
   gap: 0.875rem;
   position: relative;
   z-index: 1;
+  cursor: pointer;
 }
 
 .posicao-wrapper {
