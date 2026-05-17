@@ -25,6 +25,7 @@ import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import { timeLigaInfo } from "../lib/times-liga.ts";
+import { cdn } from "../lib/cdn.ts";
 import type { State } from "./_middleware.ts";
 
 const CHAVE_FALLBACK_DEV = "aguiar";
@@ -223,9 +224,12 @@ export const handler: Handlers<Data, State> = {
         j.escalacao === "Sim" || j.escalacao === "Banco"
       );
       // Display name vem do mapping da liga (timeLigaInfo) — mais limpo
-      // que elenco.dono que tem capitalização inconsistente.
+      // que elenco.dono que tem capitalização inconsistente. Escudo vem
+      // do mesmo mapping, wrapped pelo cdn() pra resolver em prod.
       const visual = timeLigaInfo(chave);
-      const donoDisplay = (visual?.displayName ?? elenco.dono).toUpperCase();
+      const donoDisplay =
+        (visual?.displayName ?? elenco.nome_time ?? elenco.dono).toUpperCase();
+      const donoEscudo = cdn(visual?.logo ?? null);
       for (const j of ativos) {
         ligaAtletas.push({
           atleta_id: j.atleta_id,
@@ -235,6 +239,7 @@ export const handler: Handlers<Data, State> = {
           escudo: escudoUrl(j.clube),
           foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
           dono: donoDisplay,
+          donoEscudo,
         });
       }
     }
@@ -263,7 +268,7 @@ export default function AoVivoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Ao Vivo · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=103" />
+        <link rel="stylesheet" href="/bf-styles.css?v=104" />
       </Head>
       <div class="bf-viewport">
         <TopBar

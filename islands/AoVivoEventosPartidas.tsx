@@ -12,8 +12,11 @@ export interface AtletaMeta {
   posicao: string;
   escudo: string | null;
   foto: string | null;
-  /** Nome do dono do time na liga (DOMINGOS, IAN, AGUIAR...). */
+  /** Nome do dono do time na liga (DOMINGOS, IAN, AGUIAR...) — usado
+      como tooltip do escudo do time. */
   dono: string;
+  /** Escudo do time da liga (Filhos de Kieza, Botafofo...). */
+  donoEscudo: string | null;
 }
 
 /** Entrada da timeline — gerada por diff de scouts entre 2 polls. */
@@ -22,6 +25,7 @@ interface TimelineEvent {
   atletaId: number;
   apelido: string;
   dono: string;
+  donoEscudo: string | null;
   escudo: string | null;
   clube: string;
   codigo: string;
@@ -127,6 +131,7 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
             atletaId,
             apelido: meta.apelido,
             dono: meta.dono,
+            donoEscudo: meta.donoEscudo,
             escudo: meta.escudo,
             clube: meta.clube,
             codigo,
@@ -222,7 +227,16 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
                       />
                     )}
                     {e.apelido}
-                    <span class="bf-event-row__dono">{e.dono}</span>
+                    {e.donoEscudo
+                      ? (
+                        <img
+                          class="bf-event-row__dono-escudo"
+                          src={e.donoEscudo}
+                          alt={e.dono}
+                          title={e.dono}
+                        />
+                      )
+                      : <span class="bf-event-row__dono">{e.dono}</span>}
                   </span>
                   <span class="bf-timeline__label">
                     {e.info.label}
@@ -269,7 +283,16 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
                       />
                     )}
                     {j.apelido}
-                    <span class="bf-event-row__dono">{j.dono}</span>
+                    {j.donoEscudo
+                      ? (
+                        <img
+                          class="bf-event-row__dono-escudo"
+                          src={j.donoEscudo}
+                          alt={j.dono}
+                          title={j.dono}
+                        />
+                      )
+                      : <span class="bf-event-row__dono">{j.dono}</span>}
                   </div>
                   <div class="bf-event-row__chips">
                     {j.events.slice(0, 6).map((e: EventoScout) => (
