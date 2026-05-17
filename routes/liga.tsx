@@ -1,7 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getAllElencos, getFotos, getRodadaStatus } from "../lib/kv.ts";
-import { getMelhorTimeCached } from "../lib/substituicao.ts";
 import { getHistorico, totalPontos } from "../lib/historico.ts";
 import TopBar from "../components/TopBar.tsx";
 import BottomNav from "../components/BottomNav.tsx";
@@ -82,25 +81,15 @@ export const handler: Handlers<Data, State> = {
     chavesArr.forEach((c, i) => historicoPorChave.set(c, historicos[i]));
     mark("hist", Thist);
 
-    // Melhor time de cada chave em paralelo (cache hit = quase gratuito)
-    const Tmelhor = performance.now();
-    const melhoresPorChave = new Map<
-      string,
-      Awaited<ReturnType<typeof getMelhorTimeCached>>
-    >();
-    await Promise.all(
-      Object.entries(elencos).map(async ([chave, elenco]) => {
-        const r = await getMelhorTimeCached(kv, chave, elenco);
-        melhoresPorChave.set(chave, r);
-      }),
-    );
-    mark("melhor", Tmelhor);
-
+    // /liga mostra a escalação FIRMADA pelo dono — sem aplicar
+    // calcularMelhorTime (que reescreve o `escalacao` field pra
+    // simular auto-subs). Aqui lemos elenco.jogadores direto: quem
+    // o usuário marcou como "Sim" é titular, "Banco" é reserva.
     const times: TimeLinha[] = [];
     for (const [chave, elenco] of Object.entries(elencos)) {
-      const calculados = melhoresPorChave.get(chave) ?? [];
-      const escalados = calculados.filter((j) => j.escalacao === "Sim");
-      const reservas = calculados.filter((j) => j.escalacao === "Banco");
+      const todos = Object.values(elenco.jogadores);
+      const escalados = todos.filter((j) => j.escalacao === "Sim");
+      const reservas = todos.filter((j) => j.escalacao === "Banco");
       const banco: BancoPino[] = reservas.map((j) => ({
         nome: j.apelido_api,
         pts: j.pontos,
@@ -110,7 +99,6 @@ export const handler: Handlers<Data, State> = {
         posicao: j.posicao,
         statusId: j.status_id,
         foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
-        subSaiu: j.descido === true,
       }));
       const ptsRodada = Math.round(
         escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
@@ -125,7 +113,6 @@ export const handler: Handlers<Data, State> = {
         pos: POS_ABREV[j.posicao],
         statusId: j.status_id,
         foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
-        subEntrou: j.substituido,
       });
       const gk = escalados.find((j) => j.posicao === "Goleiro");
       const def = escalados.filter((j) =>
