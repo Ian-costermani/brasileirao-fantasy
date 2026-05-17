@@ -376,18 +376,23 @@ export default function Field(
       <div class="bf-field__pitch">
         <svg
           class="bf-field__lines"
-          viewBox="0 0 100 140"
+          viewBox="0 0 100 160"
           preserveAspectRatio="none"
         >
-          <rect x="2" y="2" width="96" height="136" rx="1" />
-          <line x1="2" y1="70" x2="98" y2="70" />
-          <circle cx="50" cy="70" r="10" />
+          {/* Outline do campo + linhas. ViewBox 100×160 = aspect 5/8. */}
+          <rect x="2" y="2" width="96" height="156" rx="1" />
+          {/* Linha do meio campo no centro (y=80) */}
+          <line x1="2" y1="80" x2="98" y2="80" />
+          <circle cx="50" cy="80" r="10" />
+          {/* Grande área + pequena área superior */}
           <rect x="22" y="2" width="56" height="14" />
           <rect x="34" y="2" width="32" height="6" />
-          <rect x="22" y="124" width="56" height="14" />
-          <rect x="34" y="132" width="32" height="6" />
+          {/* Grande área + pequena área inferior */}
+          <rect x="22" y="144" width="56" height="14" />
+          <rect x="34" y="152" width="32" height="6" />
+          {/* Semicircles das grandes áreas */}
           <path d="M 42 16 A 8 8 0 0 0 58 16" />
-          <path d="M 42 124 A 8 8 0 0 1 58 124" />
+          <path d="M 42 144 A 8 8 0 0 1 58 144" />
         </svg>
         <div class="bf-field__row bf-field__row--gk">
           <PlayerPin

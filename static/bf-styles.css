@@ -2181,8 +2181,8 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
 }
 /* Inverted: ataque no topo, goleiro embaixo (defendendo a linha de baixo).
    Em modo live os cards ficam mais altos (com pontos) — gaps maiores
-   evitam overlap. Gk empurrado pra baixo pra ocupar a área final do
-   campo (reduz espaço vazio abaixo). */
+   evitam overlap. GK ajustado pra caber dentro do outline do campo
+   (pin extende ~110px abaixo do `top`, e o outline termina em 98%). */
 .bf-field__row--ata {
   top: 4%;
 }
@@ -2190,10 +2190,10 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   top: 28%;
 }
 .bf-field__row--def {
-  top: 56%;
+  top: 54%;
 }
 .bf-field__row--gk {
-  top: 84%;
+  top: 78%;
 }
 
 /* Bench dentro do field — mesma estética dos pinos, dimmed */
