@@ -1835,7 +1835,6 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  opacity: 0.85;
 }
 .bf-field__bench-row::-webkit-scrollbar {
   display: none;

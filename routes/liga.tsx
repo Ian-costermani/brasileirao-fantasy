@@ -84,12 +84,13 @@ export const handler: Handlers<Data, State> = {
     // /liga mostra a escalação FIRMADA pelo dono — sem aplicar
     // calcularMelhorTime (que reescreve o `escalacao` field pra
     // simular auto-subs). Aqui lemos elenco.jogadores direto: quem
-    // o usuário marcou como "Sim" é titular, "Banco" é reserva.
+    // o usuário marcou como "Sim" é titular; todo o resto entra como
+    // reserva (Banco + Não — alguns donos não usam "Banco" explícito).
     const times: TimeLinha[] = [];
     for (const [chave, elenco] of Object.entries(elencos)) {
       const todos = Object.values(elenco.jogadores);
       const escalados = todos.filter((j) => j.escalacao === "Sim");
-      const reservas = todos.filter((j) => j.escalacao === "Banco");
+      const reservas = todos.filter((j) => j.escalacao !== "Sim");
       const banco: BancoPino[] = reservas.map((j) => ({
         nome: j.apelido_api,
         pts: j.pontos,
@@ -169,7 +170,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=93" />
+        <link rel="stylesheet" href="/bf-styles.css?v=94" />
       </Head>
       <div class="bf-viewport">
         <TopBar
