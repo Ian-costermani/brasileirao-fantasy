@@ -2101,7 +2101,9 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
-  padding: 8px var(--bf-gutter);
+  /* bottom padding zero pra título grudar visualmente na seção abaixo
+     (mesmo padrão dos SectionHeader: 8px topo, 0 base). */
+  padding: 8px var(--bf-gutter) 0;
   font-family: var(--bf-font-cond);
   font-weight: 700;
   font-size: 11px;
@@ -4040,7 +4042,9 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
 }
 @media (max-width: 480px) {
   .bf-meu-time__titulo {
-    font-size: 15px;
+    /* Mobile mantém escala maior que antes (era 15px com Rubik Wet Paint;
+       Dripping Marker tem x-height menor então precisa bump). */
+    font-size: 24px;
   }
   .bf-meu-time__market {
     font-size: 9px;
