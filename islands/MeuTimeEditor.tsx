@@ -282,55 +282,61 @@ export default function MeuTimeEditor(
   }
 
   // Constrói escalação + banco + não-escalados a partir do estado atual
-  const { escalacao, banco, naoEscalados, reservasView } = useMemo(() => {
-    const pino = (j: AtletaElenco): Pino => ({
-      atletaId: j.atleta_id,
-      nome: j.apelido,
-      pts: j.pontos,
-      escudo: escudoUrl(j.clube),
-      cores: coresClube(j.clube),
-      pos: POS_ABREV[j.posicao],
-      statusId: j.statusId,
-      foto: j.foto,
-      subEntrou: j.subEntrou,
-      subSaiu: j.subSaiu,
-      emCampo: j.emCampo,
-    });
-    const sims = atletas.filter((j) => j.escalacao === "Sim");
-    const gk = sims.find((j) => j.posicao === "Goleiro");
-    const def = sims.filter((j) =>
-      j.posicao === "Zagueiro" || j.posicao === "Lateral"
-    );
-    const mid = sims.filter((j) => j.posicao === "Meia");
-    const ata = sims.filter((j) => j.posicao === "Atacante");
-    const escalacao: Escalacao = {
-      gk: gk ? pino(gk) : {},
-      def: def.map(pino),
-      mid: mid.map(pino),
-      ata: ata.map(pino),
-    };
-    const banco: BancoPino[] = atletas
-      .filter((j) => j.escalacao === "Banco")
-      .map((j) => ({ ...pino(j), posicao: j.posicao }));
-    const naoEscalados = atletas.filter((j) => j.escalacao === "Não");
-    // Reservas pra view mode (read-only): combina Banco + Não num único
-    // bloco como em /liga e /ao-vivo. Sort por posição igual ao NaoSection.
-    const ordemPos: Record<AtletaElenco["posicao"], number> = {
-      Goleiro: 0,
-      Lateral: 1,
-      Zagueiro: 2,
-      Meia: 3,
-      Atacante: 4,
-    };
-    const reservasView: BancoPino[] = atletas
-      .filter((j) => j.escalacao !== "Sim")
-      .sort((a, b) =>
+  const { escalacao, banco, naoEscalados, bancoView, naoEscaladosView } =
+    useMemo(() => {
+      const pino = (j: AtletaElenco): Pino => ({
+        atletaId: j.atleta_id,
+        nome: j.apelido,
+        pts: j.pontos,
+        escudo: escudoUrl(j.clube),
+        cores: coresClube(j.clube),
+        pos: POS_ABREV[j.posicao],
+        statusId: j.statusId,
+        foto: j.foto,
+        subEntrou: j.subEntrou,
+        subSaiu: j.subSaiu,
+        emCampo: j.emCampo,
+      });
+      const sims = atletas.filter((j) => j.escalacao === "Sim");
+      const gk = sims.find((j) => j.posicao === "Goleiro");
+      const def = sims.filter((j) =>
+        j.posicao === "Zagueiro" || j.posicao === "Lateral"
+      );
+      const mid = sims.filter((j) => j.posicao === "Meia");
+      const ata = sims.filter((j) => j.posicao === "Atacante");
+      const escalacao: Escalacao = {
+        gk: gk ? pino(gk) : {},
+        def: def.map(pino),
+        mid: mid.map(pino),
+        ata: ata.map(pino),
+      };
+      const banco: BancoPino[] = atletas
+        .filter((j) => j.escalacao === "Banco")
+        .map((j) => ({ ...pino(j), posicao: j.posicao }));
+      const naoEscalados = atletas.filter((j) => j.escalacao === "Não");
+      // View mode: Banco e Reservas em rows separadas (Banco = pode entrar
+      // via auto-sub, Reservas = resto do elenco). Sort por posição igual
+      // ao NaoSection do edit mode pra consistência.
+      const ordemPos: Record<AtletaElenco["posicao"], number> = {
+        Goleiro: 0,
+        Lateral: 1,
+        Zagueiro: 2,
+        Meia: 3,
+        Atacante: 4,
+      };
+      const sortPos = (a: AtletaElenco, b: AtletaElenco) =>
         ordemPos[a.posicao] - ordemPos[b.posicao] ||
-        a.apelido.localeCompare(b.apelido, "pt-BR")
-      )
-      .map((j) => ({ ...pino(j), posicao: j.posicao }));
-    return { escalacao, banco, naoEscalados, reservasView };
-  }, [atletas]);
+        a.apelido.localeCompare(b.apelido, "pt-BR");
+      const bancoView: BancoPino[] = [...banco].sort((a, b) => {
+        const ja = atletas.find((x) => x.atleta_id === a.atletaId);
+        const jb = atletas.find((x) => x.atleta_id === b.atletaId);
+        return ja && jb ? sortPos(ja, jb) : 0;
+      });
+      const naoEscaladosView: BancoPino[] = [...naoEscalados]
+        .sort(sortPos)
+        .map((j) => ({ ...pino(j), posicao: j.posicao }));
+      return { escalacao, banco, naoEscalados, bancoView, naoEscaladosView };
+    }, [atletas]);
 
   return (
     <div
@@ -504,13 +510,22 @@ export default function MeuTimeEditor(
           )
         )
         : (
-          /* View mode: reservas read-only (Banco + Não) numa linha
-             separada, igual /liga e /ao-vivo. */
-          <ReservasRow
-            jogadores={reservasView}
-            showPoints={showPoints}
-            showStatus={!aoVivo}
-          />
+          /* View mode: Banco e Reservas em rows separadas, igual
+             /liga e /ao-vivo. */
+          <>
+            <ReservasRow
+              label="Banco"
+              jogadores={bancoView}
+              showPoints={showPoints}
+              showStatus={!aoVivo}
+            />
+            <ReservasRow
+              label="Reservas"
+              jogadores={naoEscaladosView}
+              showPoints={showPoints}
+              showStatus={!aoVivo}
+            />
+          </>
         )}
     </div>
   );

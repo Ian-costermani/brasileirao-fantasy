@@ -3,6 +3,10 @@ import { statusInfo } from "./Field.tsx";
 
 interface Props {
   jogadores: BancoPino[];
+  /** Label da seção. Default "Reservas". Usado pra diferenciar
+      "Banco" (pode entrar via auto-sub) de "Reservas" (resto do
+      elenco, não-escalados). */
+  label?: string;
   /** Mostra pontos abaixo do nome (/ao-vivo). Default false (escalação
       estática em /liga). */
   showPoints?: boolean;
@@ -27,14 +31,19 @@ const POS_TO_CLASS: Record<string, string> = {
  * em /liga (escalação estática) e /ao-vivo (com pontos live).
  */
 export default function ReservasRow(
-  { jogadores, showPoints = false, showStatus = false }: Props,
+  {
+    jogadores,
+    label = "Reservas",
+    showPoints = false,
+    showStatus = false,
+  }: Props,
 ) {
   if (!jogadores.length) return null;
 
   return (
     <div class="bf-pool">
       <div class="bf-pool__label">
-        Reservas <span class="bf-pool__grupo-qtd">{jogadores.length}</span>
+        {label} <span class="bf-pool__grupo-qtd">{jogadores.length}</span>
       </div>
       <div class="bf-pool__row">
         {jogadores.map((p, i) => {

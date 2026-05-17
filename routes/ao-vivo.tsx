@@ -46,7 +46,10 @@ interface TimeLinha {
   total: number;
   rodadasJogadas: number;
   escalacao: Escalacao | null;
+  /** Banco — pode entrar via auto-sub. */
   banco: BancoPino[];
+  /** Resto do elenco — fora do banco. */
+  naoEscalados: BancoPino[];
   historico: Record<string, number>;
   subsAplicadas: number;
 }
@@ -132,8 +135,9 @@ export const handler: Handlers<Data, State> = {
       const calculados = melhoresPorChave.get(chave) ?? [];
       const escalados = calculados.filter((j) => j.escalacao === "Sim");
       const reservas = calculados.filter((j) => j.escalacao === "Banco");
+      const naoEscaladosRaw = calculados.filter((j) => j.escalacao === "Não");
       const subsAplicadas = escalados.filter((j) => j.substituido).length;
-      const banco: BancoPino[] = reservas.map((j) => ({
+      const toBanco = (j: typeof calculados[number]): BancoPino => ({
         nome: j.apelido_api,
         pts: j.pontos,
         escudo: escudoUrl(j.clube),
@@ -143,7 +147,9 @@ export const handler: Handlers<Data, State> = {
         statusId: j.status_id,
         foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
         subSaiu: j.descido === true,
-      }));
+      });
+      const banco: BancoPino[] = reservas.map(toBanco);
+      const naoEscalados: BancoPino[] = naoEscaladosRaw.map(toBanco);
       const ptsRodada = Math.round(
         escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
       ) / 100;
@@ -183,6 +189,7 @@ export const handler: Handlers<Data, State> = {
         rodadasJogadas: Object.keys(historico).length,
         escalacao,
         banco,
+        naoEscalados,
         historico,
         subsAplicadas,
       });
@@ -253,7 +260,7 @@ export default function AoVivoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Ao Vivo · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=101" />
+        <link rel="stylesheet" href="/bf-styles.css?v=102" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -329,7 +336,13 @@ function AoVivoLiga({ data }: { data: Data }) {
                         accent={accent}
                       />
                       <ReservasRow
+                        label="Banco"
                         jogadores={t.banco}
+                        showPoints={data.aoVivo}
+                      />
+                      <ReservasRow
+                        label="Reservas"
+                        jogadores={t.naoEscalados}
                         showPoints={data.aoVivo}
                       />
                     </>

@@ -39,7 +39,11 @@ interface TimeLinha {
   total: number;
   rodadasJogadas: number;
   escalacao: Escalacao | null;
+  /** Banco oficial — quem o dono marcou como "Banco" (pode entrar via
+      auto-sub durante a rodada). */
   banco: BancoPino[];
+  /** Resto do elenco — marcados como "Não" (fora do banco). */
+  naoEscalados: BancoPino[];
   historico: Record<string, number>;
 }
 
@@ -85,14 +89,13 @@ export const handler: Handlers<Data, State> = {
     // /liga mostra a escalação FIRMADA pelo dono — sem aplicar
     // calcularMelhorTime (que reescreve o `escalacao` field pra
     // simular auto-subs). Aqui lemos elenco.jogadores direto: quem
-    // o usuário marcou como "Sim" é titular; todo o resto entra como
-    // reserva (Banco + Não — alguns donos não usam "Banco" explícito).
+    // o usuário marcou como "Sim" é titular, "Banco" é reserva ativa
+    // (auto-sub elegível), "Não" é resto do elenco.
     const times: TimeLinha[] = [];
     for (const [chave, elenco] of Object.entries(elencos)) {
       const todos = Object.values(elenco.jogadores);
       const escalados = todos.filter((j) => j.escalacao === "Sim");
-      const reservas = todos.filter((j) => j.escalacao !== "Sim");
-      const banco: BancoPino[] = reservas.map((j) => ({
+      const toBanco = (j: typeof todos[number]): BancoPino => ({
         nome: j.apelido_api,
         pts: j.pontos,
         escudo: escudoUrl(j.clube),
@@ -101,7 +104,13 @@ export const handler: Handlers<Data, State> = {
         posicao: j.posicao,
         statusId: j.status_id,
         foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
-      }));
+      });
+      const banco: BancoPino[] = todos
+        .filter((j) => j.escalacao === "Banco")
+        .map(toBanco);
+      const naoEscalados: BancoPino[] = todos
+        .filter((j) => j.escalacao === "Não")
+        .map(toBanco);
       const ptsRodada = Math.round(
         escalados.reduce((s, j) => s + (j.pontos ?? 0), 0) * 100,
       ) / 100;
@@ -140,6 +149,7 @@ export const handler: Handlers<Data, State> = {
         rodadasJogadas: Object.keys(historico).length,
         escalacao,
         banco,
+        naoEscalados,
         historico,
       });
     }
@@ -171,7 +181,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=101" />
+        <link rel="stylesheet" href="/bf-styles.css?v=102" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -223,7 +233,14 @@ export default function Liga({ data }: PageProps<Data>) {
                           accent={accent}
                         />
                         <ReservasRow
+                          label="Banco"
                           jogadores={t.banco}
+                          showPoints={false}
+                          showStatus={false}
+                        />
+                        <ReservasRow
+                          label="Reservas"
+                          jogadores={t.naoEscalados}
                           showPoints={false}
                           showStatus={false}
                         />
