@@ -62,9 +62,11 @@ interface DataLive extends UserInfo {
   subsMax: number;
   times: TimeLinha[];
   meuChave: string;
-  /** Mapa atleta_id → posição no ranking GERAL (por total acumulado).
-      Usado pra calcular delta vs ranking AO VIVO (por pontos da rodada). */
-  posGeralPorChave: Record<string, number>;
+  /** Mapa chave → posição no ranking AO VIVO (total + parcial da rodada
+      atual). A posição base do card vem da ORDEM dos times (= geral),
+      então o delta = posGeral - posLive mostra como a rodada está
+      mexendo no ranking. */
+  posLivePorChave: Record<string, number>;
   /** Metadata dos atletas da liga (escalados + banco de todos os times).
       Passado pra island filtrar pontuados Cartola e renderizar eventos. */
   ligaAtletas: AtletaMeta[];
@@ -205,20 +207,24 @@ export const handler: Handlers<Data, State> = {
       });
     }
 
-    // Ranking GERAL (por total acumulado) — pra calcular delta vs ranking
-    // AO VIVO depois. Snapshot antes de re-ordenar.
-    const ordemGeral = [...times].sort((a, b) =>
+    // Ordem do card = ranking GERAL (total acumulado, mesma de /liga).
+    // O "ao vivo" do /ao-vivo vem do delta + parcial + eventos, não da
+    // ordem em si.
+    times.sort((a, b) =>
       b.total - a.total || b.pontuacaoRodada - a.pontuacaoRodada
     );
-    const posGeralPorChave: Record<string, number> = {};
-    ordemGeral.forEach((t, i) => {
-      posGeralPorChave[t.chave] = i + 1;
-    });
 
-    // Ordena por pontos da rodada (ao vivo: o que importa é AGORA)
-    times.sort((a, b) =>
-      b.pontuacaoRodada - a.pontuacaoRodada || b.total - a.total
+    // Ranking AO VIVO simulado = total + parcial (onde estaria SE a
+    // rodada terminasse agora). Comparado com a posição geral (i+1 na
+    // ordem acima) gera o delta de "mudança em tempo real".
+    const ordemLive = [...times].sort((a, b) =>
+      (b.total + b.pontuacaoRodada) - (a.total + a.pontuacaoRodada) ||
+      b.pontuacaoRodada - a.pontuacaoRodada
     );
+    const posLivePorChave: Record<string, number> = {};
+    ordemLive.forEach((t, i) => {
+      posLivePorChave[t.chave] = i + 1;
+    });
 
     // Junta metadata de TODOS atletas escalados+banco de TODOS os times.
     // Island filtra Cartola pontuados por esses IDs e renderiza eventos.
@@ -250,7 +256,7 @@ export const handler: Handlers<Data, State> = {
       subsMax: MAX_SUBS_AO_VIVO,
       times,
       meuChave,
-      posGeralPorChave,
+      posLivePorChave,
       ligaAtletas,
       ...userInfo,
     });
@@ -319,11 +325,10 @@ function AoVivoLiga({ data }: { data: DataLive }) {
           const accent = visual?.accent ?? "var(--bf-fg-2)";
           // Mostra pontos da rodada AO VIVO em vez do total acumulado.
           const rodadaFmt = t.pontuacaoRodada.toFixed(1).replace(".", ",");
-          // Delta vs ranking geral: positivo = subiu nesta rodada, negativo
-          // = caiu. Sem sparkline porque não cabe (ranking ao vivo é a
-          // própria sparkline visualmente).
-          const posGeral = data.posGeralPorChave[t.chave] ?? pos;
-          const posDelta = posGeral - pos;
+          // pos = ranking GERAL (ordem dos times). posLive = onde estaria
+          // SE a rodada terminasse agora. Delta positivo = subiu na live.
+          const posLive = data.posLivePorChave[t.chave] ?? pos;
+          const posDelta = pos - posLive;
           return (
             <CollapsibleTeamRow
               key={t.chave}
