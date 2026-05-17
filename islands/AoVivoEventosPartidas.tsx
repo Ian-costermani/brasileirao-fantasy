@@ -79,6 +79,9 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
   const [partidas, setPartidas] = useState<CartolaPartidasResp | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [atualizadoEm, setAtualizadoEm] = useState<Date | null>(null);
+  /** Expande/colapsa lista de "Eventos da liga" (mostra os primeiros N
+      sempre; resto fica oculto até o usuário expandir). */
+  const [eventosExpandido, setEventosExpandido] = useState(false);
   /** Timeline gerada por diff entre polls. Persiste durante a sessão. */
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   /** Snapshot do último scout por atleta — pra computar diff no próximo poll.
@@ -259,75 +262,123 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
       >
         Eventos da liga
       </SectionHeader>
-      {eventosLiga.length === 0
-        ? (
-          <div class="bf-empty-state">
-            {carregando
-              ? "Carregando…"
-              : erro
-              ? `erro: ${erro}`
-              : "Aguardando eventos…"}
-          </div>
-        )
-        : (
-          <div class="bf-events">
-            {eventosLiga.map((j) => (
-              <article class="bf-event-row" key={j.atleta_id}>
-                {j.foto && (
-                  <img class="bf-event-row__face" src={j.foto} alt="" />
+      {(() => {
+        if (eventosLiga.length === 0) {
+          return (
+            <div class="bf-empty-state">
+              {carregando
+                ? "Carregando…"
+                : erro
+                ? `erro: ${erro}`
+                : "Aguardando eventos…"}
+            </div>
+          );
+        }
+        const LIMIT = 5;
+        const podeExpandir = eventosLiga.length > LIMIT;
+        const visiveis = podeExpandir
+          ? eventosLiga.slice(0, LIMIT)
+          : eventosLiga;
+        const extras = podeExpandir ? eventosLiga.slice(LIMIT) : [];
+        const renderRow = (j: typeof eventosLiga[number]) => (
+          <article class="bf-event-row" key={j.atleta_id}>
+            {j.foto && <img class="bf-event-row__face" src={j.foto} alt="" />}
+            <div class="bf-event-row__meta">
+              <div class="bf-event-row__name">
+                {j.escudo && (
+                  <img class="bf-event-row__escudo" src={j.escudo} alt="" />
                 )}
-                <div class="bf-event-row__meta">
-                  <div class="bf-event-row__name">
-                    {j.escudo && (
-                      <img
-                        class="bf-event-row__escudo"
-                        src={j.escudo}
-                        alt=""
-                      />
-                    )}
-                    {j.apelido}
-                    {j.donoEscudo
-                      ? (
-                        <img
-                          class="bf-event-row__dono-escudo"
-                          src={j.donoEscudo}
-                          alt={j.dono}
-                          title={j.dono}
-                        />
-                      )
-                      : <span class="bf-event-row__dono">{j.dono}</span>}
-                  </div>
-                  <div class="bf-event-row__chips">
-                    {j.events.slice(0, 6).map((e: EventoScout) => (
-                      <span
-                        class={`bf-event-chip bf-event-chip--${e.info.tipo}`}
-                        key={e.codigo}
-                        title={e.info.label}
-                      >
-                        <span class="bf-event-chip__icon">
-                          <ScoutIcon codigo={e.codigo} size={12} />
-                        </span>
-                        {e.qtd > 1 && (
-                          <span class="bf-event-chip__qtd">{e.qtd}</span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div class="bf-event-row__pts">
+                {j.apelido}
+                {j.donoEscudo
+                  ? (
+                    <img
+                      class="bf-event-row__dono-escudo"
+                      src={j.donoEscudo}
+                      alt={j.dono}
+                      title={j.dono}
+                    />
+                  )
+                  : <span class="bf-event-row__dono">{j.dono}</span>}
+              </div>
+              <div class="bf-event-row__chips">
+                {j.events.slice(0, 6).map((e: EventoScout) => (
                   <span
-                    class={`bf-event-row__pts-value ${
-                      j.pontos < 0 ? "bf-event-row__pts-value--neg" : ""
+                    class={`bf-event-chip bf-event-chip--${e.info.tipo}`}
+                    key={e.codigo}
+                    title={e.info.label}
+                  >
+                    <span class="bf-event-chip__icon">
+                      <ScoutIcon codigo={e.codigo} size={12} />
+                    </span>
+                    {e.qtd > 1 && (
+                      <span class="bf-event-chip__qtd">{e.qtd}</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div class="bf-event-row__pts">
+              <span
+                class={`bf-event-row__pts-value ${
+                  j.pontos < 0 ? "bf-event-row__pts-value--neg" : ""
+                }`}
+              >
+                {j.pontos > 0 ? "+" : ""}
+                {j.pontos.toFixed(1).replace(".", ",")}
+              </span>
+            </div>
+          </article>
+        );
+        return (
+          <>
+            <div class="bf-events">{visiveis.map(renderRow)}</div>
+            {extras.length > 0 && (
+              <div
+                class={`bf-partidas-expand ${
+                  eventosExpandido ? "bf-partidas-expand--open" : ""
+                }`}
+                aria-hidden={!eventosExpandido}
+              >
+                <div class="bf-partidas-expand__inner">
+                  <div class="bf-events">{extras.map(renderRow)}</div>
+                </div>
+              </div>
+            )}
+            {podeExpandir && (
+              <div class="bf-section-footer">
+                <button
+                  type="button"
+                  class="bf-section-footer__chev"
+                  onClick={() => setEventosExpandido(!eventosExpandido)}
+                  aria-label={eventosExpandido
+                    ? "Ver menos"
+                    : `Ver todos (${eventosLiga.length})`}
+                  title={eventosExpandido
+                    ? "Ver menos"
+                    : `Ver todos (${eventosLiga.length})`}
+                  aria-expanded={eventosExpandido}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class={`bf-section-footer__chev-icon ${
+                      eventosExpandido ? "bf-section-footer__chev-icon--up" : ""
                     }`}
                   >
-                    {j.pontos > 0 ? "+" : ""}
-                    {j.pontos.toFixed(1).replace(".", ",")}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       <SectionHeader>Partidas</SectionHeader>
       {partidas?.partidas && partidas.partidas.length > 0
