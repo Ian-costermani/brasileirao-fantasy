@@ -194,7 +194,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=82" />
+        <link rel="stylesheet" href="/bf-styles.css?v=83" />
       </Head>
       <div class="bf-viewport">
         <TopBar

@@ -24,6 +24,12 @@ interface Props {
   historico?: Record<string, number>;
   /** Quantas auto-substituições foram aplicadas (só pra ao vivo). */
   subsBadge?: { aplicadas: number; max: number } | null;
+  /** Label embaixo do número grande de pontos. Default "PTS".
+      /ao-vivo usa "PARCIAL" pra diferenciar do total acumulado de /liga. */
+  ptsLabel?: string;
+  /** Delta de posição vs ranking geral (acumulado da temporada).
+      Positivo = subiu na rodada, negativo = caiu, 0 = igual. Só /ao-vivo. */
+  posDelta?: number | null;
   /** Conteúdo que aparece colapsado/expandido (Field SSR) */
   children: ComponentChildren;
 }
@@ -43,6 +49,8 @@ export default function CollapsibleTeamRow(
     isMine,
     historico,
     subsBadge = null,
+    ptsLabel = "PTS",
+    posDelta = null,
     children,
   }: Props,
 ) {
@@ -95,6 +103,19 @@ export default function CollapsibleTeamRow(
       >
         <span class="bf-team-row__pos">
           {isLider ? "🏆" : `#${pos}`}
+          {posDelta !== null && posDelta !== 0 && (
+            <span
+              class={`bf-team-row__delta bf-team-row__delta--${
+                posDelta > 0 ? "up" : "down"
+              }`}
+              title={posDelta > 0
+                ? `Subiu ${posDelta} no ranking geral`
+                : `Caiu ${Math.abs(posDelta)} no ranking geral`}
+            >
+              {posDelta > 0 ? "↑" : "↓"}
+              {Math.abs(posDelta)}
+            </span>
+          )}
         </span>
         <div class="bf-team-row__meta">
           <div class="bf-team-row__name">{displayName}</div>
@@ -121,7 +142,7 @@ export default function CollapsibleTeamRow(
         )}
         <div class="bf-team-row__pts">
           <span class="bf-team-row__pts-value">{totalFmt}</span>
-          <span class="bf-team-row__pts-foot">PTS</span>
+          <span class="bf-team-row__pts-foot">{ptsLabel}</span>
         </div>
         <svg
           width="14"

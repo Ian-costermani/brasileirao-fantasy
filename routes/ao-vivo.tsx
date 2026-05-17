@@ -16,13 +16,13 @@ import Field, {
   type Pino,
 } from "../components/Field.tsx";
 import CollapsibleTeamRow from "../islands/CollapsibleTeamRow.tsx";
-import LeagueChart, { type LinhaTime } from "../islands/LeagueChart.tsx";
-import SectionHeader from "../components/SectionHeader.tsx";
+import AoVivoEventosPartidas, {
+  type AtletaMeta,
+} from "../islands/AoVivoEventosPartidas.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { fotoUrl } from "../lib/fotos.ts";
 import { timeLigaInfo } from "../lib/times-liga.ts";
-import { cdn } from "../lib/cdn.ts";
 import type { State } from "./_middleware.ts";
 
 const CHAVE_FALLBACK_DEV = "aguiar";
@@ -62,6 +62,12 @@ interface DataLive extends UserInfo {
   subsMax: number;
   times: TimeLinha[];
   meuChave: string;
+  /** Mapa atleta_id → posição no ranking GERAL (por total acumulado).
+      Usado pra calcular delta vs ranking AO VIVO (por pontos da rodada). */
+  posGeralPorChave: Record<string, number>;
+  /** Metadata dos atletas da liga (escalados + banco de todos os times).
+      Passado pra island filtrar pontuados Cartola e renderizar eventos. */
+  ligaAtletas: AtletaMeta[];
 }
 
 interface DataBloqueado extends UserInfo {
@@ -199,11 +205,42 @@ export const handler: Handlers<Data, State> = {
       });
     }
 
-    // Ordena por pontos da rodada (ao vivo: o que importa é AGORA, não
-    // total acumulado — diferente de /liga que ordena por total)
+    // Ranking GERAL (por total acumulado) — pra calcular delta vs ranking
+    // AO VIVO depois. Snapshot antes de re-ordenar.
+    const ordemGeral = [...times].sort((a, b) =>
+      b.total - a.total || b.pontuacaoRodada - a.pontuacaoRodada
+    );
+    const posGeralPorChave: Record<string, number> = {};
+    ordemGeral.forEach((t, i) => {
+      posGeralPorChave[t.chave] = i + 1;
+    });
+
+    // Ordena por pontos da rodada (ao vivo: o que importa é AGORA)
     times.sort((a, b) =>
       b.pontuacaoRodada - a.pontuacaoRodada || b.total - a.total
     );
+
+    // Junta metadata de TODOS atletas escalados+banco de TODOS os times.
+    // Island filtra Cartola pontuados por esses IDs e renderiza eventos.
+    const ligaAtletas: AtletaMeta[] = [];
+    for (const [chave, elenco] of Object.entries(elencos)) {
+      const calculados = melhoresPorChave.get(chave) ?? [];
+      const ativos = calculados.filter((j) =>
+        j.escalacao === "Sim" || j.escalacao === "Banco"
+      );
+      for (const j of ativos) {
+        ligaAtletas.push({
+          atleta_id: j.atleta_id,
+          apelido: j.apelido_api,
+          clube: j.clube,
+          posicao: j.posicao,
+          escudo: escudoUrl(j.clube),
+          foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
+        });
+      }
+      // suprime warning de elenco não usado (precisava só pra iterar chaves)
+      void elenco;
+    }
 
     mark("data", T0);
     const Trender = performance.now();
@@ -213,6 +250,8 @@ export const handler: Handlers<Data, State> = {
       subsMax: MAX_SUBS_AO_VIVO,
       times,
       meuChave,
+      posGeralPorChave,
+      ligaAtletas,
       ...userInfo,
     });
     mark("render", Trender);
@@ -240,7 +279,7 @@ export default function AoVivoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Ao Vivo · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=82" />
+        <link rel="stylesheet" href="/bf-styles.css?v=83" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -280,6 +319,11 @@ function AoVivoLiga({ data }: { data: DataLive }) {
           const accent = visual?.accent ?? "var(--bf-fg-2)";
           // Mostra pontos da rodada AO VIVO em vez do total acumulado.
           const rodadaFmt = t.pontuacaoRodada.toFixed(1).replace(".", ",");
+          // Delta vs ranking geral: positivo = subiu nesta rodada, negativo
+          // = caiu. Sem sparkline porque não cabe (ranking ao vivo é a
+          // própria sparkline visualmente).
+          const posGeral = data.posGeralPorChave[t.chave] ?? pos;
+          const posDelta = posGeral - pos;
           return (
             <CollapsibleTeamRow
               key={t.chave}
@@ -288,9 +332,10 @@ function AoVivoLiga({ data }: { data: DataLive }) {
               displayName={displayName}
               dono={t.dono}
               totalFmt={rodadaFmt}
+              ptsLabel="PARCIAL"
+              posDelta={posDelta}
               accent={accent}
               isMine={isMe}
-              historico={t.historico}
               subsBadge={{ aplicadas: t.subsAplicadas, max: data.subsMax }}
             >
               <div class="bf-team-row__expanded">
@@ -315,20 +360,7 @@ function AoVivoLiga({ data }: { data: DataLive }) {
         })}
       </div>
 
-      <SectionHeader>Evolução</SectionHeader>
-      <LeagueChart
-        times={data.times.map((t): LinhaTime => {
-          const info = timeLigaInfo(t.chave);
-          return {
-            chave: t.chave,
-            nome: info?.displayName ?? t.nome,
-            accent: info?.accent ?? "#888",
-            logo: cdn(info?.logo ?? null),
-            pontosPorRodada: t.historico,
-          };
-        })}
-        destaque={data.meuChave}
-      />
+      <AoVivoEventosPartidas ligaAtletas={data.ligaAtletas} />
     </>
   );
 }

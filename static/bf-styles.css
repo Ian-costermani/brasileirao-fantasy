@@ -883,9 +883,41 @@ body {
   text-align: center;
   color: var(--bf-fg-2);
   font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 .bf-team-row--lider .bf-team-row__pos {
   font-size: 22px;
+}
+/* Delta de posição vs ranking geral — só /ao-vivo. Mostra se o time
+   subiu ou caiu na rodada vs onde está acumulado. */
+.bf-team-row__delta {
+  font-family: var(--bf-font-display);
+  font-weight: 800;
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+.bf-team-row__delta--up {
+  color: var(--bf-lime);
+  background: color-mix(in srgb, var(--bf-lime) 14%, transparent);
+}
+.bf-team-row__delta--down {
+  color: var(--bf-red);
+  background: color-mix(in srgb, var(--bf-red) 14%, transparent);
+}
+/* Texto secundário pequeno usado no SectionHeader.right (ex: "atualizado
+   às 14:32") — discreto pra não competir com o título da seção. */
+.bf-meta-text {
+  font-family: var(--bf-font-mono, monospace);
+  font-size: 10px;
+  color: var(--bf-fg-3);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
 .bf-team-row__meta {
   display: flex;
