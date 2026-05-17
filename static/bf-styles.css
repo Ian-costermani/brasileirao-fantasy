@@ -276,7 +276,10 @@ body {
 .bf-section-header__title {
   font-family: var(--bf-font-graffiti);
   font-weight: 400;
-  font-size: 18px;
+  /* A Dripping Marker rende menor que Rubik Wet Paint no mesmo px —
+     bump pra compensar o x-height menor. Mesma lógica nos demais
+     usos de var(--bf-font-graffiti). */
+  font-size: 28px;
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -730,7 +733,7 @@ body {
 .bf-liga-hero__title {
   font-family: var(--bf-font-graffiti);
   font-weight: 400;
-  font-size: 32px;
+  font-size: 48px;
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -4026,7 +4029,7 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
 .bf-meu-time__titulo {
   font-family: var(--bf-font-graffiti);
   font-weight: 400;
-  font-size: 18px;
+  font-size: 28px;
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;

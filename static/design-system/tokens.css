@@ -216,7 +216,9 @@ html, body {
 .bf-h2, h2 {
   font-family: var(--bf-font-graffiti);
   font-weight: 400;
-  font-size: var(--bf-fs-28);
+  /* A Dripping Marker rende menor que Rubik Wet Paint — bump pra
+     compensar o x-height menor da fonte. */
+  font-size: var(--bf-fs-40);
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
