@@ -270,6 +270,9 @@ export const handler: Handlers<HomeData, State> = {
       : null;
 
     const meuElenco = elencos[CHAVE_USUARIO];
+    const meuMelhor = melhoresPorChave.get(CHAVE_USUARIO) ?? [];
+    // Map por atleta_id pra olhar substituido/descido do melhor time
+    const melhorById = new Map(meuMelhor.map((j) => [j.atleta_id, j]));
     const atletas: AtletaElenco[] = meuElenco
       ? Object.values(meuElenco.jogadores)
         // Inclui todos os 26 fixos: Sim (titular), Banco (reserva ativa),
@@ -278,18 +281,29 @@ export const handler: Handlers<HomeData, State> = {
           j.escalacao === "Sim" || j.escalacao === "Banco" ||
           j.escalacao === "Não"
         )
-        .map((j) => ({
-          atleta_id: j.atleta_id,
-          apelido: j.apelido_api,
-          clube: j.clube,
-          posicao: j.posicao as AtletaElenco["posicao"],
-          escalacao: j.escalacao as "Sim" | "Banco" | "Não",
-          pontos: liveP(j.atleta_id, j.pontos),
-          foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
-          statusId: j.status_id,
-        }))
+        .map((j) => {
+          const m = melhorById.get(j.atleta_id);
+          const live = livePts[String(j.atleta_id)];
+          // Quando ao vivo, escalacao reflete estado FINAL pós auto-sub
+          // (banco que entrou vira "Sim", titular descido vira "Banco")
+          // — pra Field renderizar no slot certo. Fora do live, mantém
+          // a escala que o dono firmou.
+          const escalacao = aoVivoReal && m ? m.escalacao : j.escalacao;
+          return {
+            atleta_id: j.atleta_id,
+            apelido: j.apelido_api,
+            clube: j.clube,
+            posicao: j.posicao as AtletaElenco["posicao"],
+            escalacao: escalacao as "Sim" | "Banco" | "Não",
+            pontos: liveP(j.atleta_id, j.pontos),
+            foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
+            statusId: j.status_id,
+            subEntrou: m?.substituido ?? false,
+            subSaiu: m?.descido === true,
+            emCampo: !!live?.entrou_em_campo,
+          };
+        })
       : [];
-    const meuMelhor = melhoresPorChave.get(CHAVE_USUARIO) ?? [];
     const banco: BancoPino[] = meuElenco
       ? meuMelhor
         .filter((j) => j.escalacao === "Banco")
@@ -427,7 +441,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=95" />
+        <link rel="stylesheet" href="/bf-styles.css?v=96" />
       </Head>
       <div class="bf-viewport">
         <TopBar

@@ -7,6 +7,7 @@ import Field, {
 } from "../components/Field.tsx";
 import { coresClube } from "../lib/cores.ts";
 import { escudoUrl } from "../lib/escudos.ts";
+import ReservasRow from "../components/ReservasRow.tsx";
 
 /** Atleta do elenco — abrange as 3 categorias do roster fixo de ~26. */
 export interface AtletaElenco {
@@ -19,6 +20,12 @@ export interface AtletaElenco {
   pontos: number | null;
   foto: string | null;
   statusId: number | null;
+  /** Live: jogador entrou em campo via auto-sub (bench → escala). */
+  subEntrou?: boolean;
+  /** Live: era titular, foi rebaixado pelo auto-sub (escala → bench). */
+  subSaiu?: boolean;
+  /** Live: jogador está atualmente em campo (Cartola entrou_em_campo). */
+  emCampo?: boolean;
 }
 
 interface Props {
@@ -275,7 +282,7 @@ export default function MeuTimeEditor(
   }
 
   // Constrói escalação + banco + não-escalados a partir do estado atual
-  const { escalacao, banco, naoEscalados } = useMemo(() => {
+  const { escalacao, banco, naoEscalados, reservasView } = useMemo(() => {
     const pino = (j: AtletaElenco): Pino => ({
       atletaId: j.atleta_id,
       nome: j.apelido,
@@ -285,6 +292,9 @@ export default function MeuTimeEditor(
       pos: POS_ABREV[j.posicao],
       statusId: j.statusId,
       foto: j.foto,
+      subEntrou: j.subEntrou,
+      subSaiu: j.subSaiu,
+      emCampo: j.emCampo,
     });
     const sims = atletas.filter((j) => j.escalacao === "Sim");
     const gk = sims.find((j) => j.posicao === "Goleiro");
@@ -303,7 +313,23 @@ export default function MeuTimeEditor(
       .filter((j) => j.escalacao === "Banco")
       .map((j) => ({ ...pino(j), posicao: j.posicao }));
     const naoEscalados = atletas.filter((j) => j.escalacao === "Não");
-    return { escalacao, banco, naoEscalados };
+    // Reservas pra view mode (read-only): combina Banco + Não num único
+    // bloco como em /liga e /ao-vivo. Sort por posição igual ao NaoSection.
+    const ordemPos: Record<AtletaElenco["posicao"], number> = {
+      Goleiro: 0,
+      Lateral: 1,
+      Zagueiro: 2,
+      Meia: 3,
+      Atacante: 4,
+    };
+    const reservasView: BancoPino[] = atletas
+      .filter((j) => j.escalacao !== "Sim")
+      .sort((a, b) =>
+        ordemPos[a.posicao] - ordemPos[b.posicao] ||
+        a.apelido.localeCompare(b.apelido, "pt-BR")
+      )
+      .map((j) => ({ ...pino(j), posicao: j.posicao }));
+    return { escalacao, banco, naoEscalados, reservasView };
   }, [atletas]);
 
   return (
@@ -444,8 +470,11 @@ export default function MeuTimeEditor(
       <Field
         jogadores={escalacao}
         showPoints={showPoints}
+        liveMode={aoVivo}
         accent={accent}
-        banco={banco}
+        /* Banco inline no field SÓ no modo de edição (precisa pra drag/swap).
+           Fora do edit, os reservas aparecem na ReservasRow abaixo. */
+        banco={editando ? banco : undefined}
         onSelect={editando ? selecionar : undefined}
         selecionado={selecionado ?? undefined}
         compativelCom={!editando ? undefined : (p) => {
@@ -460,16 +489,29 @@ export default function MeuTimeEditor(
         }}
       />
 
-      {editando && naoEscalados.length > 0 && (
-        <NaoSection
-          atletas={naoEscalados}
-          selecionado={selecionado ?? undefined}
-          posicaoFiltro={selecionado != null
-            ? atletas.find((x) => x.atleta_id === selecionado)?.posicao ?? null
-            : null}
-          onSelect={selecionar}
-        />
-      )}
+      {editando
+        ? (
+          naoEscalados.length > 0 && (
+            <NaoSection
+              atletas={naoEscalados}
+              selecionado={selecionado ?? undefined}
+              posicaoFiltro={selecionado != null
+                ? atletas.find((x) => x.atleta_id === selecionado)?.posicao ??
+                  null
+                : null}
+              onSelect={selecionar}
+            />
+          )
+        )
+        : (
+          /* View mode: reservas read-only (Banco + Não) numa linha
+             separada, igual /liga e /ao-vivo. */
+          <ReservasRow
+            jogadores={reservasView}
+            showPoints={showPoints}
+            showStatus={!aoVivo}
+          />
+        )}
     </div>
   );
 }
