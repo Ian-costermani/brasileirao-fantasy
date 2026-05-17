@@ -615,6 +615,77 @@ body {
 }
 
 /* ============================================================
+   ADMIN — lista de times pra editar (admin/times)
+   ============================================================ */
+.bf-admin-times {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 var(--bf-gutter);
+}
+.bf-admin-times__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-left: 4px solid var(--accent, var(--bf-fg-2));
+  border-radius: var(--bf-radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--bf-dur-fast) var(--bf-ease-out);
+}
+.bf-admin-times__item:hover {
+  background: var(--bf-chassis-hover);
+}
+.bf-admin-times__escudo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bf-admin-times__meta {
+  flex: 1;
+  min-width: 0;
+}
+.bf-admin-times__name {
+  font-family: var(--bf-font-cond);
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.bf-admin-times__dono {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
+}
+.bf-admin-times__count {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+.bf-admin-times__count-lbl {
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bf-fg-3);
+  margin-top: 2px;
+}
+
+/* ============================================================
    TIMELINE — eventos chave gerados via diff entre polls de Cartola
    ============================================================ */
 .bf-timeline {

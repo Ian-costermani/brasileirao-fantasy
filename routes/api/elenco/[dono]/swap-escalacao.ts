@@ -9,6 +9,7 @@ import {
   setElenco,
   TODAS_CHAVES,
 } from "../../../../lib/kv.ts";
+import type { State } from "../../../_middleware.ts";
 
 const H = { "Content-Type": "application/json" };
 
@@ -30,13 +31,23 @@ interface Body {
  * - Se bola_rolando (ao vivo): limite de 3 substituições/rodada quando a
  *   troca envolve a escala (Sim ↔ Banco)
  */
-export const handler: Handlers = {
+export const handler: Handlers<unknown, State> = {
   async POST(req, ctx) {
     const chave = ctx.params.dono.toLowerCase();
     if (!TODAS_CHAVES.includes(chave)) {
       return new Response(
         JSON.stringify({ ok: false, erro: "Time não encontrado" }),
         { status: 404, headers: H },
+      );
+    }
+    // Só dono ou admin
+    const session = ctx.state.session;
+    const isAdmin = session?.role === "admin";
+    const isDono = session?.chave === chave;
+    if (!isAdmin && !isDono) {
+      return new Response(
+        JSON.stringify({ ok: false, erro: "Só o dono do time (ou admin)" }),
+        { status: 403, headers: H },
       );
     }
 

@@ -1,14 +1,24 @@
 import { Handlers } from "$fresh/server.ts";
-import { getAllElencos, getElenco, setElenco, getAtletasCache, getPartidasCache, TODAS_CHAVES, POSICAO_CHAVES_CACHE } from "../../../../../lib/kv.ts";
+import { getAllElencos, getAtletasCache, getElenco, getPartidasCache, POSICAO_CHAVES_CACHE, setElenco, TODAS_CHAVES } from "../../../../../lib/kv.ts";
 import type { JogadorKV } from "../../../../../lib/types.ts";
+import type { State } from "../../../../_middleware.ts";
 
 const H = { "Content-Type": "application/json" };
 
-export const handler: Handlers = {
+export const handler: Handlers<unknown, State> = {
   async POST(req, ctx) {
     const chave = ctx.params.dono.toLowerCase();
     if (!TODAS_CHAVES.includes(chave)) {
       return new Response(JSON.stringify({ ok: false, erro: "Time não encontrado" }), { status: 404, headers: H });
+    }
+    const session = ctx.state.session;
+    const isAdmin = session?.role === "admin";
+    const isDono = session?.chave === chave;
+    if (!isAdmin && !isDono) {
+      return new Response(
+        JSON.stringify({ ok: false, erro: "Só o dono do time (ou admin)" }),
+        { status: 403, headers: H },
+      );
     }
 
     let body: { atleta_id_sai: number; atleta_id_entra: number; escalacao: "Sim" | "Banco" | "Não" };

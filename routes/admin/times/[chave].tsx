@@ -1,0 +1,149 @@
+import { Handlers, PageProps } from "$fresh/server.ts";
+import { Head } from "$fresh/runtime.ts";
+import {
+  CHAVES_TIMES,
+  getAVenda,
+  getElenco,
+  getFotos,
+  getRodadaStatus,
+  getSubsUsadas,
+  isRodadaEmAndamento,
+  MAX_SUBS_AO_VIVO,
+  TODAS_CHAVES,
+} from "../../../lib/kv.ts";
+import { fotoUrl } from "../../../lib/fotos.ts";
+import { timeLigaInfo } from "../../../lib/times-liga.ts";
+import TopBar from "../../../components/TopBar.tsx";
+import SectionHeader from "../../../components/SectionHeader.tsx";
+import MeuTimeEditor, {
+  type AtletaElenco,
+} from "../../../islands/MeuTimeEditor.tsx";
+import type { State } from "../../_middleware.ts";
+
+interface Data {
+  chave: string;
+  displayName: string;
+  dono: string;
+  accent: string;
+  atletas: AtletaElenco[];
+  aoVivo: boolean;
+  subsUsadas: number;
+  subsMax: number;
+  aVendaIds: number[];
+  userEmail: string | null;
+  userRole: "admin" | "user" | null;
+  userNome: string | null;
+  userPicture: string | null;
+}
+
+export const handler: Handlers<Data, State> = {
+  async GET(_req, ctx) {
+    const chave = ctx.params.chave.toLowerCase();
+    if (!TODAS_CHAVES.includes(chave)) {
+      return new Response("Time não encontrado", { status: 404 });
+    }
+    const kv = await Deno.openKv();
+    const [elenco, fotos, rodadaStatus, aVendaIds] = await Promise.all([
+      getElenco(kv, chave),
+      getFotos(kv),
+      getRodadaStatus(kv),
+      getAVenda(kv, chave),
+    ]);
+    if (!elenco) {
+      return new Response("Elenco não seedado", { status: 404 });
+    }
+    const aoVivo = isRodadaEmAndamento(rodadaStatus?.status);
+    const rodadaAtual = rodadaStatus?.rodada ?? 0;
+    const subsUsadas = aoVivo ? await getSubsUsadas(kv, rodadaAtual, chave) : 0;
+
+    const atletas: AtletaElenco[] = Object.values(elenco.jogadores)
+      .filter((j) =>
+        j.escalacao === "Sim" || j.escalacao === "Banco" ||
+        j.escalacao === "Não"
+      )
+      .map((j) => ({
+        atleta_id: j.atleta_id,
+        apelido: j.apelido_api,
+        clube: j.clube,
+        posicao: j.posicao as AtletaElenco["posicao"],
+        escalacao: j.escalacao as "Sim" | "Banco" | "Não",
+        pontos: j.pontos,
+        foto: fotos[String(j.atleta_id)] ?? fotoUrl(j.apelido_api) ?? null,
+        statusId: j.status_id,
+      }));
+
+    const meta = CHAVES_TIMES[chave];
+    const visual = timeLigaInfo(chave);
+    return ctx.render({
+      chave,
+      displayName: visual?.displayName ?? meta?.nome_time ?? chave,
+      dono: meta?.dono ?? "",
+      accent: visual?.accent ?? "#888",
+      atletas,
+      aoVivo,
+      subsUsadas,
+      subsMax: MAX_SUBS_AO_VIVO,
+      aVendaIds,
+      userEmail: ctx.state.session?.email ?? null,
+      userRole: ctx.state.session?.role ?? null,
+      userNome: ctx.state.session?.name ?? null,
+      userPicture: ctx.state.session?.picture ?? null,
+    });
+  },
+};
+
+export default function AdminTimeEditor({ data }: PageProps<Data>) {
+  return (
+    <>
+      <Head>
+        <title>Admin · {data.displayName}</title>
+        <link rel="stylesheet" href="/bf-styles.css?v=108" />
+      </Head>
+      <div class="bf-viewport">
+        <TopBar
+          userEmail={data.userEmail}
+          userRole={data.userRole}
+          userNome={data.userNome}
+          userPicture={data.userPicture}
+        />
+
+        <article class="bf-card bf-status-card">
+          <div class="bf-status-card__top">
+            <div class="bf-status-card__name">
+              <h3>{data.displayName}</h3>
+              <span class="bf-status-card__sub">{data.dono}</span>
+            </div>
+            <a
+              href="/admin/times"
+              class="bf-btn bf-btn--ghost"
+              style="height:32px;font-size:11px;padding:0 12px"
+            >
+              ← outros times
+            </a>
+          </div>
+          <p class="bf-status-card__sub" style="margin-top:8px">
+            Modo admin — edição habilitada mesmo com mercado fechado/rodada
+            ativa. Use com cuidado: mudanças durante o live podem afetar a
+            pontuação parcial.
+          </p>
+        </article>
+
+        <SectionHeader>Escalacao</SectionHeader>
+        <MeuTimeEditor
+          chave={data.chave}
+          atletas={data.atletas}
+          accent={data.accent}
+          aoVivo={data.aoVivo}
+          subsUsadasInicial={data.subsUsadas}
+          subsMax={data.subsMax}
+          showPoints={data.aoVivo}
+          /* Admin entra direto em edit mode pra não precisar clicar. */
+          editandoInicial={true}
+          /* Admin contorna o bloqueio de edição (mercado fechado etc). */
+          edicaoBloqueada={false}
+          aVendaIds={data.aVendaIds}
+        />
+      </div>
+    </>
+  );
+}

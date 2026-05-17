@@ -70,7 +70,7 @@ export default function AdminPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Admin · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=107" />
+        <link rel="stylesheet" href="/bf-styles.css?v=108" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -88,6 +88,23 @@ export default function AdminPage({ data }: PageProps<Data>) {
             Atribua um email Google a cada time. Esse email será aceito no login
             via SSO e mapeado para o time correspondente.
           </p>
+        </article>
+
+        <SectionHeader>Editar times</SectionHeader>
+        <article class="bf-card">
+          <p class="bf-status-card__sub" style="margin:0 0 12px">
+            Editar a escalação de qualquer time da liga — útil pra corrigir
+            erros, ajustar manualmente fora do horário do mercado, ou preparar
+            elenco de novo dono. Edição funciona mesmo durante a rodada (use com
+            cuidado).
+          </p>
+          <a
+            href="/admin/times"
+            class="bf-btn"
+            style="display:inline-flex"
+          >
+            Ver todos os times →
+          </a>
         </article>
 
         <SectionHeader>Atribuicoes</SectionHeader>
