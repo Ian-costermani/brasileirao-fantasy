@@ -273,6 +273,10 @@ export const handler: Handlers<HomeData, State> = {
     const meuMelhor = melhoresPorChave.get(CHAVE_USUARIO) ?? [];
     // Map por atleta_id pra olhar substituido/descido do melhor time
     const melhorById = new Map(meuMelhor.map((j) => [j.atleta_id, j]));
+    // aoVivoReal precisa estar disponível no .map abaixo — definido
+    // de novo mais embaixo é só duplicação inofensiva.
+    const aoVivoReal = !!mercado?.bola_rolando ||
+      (rodada?.status === "ao_vivo");
     const atletas: AtletaElenco[] = meuElenco
       ? Object.values(meuElenco.jogadores)
         // Inclui todos os 26 fixos: Sim (titular), Banco (reserva ativa),
@@ -332,9 +336,7 @@ export const handler: Handlers<HomeData, State> = {
     }
 
     const rodadaAtual = rodada?.rodada ?? mercado?.rodada_atual ?? 0;
-    // Combina KV + Cartola: confia em qualquer fonte que diga ao vivo.
-    const aoVivoReal = !!mercado?.bola_rolando ||
-      (rodada?.status === "ao_vivo");
+    // aoVivoReal já computado acima (precisava antes do atletas.map).
 
     // Countdown: usa fechamento do KV se tiver, senão da Cartola.
     // Durante o ao vivo esconde porque ações de mercado bloqueiam.
@@ -441,7 +443,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=97" />
+        <link rel="stylesheet" href="/bf-styles.css?v=98" />
       </Head>
       <div class="bf-viewport">
         <TopBar
