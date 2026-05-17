@@ -816,6 +816,61 @@ body {
 }
 
 /* ============================================================
+   TABS — alternância entre "Top scorers" e "Timeline" no /ao-vivo
+   ============================================================ */
+.bf-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 0 var(--bf-gutter) 8px;
+  background: var(--bf-chassis);
+  border: 1px solid var(--bf-line);
+  border-radius: var(--bf-radius-md);
+}
+.bf-tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--bf-fg-2);
+  border: 0;
+  border-radius: var(--bf-radius-sm);
+  font-family: var(--bf-font-cond);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background var(--bf-dur-fast) var(--bf-ease-out),
+    color var(--bf-dur-fast) var(--bf-ease-out);
+}
+.bf-tabs__btn:hover {
+  color: var(--bf-fg-1);
+}
+.bf-tabs__btn--active {
+  background: color-mix(in srgb, var(--bf-lime) 14%, transparent);
+  color: var(--bf-lime);
+}
+.bf-tabs__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  background: color-mix(in srgb, var(--bf-lime) 22%, transparent);
+  border-radius: 999px;
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  color: var(--bf-lime);
+  letter-spacing: 0;
+}
+
+/* ============================================================
    TIMELINE — eventos chave gerados via diff entre polls de Cartola
    ============================================================ */
 .bf-timeline {

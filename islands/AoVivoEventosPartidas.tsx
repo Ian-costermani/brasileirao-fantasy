@@ -82,6 +82,10 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
   /** Expande/colapsa lista de "Eventos da liga" (mostra os primeiros N
       sempre; resto fica oculto até o usuário expandir). */
   const [eventosExpandido, setEventosExpandido] = useState(false);
+  /** Toggle entre "ranking dos top scorers" vs "timeline cronológica
+      de eventos chave". Default ranking (mais útil pra ver quem tá
+      pontuando agora). */
+  const [view, setView] = useState<"eventos" | "timeline">("eventos");
   /** Timeline gerada por diff entre polls. Persiste durante a sessão. */
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   /** Snapshot do último scout por atleta — pra computar diff no próximo poll.
@@ -201,60 +205,6 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
 
   return (
     <>
-      {
-        /* Timeline — eventos detectados via diff entre polls. Aparece
-          quando há pelo menos 1 evento desde que a tela abriu. */
-      }
-      {timeline.length > 0 && (
-        <>
-          <SectionHeader>Timeline</SectionHeader>
-          <div class="bf-timeline">
-            {timeline.map((e, i) => {
-              const hora = e.ts.toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-                timeZone: "America/Sao_Paulo",
-              });
-              return (
-                <div
-                  class={`bf-timeline__row bf-timeline__row--${e.info.tipo}`}
-                  key={`${e.atletaId}-${e.codigo}-${e.ts.getTime()}-${i}`}
-                >
-                  <span class="bf-timeline__time">{hora}</span>
-                  <span class="bf-timeline__icon">
-                    <ScoutIcon codigo={e.codigo} size={16} />
-                  </span>
-                  <span class="bf-timeline__name">
-                    {e.escudo && (
-                      <img
-                        class="bf-event-row__escudo"
-                        src={e.escudo}
-                        alt=""
-                      />
-                    )}
-                    {e.apelido}
-                    {e.donoEscudo
-                      ? (
-                        <img
-                          class="bf-event-row__dono-escudo"
-                          src={e.donoEscudo}
-                          alt={e.dono}
-                          title={e.dono}
-                        />
-                      )
-                      : <span class="bf-event-row__dono">{e.dono}</span>}
-                  </span>
-                  <span class="bf-timeline__label">
-                    {e.info.label}
-                    {e.qtd > 1 && <span>×{e.qtd}</span>}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
       <SectionHeader
         right={atualizadoTxt && (
           <span class="bf-meta-text">atualizado às {atualizadoTxt}</span>
@@ -262,7 +212,93 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
       >
         Eventos da liga
       </SectionHeader>
-      {(() => {
+
+      {/* Toggle entre Top scorers (default) e Timeline cronológica. */}
+      <div class="bf-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === "eventos"}
+          class={`bf-tabs__btn ${
+            view === "eventos" ? "bf-tabs__btn--active" : ""
+          }`}
+          onClick={() => setView("eventos")}
+        >
+          Top scorers
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === "timeline"}
+          class={`bf-tabs__btn ${
+            view === "timeline" ? "bf-tabs__btn--active" : ""
+          }`}
+          onClick={() => setView("timeline")}
+        >
+          Timeline{timeline.length > 0 && (
+            <span class="bf-tabs__badge">{timeline.length}</span>
+          )}
+        </button>
+      </div>
+
+      {view === "timeline" && (
+        timeline.length === 0
+          ? (
+            <div class="bf-empty-state">
+              {carregando
+                ? "Carregando…"
+                : "Aguardando próximos eventos — a timeline lista lances chave (gols, cartões, defesas) conforme acontecem nesta sessão."}
+            </div>
+          )
+          : (
+            <div class="bf-timeline">
+              {timeline.map((e, i) => {
+                const hora = e.ts.toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "America/Sao_Paulo",
+                });
+                return (
+                  <div
+                    class={`bf-timeline__row bf-timeline__row--${e.info.tipo}`}
+                    key={`${e.atletaId}-${e.codigo}-${e.ts.getTime()}-${i}`}
+                  >
+                    <span class="bf-timeline__time">{hora}</span>
+                    <span class="bf-timeline__icon">
+                      <ScoutIcon codigo={e.codigo} size={16} />
+                    </span>
+                    <span class="bf-timeline__name">
+                      {e.escudo && (
+                        <img
+                          class="bf-event-row__escudo"
+                          src={e.escudo}
+                          alt=""
+                        />
+                      )}
+                      {e.apelido}
+                      {e.donoEscudo
+                        ? (
+                          <img
+                            class="bf-event-row__dono-escudo"
+                            src={e.donoEscudo}
+                            alt={e.dono}
+                            title={e.dono}
+                          />
+                        )
+                        : <span class="bf-event-row__dono">{e.dono}</span>}
+                    </span>
+                    <span class="bf-timeline__label">
+                      {e.info.label}
+                      {e.qtd > 1 && <span>×{e.qtd}</span>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )
+      )}
+
+      {view === "eventos" && (() => {
         if (eventosLiga.length === 0) {
           return (
             <div class="bf-empty-state">
