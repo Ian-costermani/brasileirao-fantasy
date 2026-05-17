@@ -567,6 +567,21 @@ body {
 .bf-event-chip__icon {
   font-size: 11px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.bf-scout-icon {
+  display: block;
+  flex-shrink: 0;
+}
+/* Cartão amarelo — força cor amarela (CA tem tipo "negativo" mas
+   visualmente PRECISA ser amarelo, não vermelho do chip). */
+.bf-scout-icon--CA {
+  color: var(--bf-yellow);
+}
+/* Cartão vermelho — explícito mesmo já herdando do --negativo. */
+.bf-scout-icon--CV {
+  color: var(--bf-red);
 }
 .bf-event-chip__qtd {
   opacity: 0.85;

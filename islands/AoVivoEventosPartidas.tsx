@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import SectionHeader from "../components/SectionHeader.tsx";
 import Partidas from "../components/Partidas.tsx";
+import ScoutIcon from "../components/ScoutIcon.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { eventos, type EventoScout, SCOUT } from "../lib/scout.ts";
 
@@ -217,7 +218,9 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
                   key={`${e.atletaId}-${e.codigo}-${e.ts.getTime()}-${i}`}
                 >
                   <span class="bf-timeline__time">{hora}</span>
-                  <span class="bf-timeline__icon">{e.info.icon}</span>
+                  <span class="bf-timeline__icon">
+                    <ScoutIcon codigo={e.codigo} size={16} />
+                  </span>
                   <span class="bf-timeline__name">
                     {e.escudo && (
                       <img
@@ -301,7 +304,9 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
                         key={e.codigo}
                         title={e.info.label}
                       >
-                        <span class="bf-event-chip__icon">{e.info.icon}</span>
+                        <span class="bf-event-chip__icon">
+                          <ScoutIcon codigo={e.codigo} size={12} />
+                        </span>
                         {e.qtd > 1 && (
                           <span class="bf-event-chip__qtd">{e.qtd}</span>
                         )}
