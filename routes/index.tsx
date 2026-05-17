@@ -428,7 +428,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=110" />
+        <link rel="stylesheet" href="/bf-styles.css?v=111" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -467,7 +467,14 @@ export default function Home({ data }: PageProps<HomeData>) {
                 Liga da Sexta · {data.totalTimes} times
               </span>
             </div>
-            {data.aoVivoReal && <Pill variant="lime" live>Ao Vivo</Pill>}
+            <div class="bf-status-card__pills">
+              {data.aoVivoReal && <Pill variant="lime" live>Ao Vivo</Pill>}
+              {data.aoVivoReal && (
+                <Pill>
+                  {data.subsAuto}/{data.subsMax} subs
+                </Pill>
+              )}
+            </div>
           </div>
 
           <div class="bf-status-card__metrics">

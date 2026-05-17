@@ -1677,6 +1677,15 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   align-items: center;
   gap: 12px;
 }
+/* Container das pills (Ao Vivo + Subs) no canto direito do header
+   do status card. Stack vertical em mobile pra não estourar. */
+.bf-status-card__pills {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
 .bf-status-card__name {
   flex: 1;
   display: flex;
@@ -1756,19 +1765,25 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
 }
 
 .bf-status-card__metrics {
+  /* Subgrid de 3 rows (label / value / foot) compartilhadas pelas 3
+     colunas — garante que label de "esta rodada", "posição" e "total"
+     fiquem na mesma linha, mesmo que o valor "esta rodada" (28px)
+     seja maior que "posição/total" (24px). */
   display: grid;
   grid-template-columns: 1fr 1px 1fr 1px 1fr;
-  gap: 10px;
+  grid-template-rows: auto 1fr auto;
+  column-gap: 10px;
+  row-gap: 4px;
   margin-top: 18px;
-  align-items: end;
 }
 .bf-status-card__divider {
   background: var(--bf-line);
-  align-self: stretch;
+  grid-row: 1 / 4;
 }
 .bf-status-card__metric {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: 1 / 4;
   gap: 4px;
 }
 .bf-status-card__metric-label {
@@ -4374,7 +4389,8 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
    acompanham o shift do título — assim a linha visual fica consistente
    em vez de título "afundado" e siblings "elevados". */
 .bf-meu-time__bar > .bf-meu-time__market,
-.bf-meu-time__bar > .bf-meu-time__btn {
+.bf-meu-time__bar > .bf-meu-time__btn,
+.bf-meu-time__bar > .bf-pill {
   transform: translateY(0.18em);
 }
 @media (max-width: 480px) {
