@@ -239,6 +239,12 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
           : (
             <div class="bf-timeline">
               {timeline.map((e, i) => {
+                // Dia da semana abreviado (sáb, dom, seg…) — rodada
+                // pode ter jogos em dias diferentes.
+                const dia = e.ts.toLocaleDateString("pt-BR", {
+                  weekday: "short",
+                  timeZone: "America/Sao_Paulo",
+                }).replace(".", "").slice(0, 3);
                 const hora = e.ts.toLocaleTimeString("pt-BR", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -249,7 +255,10 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
                     class={`bf-timeline__row bf-timeline__row--${e.info.tipo}`}
                     key={`${e.atletaId}-${e.codigo}-${e.ts.getTime()}-${i}`}
                   >
-                    <span class="bf-timeline__time">{hora}</span>
+                    <span class="bf-timeline__time">
+                      <span class="bf-timeline__day">{dia}</span>
+                      <span class="bf-timeline__hour">{hora}</span>
+                    </span>
                     <span class="bf-timeline__icon">
                       <ScoutIcon codigo={e.codigo} size={16} />
                     </span>
