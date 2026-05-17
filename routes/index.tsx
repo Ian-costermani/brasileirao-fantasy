@@ -272,7 +272,9 @@ export const handler: Handlers<HomeData, State> = {
     const meuElenco = elencos[CHAVE_USUARIO];
     const meuMelhor = melhoresPorChave.get(CHAVE_USUARIO) ?? [];
     // Map por atleta_id pra olhar substituido/descido do melhor time
-    const melhorById = new Map(meuMelhor.map((j) => [j.atleta_id, j]));
+    type MelhorJogador = typeof meuMelhor[number];
+    const melhorById = new Map<number, MelhorJogador>();
+    for (const j of meuMelhor) melhorById.set(j.atleta_id, j);
     // aoVivoReal precisa estar disponível no .map abaixo — definido
     // de novo mais embaixo é só duplicação inofensiva.
     const aoVivoReal = !!mercado?.bola_rolando ||
@@ -443,7 +445,7 @@ export default function Home({ data }: PageProps<HomeData>) {
     <>
       <Head>
         <title>Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=98" />
+        <link rel="stylesheet" href="/bf-styles.css?v=99" />
       </Head>
       <div class="bf-viewport">
         <TopBar
