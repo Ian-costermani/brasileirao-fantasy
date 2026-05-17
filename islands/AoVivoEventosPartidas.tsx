@@ -82,10 +82,10 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
   /** Expande/colapsa lista de "Eventos da liga" (mostra os primeiros N
       sempre; resto fica oculto até o usuário expandir). */
   const [eventosExpandido, setEventosExpandido] = useState(false);
-  /** Toggle entre "ranking dos top scorers" vs "timeline cronológica
-      de eventos chave". Default ranking (mais útil pra ver quem tá
-      pontuando agora). */
-  const [view, setView] = useState<"eventos" | "timeline">("eventos");
+  /** Toggle entre "timeline cronológica" (default) e "ranking dos
+      top scorers". Timeline é mais útil pra acompanhar a rodada;
+      ranking é mais um resumo do acumulado. */
+  const [view, setView] = useState<"eventos" | "timeline">("timeline");
   /** Timeline gerada por diff entre polls. Persiste durante a sessão. */
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
