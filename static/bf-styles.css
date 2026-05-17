@@ -3990,6 +3990,21 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   word-break: break-word;
   max-width: 80px;
 }
+/* Pontos parciais no pool — usado em /ao-vivo via ReservasRow.
+   Mesma estética do .bf-pin__card-pts: lime no positivo, red no negativo. */
+.bf-pool__pts {
+  font-family: var(--bf-font-display);
+  font-weight: 900;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--bf-lime);
+  text-shadow: 0 0 6px var(--bf-lime-glow);
+  line-height: 1;
+}
+.bf-pool__pts--neg {
+  color: var(--bf-red);
+  text-shadow: 0 0 6px var(--bf-red-glow);
+}
 .bf-pool__clube {
   font-family: var(--bf-font-cond);
   font-weight: 700;

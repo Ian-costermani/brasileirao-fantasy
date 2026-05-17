@@ -19,6 +19,7 @@ import CollapsibleTeamRow from "../islands/CollapsibleTeamRow.tsx";
 import AoVivoEventosPartidas, {
   type AtletaMeta,
 } from "../islands/AoVivoEventosPartidas.tsx";
+import ReservasRow from "../components/ReservasRow.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { fotoUrl } from "../lib/fotos.ts";
@@ -285,7 +286,7 @@ export default function AoVivoPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Ao Vivo · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=94" />
+        <link rel="stylesheet" href="/bf-styles.css?v=95" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -346,13 +347,18 @@ function AoVivoLiga({ data }: { data: DataLive }) {
               <div class="bf-team-row__expanded">
                 {t.escalacao
                   ? (
-                    <Field
-                      jogadores={t.escalacao}
-                      showPoints={true}
-                      liveMode={true}
-                      accent={accent}
-                      banco={t.banco}
-                    />
+                    <>
+                      <Field
+                        jogadores={t.escalacao}
+                        showPoints={true}
+                        liveMode={true}
+                        accent={accent}
+                      />
+                      <ReservasRow
+                        jogadores={t.banco}
+                        showPoints={true}
+                      />
+                    </>
                   )
                   : (
                     <div class="bf-empty-state">

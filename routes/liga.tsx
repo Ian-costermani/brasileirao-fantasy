@@ -13,6 +13,7 @@ import Field, {
 import CollapsibleTeamRow from "../islands/CollapsibleTeamRow.tsx";
 import LeagueChart, { type LinhaTime } from "../islands/LeagueChart.tsx";
 import SectionHeader from "../components/SectionHeader.tsx";
+import ReservasRow from "../components/ReservasRow.tsx";
 import { escudoUrl } from "../lib/escudos.ts";
 import { coresClube } from "../lib/cores.ts";
 import { fotoUrl } from "../lib/fotos.ts";
@@ -170,7 +171,7 @@ export default function Liga({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Liga · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=94" />
+        <link rel="stylesheet" href="/bf-styles.css?v=95" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -214,13 +215,19 @@ export default function Liga({ data }: PageProps<Data>) {
                 <div class="bf-team-row__expanded">
                   {t.escalacao
                     ? (
-                      <Field
-                        jogadores={t.escalacao}
-                        showPoints={false}
-                        showStatus={false}
-                        accent={accent}
-                        banco={t.banco}
-                      />
+                      <>
+                        <Field
+                          jogadores={t.escalacao}
+                          showPoints={false}
+                          showStatus={false}
+                          accent={accent}
+                        />
+                        <ReservasRow
+                          jogadores={t.banco}
+                          showPoints={false}
+                          showStatus={false}
+                        />
+                      </>
                     )
                     : (
                       <div class="bf-empty-state">
