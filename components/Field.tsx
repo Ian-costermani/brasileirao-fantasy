@@ -313,18 +313,15 @@ function PlayerPin(
       {/* Corpo da carta */}
       <div class="bf-pin__card">
         {p.nome && <span class="bf-pin__card-name">{p.nome}</span>}
-        {pts != null
-          ? (
-            <div
-              class={`bf-pin__card-pts ${
-                pts < 0 ? "bf-pin__card-pts--neg" : ""
-              }`}
-            >
-              {pts > 0 ? "+" : ""}
-              {pts.toFixed(1).replace(".", ",")}
-            </div>
-          )
-          : p.pos && <div class="bf-pin__card-pos">{p.pos}</div>}
+        {p.pos && <div class="bf-pin__card-pos">{p.pos}</div>}
+        {pts != null && (
+          <div
+            class={`bf-pin__card-pts ${pts < 0 ? "bf-pin__card-pts--neg" : ""}`}
+          >
+            {pts > 0 ? "+" : ""}
+            {pts.toFixed(1).replace(".", ",")}
+          </div>
+        )}
       </div>
     </div>
   );
