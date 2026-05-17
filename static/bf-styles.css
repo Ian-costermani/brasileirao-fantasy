@@ -4046,7 +4046,15 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   overflow: hidden;
   text-overflow: ellipsis;
   /* Caps altas dentro do glyph (drips ocupam o baixo) — desloca pra
-     alinhar com pills/icons vizinhos no flex center. */
+     alinhar com pills/icons vizinhos. Shift consistente nos siblings
+     pra todos descerem juntos (regra `.bf-meu-time__bar > *` abaixo). */
+  transform: translateY(0.18em);
+}
+/* Outros itens do bar (pill SUBS, botão editar, market countdown)
+   acompanham o shift do título — assim a linha visual fica consistente
+   em vez de título "afundado" e siblings "elevados". */
+.bf-meu-time__bar > .bf-meu-time__market,
+.bf-meu-time__bar > .bf-meu-time__btn {
   transform: translateY(0.18em);
 }
 @media (max-width: 480px) {
