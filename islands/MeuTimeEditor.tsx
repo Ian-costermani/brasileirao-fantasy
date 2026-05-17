@@ -520,7 +520,7 @@ export default function MeuTimeEditor(
               showStatus={!aoVivo}
             />
             <ReservasRow
-              label="Reservas"
+              label="Não escalados"
               jogadores={naoEscaladosView}
               showPoints={showPoints}
               showStatus={!aoVivo}

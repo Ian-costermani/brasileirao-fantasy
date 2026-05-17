@@ -341,7 +341,7 @@ function AoVivoLiga({ data }: { data: Data }) {
                         showPoints={data.aoVivo}
                       />
                       <ReservasRow
-                        label="Reservas"
+                        label="Não escalados"
                         jogadores={t.naoEscalados}
                         showPoints={data.aoVivo}
                       />

@@ -239,7 +239,7 @@ export default function Liga({ data }: PageProps<Data>) {
                           showStatus={false}
                         />
                         <ReservasRow
-                          label="Reservas"
+                          label="Não escalados"
                           jogadores={t.naoEscalados}
                           showPoints={false}
                           showStatus={false}
