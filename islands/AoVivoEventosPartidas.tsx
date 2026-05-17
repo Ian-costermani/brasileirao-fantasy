@@ -199,19 +199,8 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
         Eventos da liga
       </SectionHeader>
 
-      {/* Toggle entre Top scorers (default) e Timeline cronológica. */}
+      {/* Toggle: Timeline (default) primeiro, Top scorers depois. */}
       <div class="bf-tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === "eventos"}
-          class={`bf-tabs__btn ${
-            view === "eventos" ? "bf-tabs__btn--active" : ""
-          }`}
-          onClick={() => setView("eventos")}
-        >
-          Top scorers
-        </button>
         <button
           type="button"
           role="tab"
@@ -224,6 +213,17 @@ export default function AoVivoEventosPartidas({ ligaAtletas }: Props) {
           Timeline{timeline.length > 0 && (
             <span class="bf-tabs__badge">{timeline.length}</span>
           )}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === "eventos"}
+          class={`bf-tabs__btn ${
+            view === "eventos" ? "bf-tabs__btn--active" : ""
+          }`}
+          onClick={() => setView("eventos")}
+        >
+          Top scorers
         </button>
       </div>
 
