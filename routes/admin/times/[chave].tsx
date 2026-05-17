@@ -18,7 +18,21 @@ import SectionHeader from "../../../components/SectionHeader.tsx";
 import MeuTimeEditor, {
   type AtletaElenco,
 } from "../../../islands/MeuTimeEditor.tsx";
+import AdminTransferirPanel from "../../../islands/AdminTransferirPanel.tsx";
 import type { State } from "../../_middleware.ts";
+
+interface JogadorParaTransferir {
+  atleta_id: number;
+  apelido: string;
+  clube: string;
+  posicao: string;
+  escalacao: "Sim" | "Banco" | "Não";
+}
+
+interface TimeDestino {
+  chave: string;
+  displayName: string;
+}
 
 interface Data {
   chave: string;
@@ -26,6 +40,11 @@ interface Data {
   dono: string;
   accent: string;
   atletas: AtletaElenco[];
+  /** Lista crua do elenco pro painel de transferência (inclui campos
+      como clube que o MeuTimeEditor não usa). */
+  jogadoresParaTransferir: JogadorParaTransferir[];
+  /** Outros times da liga pra dropdown de destino na transferência. */
+  outrosTimes: TimeDestino[];
   aoVivo: boolean;
   subsUsadas: number;
   subsMax: number;
@@ -74,12 +93,36 @@ export const handler: Handlers<Data, State> = {
 
     const meta = CHAVES_TIMES[chave];
     const visual = timeLigaInfo(chave);
+
+    // Lista crua pro painel de transferência (todos os jogadores do
+    // elenco, com clube original pra exibir).
+    const jogadoresParaTransferir: JogadorParaTransferir[] = Object.values(
+      elenco.jogadores,
+    )
+      .map((j) => ({
+        atleta_id: j.atleta_id,
+        apelido: j.apelido_api,
+        clube: j.clube,
+        posicao: j.posicao,
+        escalacao: j.escalacao as "Sim" | "Banco" | "Não",
+      }));
+
+    const outrosTimes: TimeDestino[] = TODAS_CHAVES
+      .filter((c) => c !== chave)
+      .map((c) => {
+        const v = timeLigaInfo(c);
+        const m = CHAVES_TIMES[c];
+        return { chave: c, displayName: v?.displayName ?? m?.nome_time ?? c };
+      });
+
     return ctx.render({
       chave,
       displayName: visual?.displayName ?? meta?.nome_time ?? chave,
       dono: meta?.dono ?? "",
       accent: visual?.accent ?? "#888",
       atletas,
+      jogadoresParaTransferir,
+      outrosTimes,
       aoVivo,
       subsUsadas,
       subsMax: MAX_SUBS_AO_VIVO,
@@ -97,7 +140,7 @@ export default function AdminTimeEditor({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Admin · {data.displayName}</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=108" />
+        <link rel="stylesheet" href="/bf-styles.css?v=109" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -142,6 +185,13 @@ export default function AdminTimeEditor({ data }: PageProps<Data>) {
           /* Admin contorna o bloqueio de edição (mercado fechado etc). */
           edicaoBloqueada={false}
           aVendaIds={data.aVendaIds}
+        />
+
+        <SectionHeader>Transferir pra outro time</SectionHeader>
+        <AdminTransferirPanel
+          fromChave={data.chave}
+          jogadores={data.jogadoresParaTransferir}
+          outrosTimes={data.outrosTimes}
         />
       </div>
     </>
