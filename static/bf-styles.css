@@ -955,11 +955,15 @@ body {
   letter-spacing: 0.05em;
 }
 .bf-team-row__subs {
+  /* Largura fixa pra alinhar escudos/pontos entre rows. Sem isso, "1/3"
+     vs "3/3" não variam, mas a falta de width fixed deixa o flex layout
+     instável quando outros campos variam. */
+  width: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 4px 8px;
+  padding: 4px 0;
   background: color-mix(in srgb, var(--bf-fg-3) 12%, transparent);
   border: 1px solid var(--bf-line);
   border-radius: var(--bf-radius-sm);
@@ -989,6 +993,10 @@ body {
   line-height: 1;
 }
 .bf-team-row__pts {
+  /* Largura fixa baseada no maior caso ("PARCIAL" + 3 dígitos + vírgula
+     + 1 decimal, ex: "100,5"). Sem isso, "9,1" vs "38,3" mudam a largura
+     da coluna e deslocam escudo + meta entre rows. */
+  width: 60px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
