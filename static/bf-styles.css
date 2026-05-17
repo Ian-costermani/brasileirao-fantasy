@@ -4395,14 +4395,13 @@ body.bf-live-active .bf-bottom-nav__item[data-nav="live"]::after {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* Caps altas dentro do glyph (drips ocupam o baixo) — desloca pra
-     alinhar com pills/icons vizinhos. Shift consistente nos siblings
-     pra todos descerem juntos (regra `.bf-meu-time__bar > *` abaixo). */
-  transform: translateY(0.18em);
+  /* Caps altas dentro do glyph (drips ocupam o baixo) — shift maior
+     pro título compensar. Pills/icons usam shift menor (eles já são
+     ~centrados naturalmente; só precisam descer pouco pra acompanhar). */
+  transform: translateY(0.32em);
 }
-/* Outros itens do bar (pill SUBS, botão editar, market countdown)
-   acompanham o shift do título — assim a linha visual fica consistente
-   em vez de título "afundado" e siblings "elevados". */
+/* Pills e botões — shift menor que o título pra alinhar caps com
+   conteúdo central deles. Sem isso, ficavam acima das caps do título. */
 .bf-meu-time__bar > .bf-meu-time__market,
 .bf-meu-time__bar > .bf-meu-time__btn,
 .bf-meu-time__bar > .bf-pill {
