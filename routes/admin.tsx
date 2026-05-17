@@ -70,7 +70,7 @@ export default function AdminPage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>Admin · Brasileirão Fantasy</title>
-        <link rel="stylesheet" href="/bf-styles.css?v=109" />
+        <link rel="stylesheet" href="/bf-styles.css?v=110" />
       </Head>
       <div class="bf-viewport">
         <TopBar
@@ -93,9 +93,8 @@ export default function AdminPage({ data }: PageProps<Data>) {
         <SectionHeader>Editar times</SectionHeader>
         <article class="bf-card">
           <p class="bf-status-card__sub" style="margin:0 0 12px">
-            Editar a escalação de qualquer time da liga — útil pra corrigir
-            erros, ajustar manualmente fora do horário do mercado, ou preparar
-            elenco de novo dono. Edição funciona mesmo durante a rodada (use com
+            Editar a escalação de qualquer time da liga, transferir jogador
+            entre times. Edição funciona mesmo durante a rodada (use com
             cuidado).
           </p>
           <a
@@ -104,6 +103,21 @@ export default function AdminPage({ data }: PageProps<Data>) {
             style="display:inline-flex"
           >
             Ver todos os times →
+          </a>
+        </article>
+
+        <SectionHeader>Vendas e Ofertas</SectionHeader>
+        <article class="bf-card">
+          <p class="bf-status-card__sub" style="margin:0 0 12px">
+            Tirar jogador da venda (override do dono) e cancelar ofertas
+            pendentes esquecidas/incorretas.
+          </p>
+          <a
+            href="/admin/ofertas"
+            class="bf-btn"
+            style="display:inline-flex"
+          >
+            Gerenciar →
           </a>
         </article>
 

@@ -131,6 +131,38 @@ export async function listarOfertasEnviadas(
   return out;
 }
 
+/** Lista TODAS as ofertas do KV (admin only — itera prefix completo).
+ *  Filtro opcional por status (geralmente `pendente`). */
+export async function listarTodasOfertas(
+  kv: Deno.Kv,
+  filtro?: { status?: StatusOferta },
+): Promise<Oferta[]> {
+  const out: Oferta[] = [];
+  for await (const entry of kv.list<Oferta>({ prefix: ["oferta"] })) {
+    const o = entry.value;
+    if (filtro?.status && o.status !== filtro.status) continue;
+    out.push(o);
+  }
+  out.sort((a, b) => b.criadoEm - a.criadoEm);
+  return out;
+}
+
+/** Cancela uma oferta pendente. Idempotente — se não está pendente,
+ *  retorna a oferta sem mudar. Usado pelo admin pra limpar ofertas
+ *  esquecidas/incorretas. */
+export async function cancelarOferta(
+  kv: Deno.Kv,
+  id: string,
+): Promise<Oferta | null> {
+  const oferta = await getOferta(kv, id);
+  if (!oferta) return null;
+  if (oferta.status !== "pendente") return oferta;
+  oferta.status = "cancelada";
+  oferta.respondidoEm = Date.now();
+  await setOferta(kv, oferta);
+  return oferta;
+}
+
 /* --- Notificações ------------------------------------------------------ */
 
 export async function criarNotif(
